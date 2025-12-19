@@ -1,14 +1,11 @@
-// Test the file
-export const text = "Hello"
-
 // Enums
 
-enum Font {
-    Lato = 'lato',
-    DMsans = 'DMsans',
+export enum Font {
+  Lato = "lato",
+  DMsans = "DMsans",
 }
 
-enum FontWeight {
+export enum FontWeight {
   Regular = 400,
   Medium = 500,
   SemiBold = 600,
@@ -16,29 +13,43 @@ enum FontWeight {
   ExtraBold = 800,
 }
 
-enum FontStyle {
-  Normal = 'normal',
-  Italic = 'italic',
+export enum FontStyle {
+  Normal = "normal",
+  Italic = "italic",
 }
 
-enum Color {
-  DarkGreen = '#01130A',
-  Green = '#90C67C',
-  LightGreen = '#E3F0AF',
-  LightCream = '#FBF6E9',
-  White = '#FFFFFF',
-  Black = '#000000',
-  Grey = '#7D7D7D',
-  LightGrey = '#D3D3D3',
-  Danger = '#FF5757',
-  Success = '#44B619',
-  Warnning = '#FFA500',
+export enum Color {
+  DarkGreen = "#01130A",
+  Green = "#90C67C",
+  LightGreen = "#E3F0AF",
+  LightCream = "#FBF6E9",
+  White = "#FFFFFF",
+  Black = "#000000",
+  Grey = "#7D7D7D", // For Placeholder text
+  LightGrey = "#D3D3D3", // For borders
+  Danger = "#FF5757",
+  Success = "#44B619",
+  Warnning = "#FFA500",
 }
 
+// Variant and Size enums
+
+export enum TextVariant {
+  Title = "title",
+  Body = "body",
+  Button = "button",
+}
+
+export enum TextSize {
+  Small = "small",
+  Medium = "medium",
+  Large = "large",
+  ExtraLarge = "extraLarge",
+}
 
 // Types
 
-type TextStyle = {
+export type TextStyle = {
   fontFamily: Font;
   fontSize: number;
   fontWeight: FontWeight | number;
@@ -47,28 +58,21 @@ type TextStyle = {
   letterSpacing?: number;
 };
 
-type TextMapping = {
-  [category: string]: {
-    [variant: string]: TextStyle;
-  };
+export type TextMapping = {
+  [TextVariant.Title]: Record<TextSize, TextStyle>;
+  [TextVariant.Body]: Record<Exclude<TextSize, TextSize.ExtraLarge>, TextStyle>;
+  [TextVariant.Button]: Record<
+    Exclude<TextSize, TextSize.ExtraLarge>,
+    TextStyle
+  >;
 };
-
 
 // Text Styles
 
-const textStyles: TextMapping = {
-  title: {
-
-    // Title - Page
-    page: {
-      fontFamily: Font.Lato,
-      fontSize: 36,
-      fontWeight: FontWeight.SemiBold,
-      fontStyle: FontStyle.Normal,
-    },
-
+export const textStyles: TextMapping = {
+  [TextVariant.Title]: {
     // Title – Small
-    small: {
+    [TextSize.Small]: {
       fontFamily: Font.Lato,
       fontSize: 16,
       fontWeight: FontWeight.Bold,
@@ -76,7 +80,7 @@ const textStyles: TextMapping = {
     },
 
     // Title – Medium
-    default: {
+    [TextSize.Medium]: {
       fontFamily: Font.Lato,
       fontSize: 20,
       fontWeight: FontWeight.Bold,
@@ -84,50 +88,51 @@ const textStyles: TextMapping = {
     },
 
     // Title – Large
-    large: {
+    [TextSize.Large]: {
       fontFamily: Font.Lato,
       fontSize: 24,
       fontWeight: FontWeight.ExtraBold,
       fontStyle: FontStyle.Normal,
     },
-  },
 
-  text: {
-
-    // Text – Small
-    small: {
-      fontFamily: Font.DMsans,
-      fontSize: 14,
-      fontWeight: FontWeight.Regular,
+    // Title - Extra Large (Page Title)
+    [TextSize.ExtraLarge]: {
+      fontFamily: Font.Lato,
+      fontSize: 36,
+      fontWeight: FontWeight.SemiBold,
       fontStyle: FontStyle.Normal,
     },
-
   },
 
-  tags: {
-
-    // Tags – Small
-    small: {
+  [TextVariant.Body]: {
+    // Text – Small (tags)
+    [TextSize.Small]: {
       fontFamily: Font.DMsans,
       fontSize: 11,
       fontWeight: FontWeight.Regular,
       fontStyle: FontStyle.Normal,
     },
 
-    // Tags – Medium
-    medium: {
+    // Text – Medium (tags)
+    [TextSize.Medium]: {
       fontFamily: Font.DMsans,
       fontSize: 12,
       fontWeight: FontWeight.SemiBold,
       fontStyle: FontStyle.Normal,
     },
- 
+
+    // Text – large
+    [TextSize.Large]: {
+      fontFamily: Font.DMsans,
+      fontSize: 14,
+      fontWeight: FontWeight.Regular,
+      fontStyle: FontStyle.Normal,
+    },
   },
 
-  button: {
-
+  [TextVariant.Button]: {
     // Button – Small
-    small: {
+    [TextSize.Small]: {
       fontFamily: Font.Lato,
       fontSize: 14,
       fontWeight: FontWeight.Bold,
@@ -135,7 +140,7 @@ const textStyles: TextMapping = {
     },
 
     // Button – Medium
-    medium: {
+    [TextSize.Medium]: {
       fontFamily: Font.DMsans,
       fontSize: 16,
       fontWeight: FontWeight.SemiBold,
@@ -143,14 +148,11 @@ const textStyles: TextMapping = {
     },
 
     // Button – Large
-    large: {
+    [TextSize.Large]: {
       fontFamily: Font.DMsans,
       fontSize: 16,
       fontWeight: FontWeight.Medium,
       fontStyle: FontStyle.Normal,
-    }
-}
-
-}
-
-
+    },
+  },
+};

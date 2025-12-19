@@ -2,12 +2,16 @@ import { StyleSheet } from 'react-native';
 
 import EditScreenInfo from '@/components/EditScreenInfo';
 import { Text, View } from '@/components/Themed';
-import { text } from '@repo/config';
+import TextComponent from '@/components/basic/Text.component';
+import { Color, TextSize, TextVariant } from '@repo/config';
 
 export default function TabOneScreen() {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{text}</Text>
+      <Text style={styles.title}>Tab One</Text>
+      <TextComponent variant={TextVariant.Title} size={TextSize.ExtraLarge} color={Color.Green}>
+        Welcome to Medipraxis!
+      </TextComponent>
       <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
       <EditScreenInfo path="app/(tabs)/index.tsx" />
     </View>
