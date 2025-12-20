@@ -1,10 +1,24 @@
 import { TaskRepository } from "../repositories/task.repository";
-import type { CreateTaskInput, Task } from "../types/task";
+import type { CreateTaskInput, Task, TaskDetails } from "../types/task";
 import { TaskStatus } from "../types/task-status.enum";
 import { TaskType } from "../types/task-type.enum";
 
 export class TaskService {
   constructor(private taskRepository: TaskRepository) {}
+
+  async getAllTasks(userId?: string): Promise<TaskDetails[]> {
+    return await this.taskRepository.findAll(userId);
+  }
+
+  async getTaskById(taskId: string): Promise<TaskDetails> {
+    const task = await this.taskRepository.findById(taskId);
+
+    if (!task) {
+      throw new Error("Task not found");
+    }
+
+    return task;
+  }
 
   async createTask(input: CreateTaskInput): Promise<Task> {
     if (!input.task_title || !input.user_id || !input.end_date) {

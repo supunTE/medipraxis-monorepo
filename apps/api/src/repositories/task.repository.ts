@@ -1,5 +1,5 @@
 import { SupabaseClient } from "@supabase/supabase-js";
-import type { CreateTaskInput, Task } from "../types/task";
+import type { CreateTaskInput, Task, TaskDetails } from "../types/task";
 
 export class TaskRepository {
   constructor(private supabase: SupabaseClient) {}
@@ -30,6 +30,72 @@ export class TaskRepository {
     }
 
     return data.task_type_id;
+  }
+
+  async findAll(userId?: string): Promise<TaskDetails[]> {
+    let query = this.supabase
+      .from("task")
+      .select(
+        `
+        *,
+        task_type:task_type_id (task_type_name),
+        task_status:task_status_id (task_status_name),
+        client:client_id (first_name, last_name)
+      `
+      )
+      .is("deleted_date", null)
+      .order("created_date", { ascending: false });
+
+    if (userId) {
+      query = query.eq("user_id", userId);
+    }
+
+    const { data, error } = await query;
+
+    if (error || !data) {
+      return [];
+    }
+
+    return data.map((item) => {
+      const { task_type, task_status, client, ...taskData } = item;
+      return {
+        ...taskData,
+        task_type_name: task_type?.task_type_name || "",
+        task_status_name: task_status?.task_status_name || "",
+        client_first_name: client?.first_name || null,
+        client_last_name: client?.last_name || null,
+      } as TaskDetails;
+    });
+  }
+
+  async findById(taskId: string): Promise<TaskDetails | null> {
+    const { data, error } = await this.supabase
+      .from("task")
+      .select(
+        `
+        *,
+        task_type:task_type_id (task_type_name),
+        task_status:task_status_id (task_status_name),
+        client:client_id (first_name, last_name)
+      `
+      )
+      .eq("task_id", taskId)
+      .is("deleted_date", null)
+      .single();
+
+    if (error || !data) {
+      return null;
+    }
+
+    const { task_type, task_status, client, ...taskData } = data;
+
+    return {
+      ...taskData,
+      task_type_name: task_type?.task_type_name || "",
+      task_status_name: task_status?.task_status_name || "",
+      client_first_name: client?.first_name || null,
+      client_last_name: client?.last_name || null,
+    } as TaskDetails;
   }
 
   async create(taskData: CreateTaskInput): Promise<Task> {
