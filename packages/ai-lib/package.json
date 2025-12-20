@@ -1,0 +1,14 @@
+{
+  "name": "@repo/ai-lib",
+  "version": "0.0.0",
+  "private": true,
+  "main": "index.ts",
+  "devDependencies": {
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*"
+  },
+  "dependencies": {
+    "@ai-sdk/google": "^2.0.49",
+    "ai": "^5.0.115"
+  }
+}
