@@ -1,4 +1,4 @@
-import * as React from 'react';
+/* eslint-env jest */
 import renderer from 'react-test-renderer';
 
 import { MonoText } from '../StyledText';

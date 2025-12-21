@@ -1,9 +1,10 @@
-import { Color, Font, FontWeight, TextSize, textStyles, TextVariant } from '@repo/config';
+import { Color, Font, FontWeight, TextSize, TextStyle, textStyles, TextVariant } from '@repo/config';
 import { Text as RNText, TextProps as RNTextProps, StyleSheet } from 'react-native';
 
 // Import font assets
 import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
-import { Lato_400Regular, Lato_700Bold, useFonts } from '@expo-google-fonts/lato';
+import { Lato_400Regular, Lato_700Bold } from '@expo-google-fonts/lato';
+import { useFonts } from 'expo-font';
 
 
 // Props type
@@ -52,7 +53,7 @@ export default function TextComponent<T extends TextVariant = TextVariant>({
   ...restProps
 }: TextComponentProps<T>) {
   // Load fonts
-  let [fontsLoaded] = useFonts({
+  const [fontsLoaded] = useFonts({
     Lato_400Regular,
     Lato_700Bold,
     DMSans_400Regular,
@@ -64,8 +65,13 @@ export default function TextComponent<T extends TextVariant = TextVariant>({
     return null;
   }
 
-  // Get text style based on category and size
-  const textStyle = (textStyles as any)[category as TextVariant][size as any] as typeof textStyles[TextVariant.Title][TextSize.Small];
+  // Get text style based on category and size (typed accessor)
+  const getTextStyle = (variant: TextVariant, selectedSize: TextSize): TextStyle | undefined => {
+    const mapping = textStyles[variant];
+    return mapping ? (mapping as Record<TextSize, TextStyle>)[selectedSize] : undefined;
+  };
+
+  const textStyle = getTextStyle(category as TextVariant, size as TextSize);
 
   if (!textStyle) {
     console.warn(`Invalid category "${category}" or size "${size}"`);

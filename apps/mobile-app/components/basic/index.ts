@@ -1,1 +1,1 @@
-export * from "./Text.component";
+export { default } from "./Text.component";
