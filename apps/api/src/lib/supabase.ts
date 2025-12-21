@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import type { Env } from "../types/env.type";
+import type { Env } from "../types";
 
 export function createSupabaseClient(env: Env) {
   if (!env.SUPABASE_URL || !env.SUPABASE_ANON_KEY) {

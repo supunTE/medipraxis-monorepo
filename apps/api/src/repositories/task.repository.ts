@@ -4,7 +4,7 @@ import type {
   Task,
   TaskDetails,
   UpdateTaskInput,
-} from "../types/task";
+} from "../types";
 
 export class TaskRepository {
   constructor(private supabase: SupabaseClient) {}

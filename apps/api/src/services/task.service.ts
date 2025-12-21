@@ -1,12 +1,11 @@
-import { TaskRepository } from "../repositories/task.repository";
+import { TaskRepository } from "../repositories";
 import type {
-    CreateTaskInput,
-    Task,
-    TaskDetails,
-    UpdateTaskInput,
-} from "../types/task";
-import { TaskStatus } from "../types/task-status.enum";
-import { TaskType } from "../types/task-type.enum";
+  CreateTaskInput,
+  Task,
+  TaskDetails,
+  UpdateTaskInput,
+} from "../types";
+import { TaskStatus, TaskType } from "../types";
 
 export class TaskService {
   constructor(private taskRepository: TaskRepository) {}
