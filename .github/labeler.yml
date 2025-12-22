@@ -1,0 +1,42 @@
+# Labeler configuration for auto-labeling pull requests
+# Documentation: https://github.com/actions/labeler
+
+# Backend/API changes
+backend:
+  - all:
+      - changed-files:
+          - any-glob-to-any-file: 'apps/api/**/*'
+      - base-branch: 'dev'
+
+# Frontend - Mobile App changes
+frontend-mobile-app:
+  - all:
+      - changed-files:
+          - any-glob-to-any-file: 'apps/mobile-app/**/*'
+      - base-branch: 'dev'
+
+# Frontend - Web App changes
+frontend-web-app:
+  - all:
+      - changed-files:
+          - any-glob-to-any-file: 'apps/web-app/**/*'
+      - base-branch: 'dev'
+
+# AI/ML Library changes
+ai:
+  - all:
+      - changed-files:
+          - any-glob-to-any-file: 'packages/ai-lib/**/*'
+      - base-branch: 'dev'
+
+# Sync PRs from dev to main
+sync:
+  - all:
+      - head-branch: 'dev'
+      - base-branch: 'main'
+
+# Release PRs from main to release branches
+release:
+  - all:
+      - head-branch: 'main'
+      - base-branch: 'release/.*'
