@@ -1,4 +1,4 @@
-import { SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
   CreateTaskInput,
   Task,
@@ -6,13 +6,30 @@ import type {
   UpdateTaskInput,
 } from "../types";
 
+export const TASK_QUERIES = {
+  TASK_STATUS_ID: "task_status_id",
+  TASK_TYPE_ID: "task_type_id",
+  FIND_ALL: `
+    *,
+    task_type:task_type_id (task_type_name),
+    task_status:task_status_id (task_status_name),
+    client:client_id (first_name, last_name)
+  `,
+  FIND_BY_ID: `
+    *,
+    task_type:task_type_id (task_type_name),
+    task_status:task_status_id (task_status_name),
+    client:client_id (first_name, last_name)
+  `,
+} as const;
+
 export class TaskRepository {
   constructor(private db: SupabaseClient) {}
 
   async getTaskStatusByName(statusName: string): Promise<string | null> {
     const { data, error } = await this.db
       .from("task_status")
-      .select("task_status_id")
+      .select(TASK_QUERIES.TASK_STATUS_ID)
       .eq("task_status_name", statusName)
       .single();
 
@@ -26,7 +43,7 @@ export class TaskRepository {
   async getTaskTypeByName(typeName: string): Promise<string | null> {
     const { data, error } = await this.db
       .from("task_type")
-      .select("task_type_id")
+      .select(TASK_QUERIES.TASK_TYPE_ID)
       .eq("task_type_name", typeName)
       .single();
 
@@ -40,14 +57,7 @@ export class TaskRepository {
   async findAll(userId?: string): Promise<TaskDetails[]> {
     let query = this.db
       .from("task")
-      .select(
-        `
-        *,
-        task_type:task_type_id (task_type_name),
-        task_status:task_status_id (task_status_name),
-        client:client_id (first_name, last_name)
-      `
-      )
+      .select(TASK_QUERIES.FIND_ALL)
       .is("deleted_date", null)
       .order("created_date", { ascending: false });
 
@@ -76,14 +86,7 @@ export class TaskRepository {
   async findById(taskId: string): Promise<TaskDetails | null> {
     const { data, error } = await this.db
       .from("task")
-      .select(
-        `
-        *,
-        task_type:task_type_id (task_type_name),
-        task_status:task_status_id (task_status_name),
-        client:client_id (first_name, last_name)
-      `
-      )
+      .select(TASK_QUERIES.FIND_BY_ID)
       .eq("task_id", taskId)
       .is("deleted_date", null)
       .single();
