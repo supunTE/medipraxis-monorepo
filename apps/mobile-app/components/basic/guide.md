@@ -21,3 +21,10 @@
 </ButtonComponent>
 ```
 
+# Back Button
+
+```ts
+<ButtonComponent.BackButton size={ButtonSize.Medium}>Back</ButtonComponent.BackButton>
+<ButtonComponent.BackButton size={ButtonSize.Small}>Home</ButtonComponent.BackButton>
+<ButtonComponent.BackButton>Go To Home Page</ButtonComponent.BackButton>
+```

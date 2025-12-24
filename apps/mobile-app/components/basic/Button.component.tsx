@@ -1,5 +1,5 @@
 import { Color, TextSize, textStyles, TextVariant } from '@repo/config';
-import { IconProps } from 'phosphor-react-native';
+import { CaretLeft, IconProps } from 'phosphor-react-native';
 import React, { useRef } from 'react';
 import { Animated, TextStyle as RNTextStyle, ViewStyle } from 'react-native';
 import {
@@ -145,5 +145,35 @@ export const ButtonComponent = ({
   );
 };
 
+// BackButton component props
+type BackButtonProps = Omit<BasicButtonProps, 'leftIcon' | 'buttonColor' | 'textColor' | 'iconColor' | 'size'> & {
+  children?: string;
+  size?: ButtonSize.Small | ButtonSize.Medium;
+};
+
+// BackButton component
+const BackButton: React.FC<BackButtonProps> = ({ 
+  children = 'Back',
+  size = ButtonSize.Medium,
+  ...props 
+}) => {
+  return (
+    <ButtonComponent
+      size={size}
+      leftIcon={CaretLeft}
+      buttonColor={Color.Green}
+      textColor={Color.White}
+      iconColor={Color.White}
+      {...props}
+    >
+      {children}
+    </ButtonComponent>
+  );
+};
+
+// Attach BackButton as a static property
+ButtonComponent.BackButton = BackButton;
+
+export default ButtonComponent;
 
 
