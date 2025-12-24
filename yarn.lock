@@ -1487,6 +1487,11 @@
     find-up "^5.0.0"
     js-yaml "^4.1.0"
 
+"@hono/zod-validator@^0.7.6":
+  version "0.7.6"
+  resolved "https://registry.yarnpkg.com/@hono/zod-validator/-/zod-validator-0.7.6.tgz#e51261e50138512f8b09996345c16b66d510355d"
+  integrity sha512-Io1B6d011Gj1KknV4rXYz4le5+5EubcWEU/speUjuw9XMMIaP3n78yXLhjd2A3PXaXaUwEAluOiAyLqhBEJgsw==
+
 "@humanfs/core@^0.19.1":
   version "0.19.1"
   resolved "https://registry.yarnpkg.com/@humanfs/core/-/core-0.19.1.tgz#17c55ca7d426733fe3c561906b8173c336b40a77"
