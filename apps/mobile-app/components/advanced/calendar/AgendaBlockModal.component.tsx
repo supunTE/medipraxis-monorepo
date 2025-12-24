@@ -89,7 +89,7 @@ export function AgendaBlockModal({
                     borderRadius: 8,
                     borderLeftWidth: content ? 4 : 1,
                     borderWidth: content ? 0 : 1,
-                    borderStyle: "dashed",
+                    borderStyle: content ? "solid" : "dashed",
                     borderColor: content ? Color.Green : Color.LightGrey,
                   }}
                 >

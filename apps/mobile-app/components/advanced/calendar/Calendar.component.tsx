@@ -21,8 +21,13 @@ import {
   WeekCalendar,
 } from "react-native-calendars";
 import { AgendaComponent } from "./Agenda.component";
+import { AgendaData } from "./calendar.types";
 
-export function CalendarComponent() {
+interface CalendarComponentProps {
+  agendaData?: AgendaData;
+}
+
+export function CalendarComponent({ agendaData }: CalendarComponentProps = {}) {
   const [selected, setSelected] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
   const [showFullCalendar, setShowFullCalendar] = useState(false);
@@ -221,7 +226,7 @@ export function CalendarComponent() {
           </Animated.View>
         </CalendarProvider>
       </ScrollView>
-      <AgendaComponent selectedDate={selected || today} />
+      <AgendaComponent selectedDate={selected || today} agendaData={agendaData} />
     </View>
   );
 }

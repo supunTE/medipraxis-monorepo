@@ -1,7 +1,7 @@
 import TextComponent from "@/components/basic";
 import { TextSize, TextVariant } from "@repo/config";
 import { View } from "react-native";
-import { HOUR_HEIGHT } from "./ui";
+import { HOUR_HEIGHT } from "./calendar.constants";
 
 export interface AgendaBlockContent {
   title: string;

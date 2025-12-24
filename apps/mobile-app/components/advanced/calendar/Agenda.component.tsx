@@ -9,14 +9,17 @@ import {
 } from "react-native";
 import { AgendaTimeBlock } from "./AgendaTimeBlock.component";
 import { AgendaTimeBlockGroup } from "./AgendaTimeBlockGroup.component";
-import { AGENDA_COLORS, HOUR_HEIGHT } from "./ui";
+import { AGENDA_COLORS, HOUR_HEIGHT } from "./calendar.constants";
+import { AgendaData } from "./calendar.types";
 
 interface AgendaComponentProps {
   selectedDate: string;
+  agendaData?: AgendaData;
 }
 
 export function AgendaComponent({
   selectedDate,
+  agendaData,
 }: AgendaComponentProps): React.JSX.Element {
   const [isScrolled, setIsScrolled] = useState(false);
   const hours = Array.from({ length: 25 }, (_, i) => {
@@ -94,47 +97,25 @@ export function AgendaComponent({
               />
             </View>
           ))}
-          <AgendaTimeBlock
-            content={{ title: "Appointment", client: "John Doe" }}
-            startHour={1}
-            endHour={2}
-            bgColor={getColorByHour(1).bg}
-            borderColor={getColorByHour(1).border}
-          />
-          <AgendaTimeBlockGroup
-            startHour={4}
-            endHour={6}
-            slots={8}
-            contents={[
-              { title: "Appointment", client: "Anna" },
-              null,
-              { title: "Appointment", client: "Michael" },
-              { title: "Appointment", client: "Sophie" },
-              null,
-              { title: "Appointment", client: "Ella" },
-              null,
-              null,
-            ]}
-          />
-          <AgendaTimeBlockGroup
-            startHour={8}
-            endHour={10}
-            slots={12}
-            contents={[
-              { title: "Appointment", client: "David" },
-              null,
-              { title: "Appointment", client: "Emma" },
-              { title: "Appointment", client: "Oliver" },
-              null,
-              null,
-              { title: "Appointment", client: "Liam" },
-              null,
-              null,
-              { title: "Appointment", client: "Noah" },
-              null,
-              null,
-            ]}
-          />
+          {agendaData?.timeBlocks?.map((block, index) => (
+            <AgendaTimeBlock
+              key={`timeblock-${index}`}
+              content={block.content}
+              startHour={block.startHour}
+              endHour={block.endHour}
+              bgColor={getColorByHour(block.startHour).bg}
+              borderColor={getColorByHour(block.startHour).border}
+            />
+          ))}
+          {agendaData?.timeBlockGroups?.map((group, index) => (
+            <AgendaTimeBlockGroup
+              key={`timeblockgroup-${index}`}
+              startHour={group.startHour}
+              endHour={group.endHour}
+              slots={group.slots}
+              contents={group.contents}
+            />
+          ))}
         </View>
       </ScrollView>
     </>

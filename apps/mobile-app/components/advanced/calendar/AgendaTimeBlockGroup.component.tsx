@@ -3,9 +3,13 @@ import { Color, TextSize, TextVariant } from "@repo/config";
 import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
 import { Pressable, View } from "react-native";
-import { AgendaBlockContent } from "./AgendaTimeBlock.component";
 import { AgendaBlockModal } from "./AgendaBlockModal.component";
-import { AGENDA_COLORS, HOUR_HEIGHT, MIN_SLOT_DURATION_MINUTES } from "./ui";
+import { AgendaBlockContent } from "./AgendaTimeBlock.component";
+import {
+  AGENDA_COLORS,
+  HOUR_HEIGHT,
+  MIN_SLOT_DURATION_MINUTES,
+} from "./calendar.constants";
 
 interface AgendaTimeBlockGroupProps {
   startHour: number;
