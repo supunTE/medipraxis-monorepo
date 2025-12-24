@@ -47,6 +47,7 @@ export enum TextSize {
   ExtraLarge = "extra_large",
 }
 
+
 // Types
 
 export type TextStyle = {

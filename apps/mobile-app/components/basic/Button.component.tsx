@@ -1,5 +1,5 @@
-import { Color, TextSize, textStyles, TextVariant } from '@repo/config';
-import { CaretLeft, IconProps } from 'phosphor-react-native';
+import { Color, Icons, TextSize, textStyles, TextVariant } from '@repo/config';
+import type { IconProps } from 'phosphor-react-native';
 import React, { useRef } from 'react';
 import { Animated, TextStyle as RNTextStyle, ViewStyle } from 'react-native';
 import {
@@ -160,10 +160,11 @@ const BackButton: React.FC<BackButtonProps> = ({
   return (
     <ButtonComponent
       size={size}
-      leftIcon={CaretLeft}
+      leftIcon={Icons.CaretLeft}
       buttonColor={Color.Green}
       textColor={Color.White}
       iconColor={Color.White}
+      className='rounded-xl shadow-sm'
       {...props}
     >
       {children}

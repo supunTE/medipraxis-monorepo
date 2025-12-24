@@ -2,9 +2,13 @@
   "name": "@repo/config",
   "version": "0.0.0",
   "private": true,
-  "main" : "index.ts",
+  "main": "index.ts",
   "devDependencies": {
     "@repo/eslint-config": "*",
     "@repo/typescript-config": "*"
+  },
+  "dependencies": {
+    "phosphor-react-native": "^3.0.2",
+    "react-native-svg": "^15.15.1"
   }
 }
