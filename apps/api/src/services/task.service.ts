@@ -45,6 +45,31 @@ export class TaskService {
       input.task_type_id = reminderTypeId;
     }
 
+		const appointmentTypeId = await this.taskRepository.getTaskTypeByName(
+			TaskType.APPOINTMENT
+		);
+
+		if (!appointmentTypeId) {
+			throw new Error('Default task type "APPOINTMENT" not found in database');
+		}
+
+		if (input.task_type_id == appointmentTypeId) {
+			const appointmentDate = input.start_date.split("T")[0];			
+
+			const count = await this.taskRepository.getAppointmentCountForDate(
+				input.user_id,
+				appointmentDate
+			);
+
+			const appointmentNumber = String(count + 1).padStart(3, "0");
+			
+			return this.taskRepository.create({
+				...input,
+				appointment_number: appointmentNumber,
+				task_type_id: appointmentTypeId,
+			});
+		}
+
     if (!input.task_status_id) {
       const notStartedStatusId = await this.taskRepository.getTaskStatusByName(
         TaskStatus.NOT_STARTED
