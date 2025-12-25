@@ -3,6 +3,8 @@ import {
   CaretDownIcon,
   CaretLeftIcon,
   CheckIcon,
+  EyeIcon,
+  EyeSlashIcon,
   HeartIcon,
   PlusIcon,
   ShoppingCartIcon,
@@ -21,6 +23,8 @@ export const Icons = {
   ShoppingCart: ShoppingCartIcon,
   Star: StarIcon,
   CaretDown: CaretDownIcon,
+  Eye: EyeIcon,
+  EyeSlash: EyeSlashIcon
 } as const;
 
 export type IconName = keyof typeof Icons;
