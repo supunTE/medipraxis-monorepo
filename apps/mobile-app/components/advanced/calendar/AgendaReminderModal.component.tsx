@@ -1,12 +1,12 @@
 import TextComponent from "@/components/basic";
 import { Color, TextSize, TextVariant } from "@repo/config";
 import { Modal, Pressable, ScrollView, View } from "react-native";
-import { AgendaReminderContent } from "./calendar.types";
+import { AgendaReminderContent, AgendaReminderData } from "./calendar.types";
 
 interface AgendaReminderModalProps {
   visible: boolean;
   onClose: () => void;
-  reminders: Array<{ content: AgendaReminderContent }>;
+  reminders: AgendaReminderData[];
   onReminderPress?: (reminder: AgendaReminderContent) => void;
 }
 
@@ -45,8 +45,16 @@ export function AgendaReminderModal({
                   onReminderPress?.(reminder.content);
                   onClose();
                 }}
-                className="py-3 px-4 mb-2 bg-mp-light-green rounded-lg border-l-4 border-mp-green"
+                className="py-3 px-4 mb-2 bg-[#F8F9FA] rounded-lg border-l-4 border-mp-green"
               >
+                <TextComponent
+                  size={TextSize.Small}
+                  variant={TextVariant.Body}
+                  color={Color.Grey}
+                >
+                  {reminder.startTime}
+                  {reminder.endTime && ` - ${reminder.endTime}`}
+                </TextComponent>
                 <TextComponent
                   size={TextSize.Small}
                   variant={TextVariant.Title}

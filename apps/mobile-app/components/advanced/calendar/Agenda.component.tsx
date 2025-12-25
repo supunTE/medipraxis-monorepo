@@ -152,6 +152,7 @@ export function AgendaComponent({
               }
               startTime={group.startTime}
               endTime={group.endTime}
+              isMerged={group.count > 1}
               onPress={
                 group.count > 1
                   ? () => {

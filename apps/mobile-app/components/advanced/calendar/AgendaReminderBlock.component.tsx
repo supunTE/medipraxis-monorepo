@@ -1,6 +1,6 @@
 import TextComponent from "@/components/basic";
 import { parseTimeToMinutes } from "@/utils";
-import { Color, TextSize, TextVariant } from "@repo/config";
+import { TextSize, TextVariant } from "@repo/config";
 import { Pressable, useWindowDimensions } from "react-native";
 import { HOUR_HEIGHT } from "./calendar.constants";
 import { AgendaReminderContent } from "./calendar.types";
@@ -9,6 +9,7 @@ interface AgendaReminderBlockProps {
   content: AgendaReminderContent;
   startTime: string;
   endTime?: string;
+  isMerged?: boolean;
   onPress?: (reminder: AgendaReminderContent) => void;
 }
 
@@ -16,6 +17,7 @@ export function AgendaReminderBlock({
   content,
   startTime,
   endTime,
+  isMerged = false,
   onPress,
 }: AgendaReminderBlockProps): React.JSX.Element {
   const { width: screenWidth } = useWindowDimensions();
@@ -59,7 +61,7 @@ export function AgendaReminderBlock({
       }}
     >
       <TextComponent
-        size={TextSize.Small}
+        size={isMerged ? TextSize.Medium : TextSize.Small}
         variant={TextVariant.Body}
         numberOfLines={2}
       >
