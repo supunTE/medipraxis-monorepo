@@ -1,5 +1,6 @@
 export const HOUR_HEIGHT = 80;
 
+// Minimum slot duration in minutes to show individual slots in agenda time block instead of a summary overlay
 export const MIN_SLOT_DURATION_MINUTES = 15;
 
 export const AGENDA_COLORS = [
