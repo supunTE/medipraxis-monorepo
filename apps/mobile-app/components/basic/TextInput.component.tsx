@@ -1,6 +1,6 @@
 import { Input, InputField, InputSlot } from '@/components/ui/input';
+import { Icons } from '@/config';
 import { Color, Font, TextSize, TextVariant, textStyles } from '@repo/config';
-import { EyeIcon, EyeSlashIcon } from 'phosphor-react-native';
 import React, { useEffect, useState } from 'react';
 import { Pressable, TextStyle as RNTextStyle, StyleSheet, Text, View } from 'react-native';
 import { z } from 'zod';
@@ -208,9 +208,9 @@ const TextInputBase: React.FC<TextInputProps> = ({
           <InputSlot style={styles.iconSlot}>
             <Pressable onPress={() => setIsPasswordVisible(!isPasswordVisible)}>
               {isPasswordVisible ? (
-                <EyeIcon size={20} color={Color.Grey} weight="regular" />
+                <Icons.Eye size={20} color={Color.Grey} weight="regular" />
               ) : (
-                <EyeSlashIcon size={20} color={Color.Grey} weight="regular" />
+                <Icons.EyeSlash size={20} color={Color.Grey} weight="regular" />
               )}
             </Pressable>
           </InputSlot>
