@@ -48,11 +48,11 @@ export type AgendaSelection =
       groupId: string | null;
     }
   | {
+      type: AgendaSelectionType.Reminder;
+      reminderId: string;
+    }
+  | {
       type: AgendaSelectionType.EmptySlot;
       groupId: string;
       slotNumber: number;
-    }
-  | {
-      type: AgendaSelectionType.Reminder;
-      reminderId: string;
     };

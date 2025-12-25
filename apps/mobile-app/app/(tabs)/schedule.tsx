@@ -11,35 +11,38 @@ import {
 
 export default function ScheduleScreen() {
   const [selectedDate, setSelectedDate] = useState("");
-  const [selectedAppointment, setSelectedAppointment] =
-    useState<AgendaSelection | null>(null);
+  const [selectedTask, setSelectedTask] = useState<AgendaSelection | null>(
+    null
+  );
 
   // Debug toast when appointment/reminder is selected
+  // TODO: Implement proper navigation to detail popups/screens
   useEffect(() => {
-    if (selectedAppointment) {
-      if (selectedAppointment.type === AgendaSelectionType.Appointment) {
+    if (selectedTask) {
+      if (selectedTask.type === AgendaSelectionType.Appointment) {
         Alert.alert(
           "Appointment Selected",
-          `Appointment ID: ${selectedAppointment.appointmentId}\nGroup ID: ${selectedAppointment.groupId || "null"}`,
-          [{ text: "OK", onPress: () => setSelectedAppointment(null) }]
+          `Appointment ID: ${selectedTask.appointmentId}\nGroup ID: ${selectedTask.groupId || "null"}`,
+          [{ text: "OK", onPress: () => setSelectedTask(null) }]
         );
-      } else if (selectedAppointment.type === AgendaSelectionType.EmptySlot) {
+      } else if (selectedTask.type === AgendaSelectionType.EmptySlot) {
         Alert.alert(
           "Empty Slot Selected",
-          `Group ID: ${selectedAppointment.groupId}\nSlot Number: ${selectedAppointment.slotNumber}`,
-          [{ text: "OK", onPress: () => setSelectedAppointment(null) }]
+          `Group ID: ${selectedTask.groupId}\nSlot Number: ${selectedTask.slotNumber}`,
+          [{ text: "OK", onPress: () => setSelectedTask(null) }]
         );
-      } else if (selectedAppointment.type === AgendaSelectionType.Reminder) {
+      } else if (selectedTask.type === AgendaSelectionType.Reminder) {
         Alert.alert(
           "Reminder Selected",
-          `Reminder ID: ${selectedAppointment.reminderId}`,
-          [{ text: "OK", onPress: () => setSelectedAppointment(null) }]
+          `Reminder ID: ${selectedTask.reminderId}`,
+          [{ text: "OK", onPress: () => setSelectedTask(null) }]
         );
       }
     }
-  }, [selectedAppointment]);
+  }, [selectedTask]);
 
-  // Sample agenda data - replace this with your actual data
+  // Sample agenda data
+  // TODO: Replace with real data fetching logic and save to a state
   const sampleAgendaData: AgendaData = {
     timeBlocks: [
       {
@@ -134,21 +137,21 @@ export default function ScheduleScreen() {
         selectedDate={selectedDate}
         onDateChange={setSelectedDate}
         onAppointmentPress={(appointment, groupId) =>
-          setSelectedAppointment({
+          setSelectedTask({
             type: AgendaSelectionType.Appointment,
             appointmentId: appointment.id,
             groupId,
           })
         }
         onEmptySlotPress={(groupId, slotNumber) =>
-          setSelectedAppointment({
+          setSelectedTask({
             type: AgendaSelectionType.EmptySlot,
             groupId,
             slotNumber,
           })
         }
         onReminderPress={(reminder) =>
-          setSelectedAppointment({
+          setSelectedTask({
             type: AgendaSelectionType.Reminder,
             reminderId: reminder.id,
           })

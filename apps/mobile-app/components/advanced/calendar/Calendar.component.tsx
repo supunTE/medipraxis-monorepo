@@ -4,46 +4,56 @@ import {
   DMSans_600SemiBold,
 } from "@expo-google-fonts/dm-sans";
 import { Lato_400Regular, Lato_700Bold } from "@expo-google-fonts/lato";
+import { Color } from "@repo/config";
 import { useFonts } from "expo-font";
 import { CaretLeftIcon, CaretRightIcon } from "phosphor-react-native";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Animated,
   ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import type { DateData } from "react-native-calendars";
 import {
   Calendar,
   CalendarProvider,
   WeekCalendar,
 } from "react-native-calendars";
+import { Theme } from "react-native-calendars/src/types";
 import { AgendaComponent } from "./Agenda.component";
-import { AgendaBlockContent, AgendaData, AgendaReminderContent } from "./calendar.types";
+import type {
+  AgendaBlockContent,
+  AgendaData,
+  AgendaReminderContent,
+} from "./calendar.types";
 
 interface CalendarComponentProps {
   agendaData?: AgendaData;
   selectedDate?: string;
   onDateChange?: (date: string) => void;
-  onAppointmentPress?: (appointment: AgendaBlockContent, groupId: string | null) => void;
+  onAppointmentPress?: (
+    appointment: AgendaBlockContent,
+    groupId: string | null
+  ) => void;
   onEmptySlotPress?: (groupId: string, slotNumber: number) => void;
   onReminderPress?: (reminder: AgendaReminderContent) => void;
 }
 
-export function CalendarComponent({ agendaData, selectedDate, onDateChange, onAppointmentPress, onEmptySlotPress, onReminderPress }: CalendarComponentProps = {}) {
-  const [selected, setSelected] = useState(selectedDate || "");
+export function CalendarComponent({
+  agendaData,
+  selectedDate,
+  onDateChange,
+  onAppointmentPress,
+  onEmptySlotPress,
+  onReminderPress,
+}: CalendarComponentProps = {}) {
   const [isExpanded, setIsExpanded] = useState(false);
+  // Controls which calendar component renders - switches with animation timing
   const [showFullCalendar, setShowFullCalendar] = useState(false);
   const today = new Date().toISOString().split("T")[0];
-
-  // Update internal state when selectedDate prop changes
-  useEffect(() => {
-    if (selectedDate !== undefined) {
-      setSelected(selectedDate);
-    }
-  }, [selectedDate]);
+  const selected = selectedDate || today;
 
   const [fontsLoaded] = useFonts({
     DMSans_400Regular,
@@ -67,11 +77,13 @@ export function CalendarComponent({ agendaData, selectedDate, onDateChange, onAp
       Animated.timing(animatedHeight, {
         toValue: isExpanded ? 1 : 0,
         duration: 300,
+        // use js thread to avoid issues
         useNativeDriver: false,
       }),
       Animated.timing(animatedOpacity, {
         toValue: 1,
         duration: 200,
+        // use js thread to avoid issues
         useNativeDriver: false,
       }),
     ]).start(() => {
@@ -88,79 +100,85 @@ export function CalendarComponent({ agendaData, selectedDate, onDateChange, onAp
 
   const renderArrow = useCallback((direction: "left" | "right") => {
     return direction === "left" ? (
-      <CaretLeftIcon size={24} color="#5A6B4D" weight="bold" />
+      <CaretLeftIcon size={24} color={Color.Grey} weight="bold" />
     ) : (
-      <CaretRightIcon size={24} color="#5A6B4D" weight="bold" />
+      <CaretRightIcon size={24} color={Color.Grey} weight="bold" />
     );
   }, []);
 
   const renderToggleButton = useCallback(() => {
     return (
-      <View style={styles.toggleButtonContainer}>
+      <View className="flex-row justify-end items-center mt-2 mb-2 pr-4">
         <TouchableOpacity
           onPress={toggleCalendar}
           activeOpacity={0.7}
-          style={styles.toggleButton}
+          className="bg-mp-light-green rounded-xl py-1 px-3 border border-mp-green"
         >
-          <Text style={styles.toggleButtonText}>
-            {isExpanded ? "Collapse ▲" : "Expand ▼"}
+          <Text
+            className="text-sm text-mp-black"
+            style={{ fontFamily: "DMSans_500Medium" }}
+          >
+            {isExpanded ? "Week View ▲" : "Month View ▼"}
           </Text>
         </TouchableOpacity>
       </View>
     );
   }, [isExpanded, toggleCalendar]);
 
+  const renderDay = useCallback(
+    ({ date, state }: { date?: DateData; state?: string }) => {
+      const isToday = date?.dateString === today;
+      const isSelected = date?.dateString === selected;
+      const isDisabled = state === "disabled";
+
+      return (
+        <TouchableOpacity
+          onPress={() => {
+            if (!isDisabled && date?.dateString) {
+              onDateChange?.(date.dateString);
+            }
+          }}
+          activeOpacity={0.7}
+          style={{
+            width: 40,
+            height: 40,
+            justifyContent: "center",
+            alignItems: "center",
+            borderRadius: 16,
+            borderWidth: isToday && !isSelected ? 2 : 0,
+            borderColor: isToday && !isSelected ? Color.Green : "transparent",
+            backgroundColor: isSelected ? Color.Green : "transparent",
+          }}
+        >
+          <Text
+            style={{
+              fontFamily: "DMSans_400Regular",
+              fontSize: 20,
+              color: isSelected
+                ? Color.White
+                : isDisabled
+                  ? "#A8B89D"
+                  : "#000000",
+              fontWeight: "400",
+            }}
+          >
+            {date?.day}
+          </Text>
+        </TouchableOpacity>
+      );
+    },
+    [today, selected, onDateChange]
+  );
+
   if (!fontsLoaded) {
     return null;
   }
 
-  const markedDates = {
-    ...(selected && selected !== today
-      ? {
-          [selected]: {
-            selected: true,
-            selectedColor: "#93C48B",
-          },
-        }
-      : {}),
-    ...(selected === today
-      ? {
-          [today]: {
-            selected: true,
-            selectedColor: "#93C48B",
-          },
-        }
-      : {
-          [today]: {
-            customStyles: {
-              container: {
-                borderWidth: 2,
-                borderColor: "#2D5026",
-                borderRadius: 16,
-                width: 40,
-                height: 40,
-                justifyContent: "center" as const,
-                alignItems: "center" as const,
-              },
-              text: {
-                color: "#4F7F48",
-                fontWeight: "bold" as const,
-              },
-            },
-          },
-        }),
-  };
-
-  const calendarTheme = {
+  const calendarTheme: Theme = {
     calendarBackground: "#E8F5B8",
     textSectionTitleColor: "#5A6B4D",
     textSectionTitleDisabledColor: "#A8B89D",
-    dayTextColor: "#000000",
-    textDisabledColor: "#A8B89D",
     monthTextColor: "#000000",
-    selectedDayBackgroundColor: "#93C48B",
-    selectedDayTextColor: "#000000",
-    todayTextColor: "#4F7F48",
     dotColor: "#4F7F48",
     textDayFontSize: 20,
     textMonthFontSize: 20,
@@ -177,66 +195,56 @@ export function CalendarComponent({ agendaData, selectedDate, onDateChange, onAp
   // Interpolate height for smooth animation
   const calendarHeight = animatedHeight.interpolate({
     inputRange: [0, 1],
-    outputRange: [140, 420],
+    outputRange: [140, 425],
   });
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1">
       <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        className="flex-grow-0"
+        contentContainerStyle={{ flexGrow: 0 }}
       >
-        <CalendarProvider date={selected || today}>
+        <CalendarProvider date={selected}>
           <Animated.View
-            style={[
-              styles.animatedContainer,
-              {
-                height: calendarHeight,
-                opacity: animatedOpacity,
-              },
-            ]}
+            className="overflow-hidden w-full relative"
+            style={{
+              height: calendarHeight,
+              opacity: animatedOpacity,
+            }}
           >
             {showFullCalendar && (
-              <View style={styles.fullCalendarWrapper}>
+              <View className="bg-mp-secondary rounded-b-3xl overflow-hidden z-[2]">
                 <Calendar
                   firstDay={1}
-                  onDayPress={(day) => {
-                    setSelected(day.dateString);
-                    onDateChange?.(day.dateString);
-                  }}
-                  markedDates={markedDates}
                   theme={calendarTheme}
-                  style={styles.calendar}
+                  style={{
+                    borderBottomLeftRadius: 24,
+                    borderBottomRightRadius: 24,
+                    padding: 16,
+                  }}
                   renderArrow={renderArrow}
+                  dayComponent={renderDay}
                 />
               </View>
             )}
             {!showFullCalendar && (
-              <View style={styles.calendarWrapper}>
+              <View className="rounded-b-3xl overflow-hidden w-full">
                 <WeekCalendar
                   firstDay={1}
-                  markedDates={markedDates}
-                  onDayPress={(day) => {
-                    setSelected(day.dateString);
-                    onDateChange?.(day.dateString);
-                  }}
                   theme={calendarTheme}
                   renderArrow={renderArrow}
+                  dayComponent={renderDay}
                 />
               </View>
             )}
             {showFullCalendar && !isExpanded && (
-              <View style={styles.weekCalendarContainer}>
-                <View style={styles.calendarWrapper}>
+              <View className="absolute top-0 left-0 right-0 bg-mp-secondary z-[1]">
+                <View className="rounded-b-3xl overflow-hidden w-full">
                   <WeekCalendar
                     firstDay={1}
-                    markedDates={markedDates}
-                    onDayPress={(day) => {
-                      setSelected(day.dateString);
-                      onDateChange?.(day.dateString);
-                    }}
                     theme={calendarTheme}
                     renderArrow={renderArrow}
+                    dayComponent={renderDay}
                   />
                 </View>
               </View>
@@ -246,7 +254,7 @@ export function CalendarComponent({ agendaData, selectedDate, onDateChange, onAp
         </CalendarProvider>
       </ScrollView>
       <AgendaComponent
-        selectedDate={selected || today}
+        selectedDate={selected}
         agendaData={agendaData}
         onAppointmentPress={onAppointmentPress}
         onEmptySlotPress={onEmptySlotPress}
@@ -255,77 +263,3 @@ export function CalendarComponent({ agendaData, selectedDate, onDateChange, onAp
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollView: {
-    flexGrow: 0,
-  },
-  scrollContent: {
-    flexGrow: 0,
-  },
-  animatedContainer: {
-    overflow: "hidden",
-    width: "100%",
-    position: "relative",
-  },
-  fullCalendarWrapper: {
-    backgroundColor: "#E8F5B8",
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    overflow: "hidden",
-    zIndex: 2,
-  },
-  weekCalendarContainer: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: "#E8F5B8",
-    zIndex: 1,
-  },
-  toggleButtonContainer: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    alignItems: "center",
-    marginTop: 8,
-    marginBottom: 8,
-    paddingRight: 16,
-  },
-  toggleButtonAbsolute: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    zIndex: 3,
-    backgroundColor: "#E8F5B8",
-  },
-  toggleButton: {
-    backgroundColor: "#E8F5B8",
-    borderRadius: 12,
-    paddingVertical: 4,
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: "#D0E4A3",
-  },
-  toggleButtonText: {
-    fontSize: 13,
-    fontFamily: "DMSans_500Medium",
-    color: "#5A6B4D",
-  },
-  calendarWrapper: {
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    overflow: "hidden",
-    width: "100%",
-  },
-  calendar: {
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    paddingLeft: 16,
-    paddingRight: 16,
-    padding: 16,
-  },
-});
