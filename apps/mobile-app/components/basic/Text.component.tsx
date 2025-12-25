@@ -110,7 +110,7 @@ export default function TextComponent<T extends TextVariant = TextVariant>({
   const computedStyle = StyleSheet.flatten([
     {
       fontFamily,
-      fontSize: textStyle.fontSize + (textStyle.fontSize * 20) / 100,
+      fontSize: textStyle.fontSize,
       fontStyle: textStyle.fontStyle,
       color,
       ...(textStyle.lineHeight && { lineHeight: textStyle.lineHeight }),
