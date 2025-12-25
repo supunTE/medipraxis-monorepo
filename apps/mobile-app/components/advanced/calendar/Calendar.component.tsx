@@ -10,6 +10,7 @@ import { CaretLeftIcon, CaretRightIcon } from "phosphor-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Animated,
+  Pressable,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -39,6 +40,87 @@ interface CalendarComponentProps {
   ) => void;
   onEmptySlotPress?: (groupId: string, slotNumber: number) => void;
   onReminderPress?: (reminder: AgendaReminderContent) => void;
+}
+
+interface DayComponentProps {
+  date?: DateData;
+  state?: string;
+  today: string;
+  selected: string;
+  onDateChange?: (date: string) => void;
+}
+
+function DayComponent({
+  date,
+  state,
+  today,
+  selected,
+  onDateChange,
+}: DayComponentProps) {
+  const isToday = date?.dateString === today;
+  const isSelected = date?.dateString === selected;
+  const isDisabled = state === "disabled";
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+
+  const handlePressIn = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 0.9,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 10,
+    }).start();
+  };
+
+  const handlePressOut = () => {
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 50,
+      bounciness: 10,
+    }).start();
+  };
+
+  return (
+    <Pressable
+      onPress={() => {
+        if (!isDisabled && date?.dateString) {
+          onDateChange?.(date.dateString);
+        }
+      }}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+      disabled={isDisabled}
+    >
+      <Animated.View
+        style={{
+          width: 40,
+          height: 40,
+          justifyContent: "center",
+          alignItems: "center",
+          borderRadius: 16,
+          borderWidth: isToday && !isSelected ? 2 : 0,
+          borderColor: isToday && !isSelected ? Color.Green : "transparent",
+          backgroundColor: isSelected ? Color.Green : "transparent",
+          transform: [{ scale: scaleAnim }],
+        }}
+      >
+        <Text
+          style={{
+            fontFamily: "DMSans_400Regular",
+            fontSize: 20,
+            color: isSelected
+              ? Color.White
+              : isDisabled
+                ? "#A8B89D"
+                : Color.DarkGreen,
+            fontWeight: "400",
+          }}
+        >
+          {date?.day}
+        </Text>
+      </Animated.View>
+    </Pressable>
+  );
 }
 
 export function CalendarComponent({
@@ -127,44 +209,14 @@ export function CalendarComponent({
 
   const renderDay = useCallback(
     ({ date, state }: { date?: DateData; state?: string }) => {
-      const isToday = date?.dateString === today;
-      const isSelected = date?.dateString === selected;
-      const isDisabled = state === "disabled";
-
       return (
-        <TouchableOpacity
-          onPress={() => {
-            if (!isDisabled && date?.dateString) {
-              onDateChange?.(date.dateString);
-            }
-          }}
-          activeOpacity={0.7}
-          style={{
-            width: 40,
-            height: 40,
-            justifyContent: "center",
-            alignItems: "center",
-            borderRadius: 16,
-            borderWidth: isToday && !isSelected ? 2 : 0,
-            borderColor: isToday && !isSelected ? Color.Green : "transparent",
-            backgroundColor: isSelected ? Color.Green : "transparent",
-          }}
-        >
-          <Text
-            style={{
-              fontFamily: "DMSans_400Regular",
-              fontSize: 20,
-              color: isSelected
-                ? Color.White
-                : isDisabled
-                  ? "#A8B89D"
-                  : "#000000",
-              fontWeight: "400",
-            }}
-          >
-            {date?.day}
-          </Text>
-        </TouchableOpacity>
+        <DayComponent
+          date={date}
+          state={state}
+          today={today}
+          selected={selected}
+          onDateChange={onDateChange}
+        />
       );
     },
     [today, selected, onDateChange]
@@ -175,11 +227,10 @@ export function CalendarComponent({
   }
 
   const calendarTheme: Theme = {
-    calendarBackground: "#E8F5B8",
+    calendarBackground: Color.LightGreen,
     textSectionTitleColor: "#5A6B4D",
     textSectionTitleDisabledColor: "#A8B89D",
-    monthTextColor: "#000000",
-    dotColor: "#4F7F48",
+    monthTextColor: Color.DarkGreen,
     textDayFontSize: 20,
     textMonthFontSize: 20,
     textDayHeaderFontSize: 14,
