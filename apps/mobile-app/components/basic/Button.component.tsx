@@ -1,5 +1,6 @@
 import { Icons, type Icon } from '@/config';
 import { Color, TextSize, textStyles, TextVariant } from '@repo/config';
+import clsx from 'clsx';
 import React, { useRef } from 'react';
 import { Animated, TextStyle as RNTextStyle, ViewStyle } from 'react-native';
 import {
@@ -106,19 +107,19 @@ export const ButtonComponent = ({
     }).start();
   };
 
-  // Button styling based on size
-  let buttonClassName = className ?? '';
-  
-  if (size === ButtonSize.Large) {
-    // Large: Full width with fixed height, centered content
-    buttonClassName = [buttonClassName, 'px-4 h-14 w-full justify-center items-center gap-2'].filter(Boolean).join(' ');
-  } else if (size === ButtonSize.Medium) {
-    // Medium: Hug content with padding and spacing
-    buttonClassName = [buttonClassName, 'px-4 py-2 justify-center items-center gap-2'].filter(Boolean).join(' ');
-  } else {
-    // Small: Hug content with small padding and spacing
-    buttonClassName = [buttonClassName, 'px-3 py-1.5 justify-center items-center gap-1.5'].filter(Boolean).join(' ');
-  }
+  // Button styling based on size using clsx
+  const buttonClassName = clsx(
+    'justify-center items-center',
+    {
+      // Large: Full width with fixed height, centered content
+      'px-4 h-14 w-full gap-2': size === ButtonSize.Large,
+      // Medium: Hug content with padding and spacing
+      'px-4 py-2 gap-2': size === ButtonSize.Medium,
+      // Small: Hug content with small padding and spacing
+      'px-3 py-1.5 gap-1.5': size === ButtonSize.Small,
+    },
+    className
+  );
 
   // Render button content (icons and text)
   const buttonContent = (
