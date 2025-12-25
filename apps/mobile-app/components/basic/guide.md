@@ -21,7 +21,7 @@
 </ButtonComponent>
 ```
 
-# Back Button
+## Back Button
 
 ```ts
 <ButtonComponent.BackButton size={ButtonSize.Medium}>Back</ButtonComponent.BackButton>

@@ -1,6 +1,6 @@
-import { Icons } from '@/config';
+import { Icons, type Icon } from '@/config';
 import { Color, TextSize, textStyles, TextVariant } from '@repo/config';
-import type { IconProps } from 'phosphor-react-native';
+import clsx from 'clsx';
 import React, { useRef } from 'react';
 import { Animated, TextStyle as RNTextStyle, ViewStyle } from 'react-native';
 import {
@@ -20,8 +20,8 @@ type BasicButtonProps = Omit<React.ComponentPropsWithoutRef<typeof GlueStackButt
   size?: ButtonSize;
   children?: React.ReactNode;
   className?: string;
-  leftIcon?: React.ComponentType<IconProps>;
-  rightIcon?: React.ComponentType<IconProps>;
+  leftIcon?: Icon;
+  rightIcon?: Icon;
   buttonColor?: Color;
   textColor?: Color;
   iconColor?: Color;
@@ -29,10 +29,21 @@ type BasicButtonProps = Omit<React.ComponentPropsWithoutRef<typeof GlueStackButt
 
 // Map ButtonSize to TextSize
 const mapButtonSizeToTextSize = (size: ButtonSize): Exclude<TextSize, TextSize.ExtraLarge> => {
-  if (size === ButtonSize.Small) return TextSize.Small;
-  if (size === ButtonSize.Medium) return TextSize.Medium;
-  return TextSize.Large;
+  const mapping: Record<ButtonSize, Exclude<TextSize, TextSize.ExtraLarge>> = {
+    [ButtonSize.Small]: TextSize.Small,
+    [ButtonSize.Medium]: TextSize.Medium,
+    [ButtonSize.Large]: TextSize.Large,
+  };
+  return mapping[size];
 };
+
+// Map ButtonSize to Icon size
+const mapButtonSizeToIconSize = (size: ButtonSize): number =>
+  ({
+    [ButtonSize.Small]: 16,
+    [ButtonSize.Medium]: 20,
+    [ButtonSize.Large]: 24,
+  }[size]);
 
 // Default button component
 export const ButtonComponent = ({ 
@@ -55,7 +66,7 @@ export const ButtonComponent = ({
   const buttonTextStyle = textStyles[TextVariant.Button][textSize];
   
   // Set icon size based on button size
-  const defaultIconSize = size === ButtonSize.Large ? 24 : size === ButtonSize.Medium ? 20 : 16;
+  const defaultIconSize = mapButtonSizeToIconSize(size);
   
   // Set icon color or fallback to text color
   const finalIconColor = iconColor || textColor;
@@ -96,19 +107,19 @@ export const ButtonComponent = ({
     }).start();
   };
 
-  // Button styling based on size
-  let buttonClassName = className ?? '';
-  
-  if (size === ButtonSize.Large) {
-    // Large: Full width with fixed height, centered content
-    buttonClassName = [buttonClassName, 'px-4 h-14 w-full justify-center items-center gap-2'].filter(Boolean).join(' ');
-  } else if (size === ButtonSize.Medium) {
-    // Medium: Hug content with padding and spacing
-    buttonClassName = [buttonClassName, 'px-4 py-2 justify-center items-center gap-2'].filter(Boolean).join(' ');
-  } else {
-    // Small: Hug content with small padding and spacing
-    buttonClassName = [buttonClassName, 'px-3 py-1.5 justify-center items-center gap-1.5'].filter(Boolean).join(' ');
-  }
+  // Button styling based on size using clsx
+  const buttonClassName = clsx(
+    'justify-center items-center',
+    {
+      // Large: Full width with fixed height, centered content
+      'px-4 h-14 w-full gap-2': size === ButtonSize.Large,
+      // Medium: Hug content with padding and spacing
+      'px-4 py-2 gap-2': size === ButtonSize.Medium,
+      // Small: Hug content with small padding and spacing
+      'px-3 py-1.5 gap-1.5': size === ButtonSize.Small,
+    },
+    className
+  );
 
   // Render button content (icons and text)
   const buttonContent = (
@@ -177,5 +188,3 @@ const BackButton: React.FC<BackButtonProps> = ({
 ButtonComponent.BackButton = BackButton;
 
 export default ButtonComponent;
-
-

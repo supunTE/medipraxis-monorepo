@@ -47,7 +47,6 @@ export enum TextSize {
   ExtraLarge = "extra_large",
 }
 
-
 // Types
 
 export type TextStyle = {
@@ -68,8 +67,7 @@ export type TextMapping = {
   >;
 };
 
-// Orginal Text Styles
-
+// Orginal Text Styles (Initial figma hifi design)
 const originalTextStyles: TextMapping = {
   [TextVariant.Title]: {
     // Title – Small
