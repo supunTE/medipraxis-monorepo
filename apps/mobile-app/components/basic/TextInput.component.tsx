@@ -20,9 +20,6 @@ interface TextInputProps {
   inputType?: 'text' | 'number' | 'decimal' | 'email' | 'phone' | 'password';
   showPasswordToggle?: boolean;
   validationSchema?: z.ZodString;
-  errorMessage?: string;
-  successMessage?: string;
-  warningMessage?: string;
   helperText?: string;
   helperTextColor?: Color;
   errorTextColor?: Color;
@@ -44,6 +41,8 @@ interface OTPInputFieldProps {
   textColor?: Color;
   labelColor?: Color;
   size?: number;
+  validationSchema?: z.ZodString;
+  showValidation?: boolean;
 }
 
 // Type for TextInputComponent with OTPField
@@ -87,9 +86,6 @@ const TextInputBase: React.FC<TextInputProps> = ({
   inputType = 'text',
   showPasswordToggle = false,
   validationSchema,
-  errorMessage,
-  successMessage,
-  warningMessage,
   helperText,
   helperTextColor = Color.Grey,
   errorTextColor = Color.Danger,
@@ -106,7 +102,7 @@ const TextInputBase: React.FC<TextInputProps> = ({
   const shouldShowToggle = showPasswordToggle || inputType === 'password';
   const isSecureEntry = shouldShowToggle && !isPasswordVisible;
 
-  // Validate input
+  // Validate input - automatically gets error message from Zod schema
   useEffect(() => {
     if (!validationSchema || !showValidation) {
       setValidationError(null);
@@ -128,18 +124,19 @@ const TextInputBase: React.FC<TextInputProps> = ({
     } else {
       setIsValid(false);
       if (value !== '') {
-        const error = result.error.issues[0]?.message || 'Invalid input';
-        setValidationError(errorMessage || error);
+        // Automatically get the error message from Zod schema
+        const zodError = result.error.issues[0]?.message || 'Invalid input';
+        setValidationError(zodError);
       } else {
         setValidationError(null);
       }
     }
-  }, [value, validationSchema, showValidation, validateOnChange, errorMessage]);
+  }, [value, validationSchema, showValidation, validateOnChange]);
 
   // Determine border color based on validation
   const getBorderColor = () => {
     if (isInvalid || validationError) return Color.Danger;
-    if (showWarning && warningMessage) return Color.Warnning;
+    if (showWarning) return Color.Warnning;
     if (isValid && value !== '') return Color.Success;
     return borderColor;
   };
@@ -147,8 +144,8 @@ const TextInputBase: React.FC<TextInputProps> = ({
   // Determine message to display
   const getMessage = () => {
     if (validationError) return validationError;
-    if (showWarning && warningMessage) return warningMessage;
-    if (isValid && successMessage) return successMessage;
+    if (showWarning) return helperText || null;
+    if (isValid) return helperText || null;
     if (helperText && !validationError && !isValid) return helperText;
     return null;
   };
@@ -156,8 +153,8 @@ const TextInputBase: React.FC<TextInputProps> = ({
   // Determine message color
   const getMessageColor = () => {
     if (validationError) return errorTextColor;
-    if (showWarning && warningMessage) return warningTextColor;
-    if (isValid && successMessage) return successTextColor;
+    if (showWarning) return warningTextColor;
+    if (isValid) return successTextColor;
     return helperTextColor;
   };
 
@@ -244,7 +241,42 @@ const OTPField: React.FC<OTPInputFieldProps> = ({
   textColor = Color.Black,
   labelColor = Color.Black,
   size = 50,
+  validationSchema,
+  showValidation = true,
 }) => {
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [isValid, setIsValid] = useState(false);
+
+  // Validate input - automatically gets error message from Zod schema
+  useEffect(() => {
+    if (!validationSchema || !showValidation) {
+      setValidationError(null);
+      setIsValid(false);
+      return;
+    }
+
+    const result = validationSchema.safeParse(value);
+    
+    if (result.success) {
+      setValidationError(null);
+      setIsValid(true);
+    } else {
+      setIsValid(false);
+      if (value !== '') {
+        setValidationError('Invalid');
+      } else {
+        setValidationError(null);
+      }
+    }
+  }, [value, validationSchema, showValidation]);
+
+  // Determine border color based on validation
+  const getBorderColor = () => {
+    if (isInvalid || validationError) return Color.Danger;
+    if (isValid && value !== '') return Color.Success;
+    return borderColor;
+  };
+
   return (
     <View style={styles.otpWrapper}>
       {label && (
@@ -261,9 +293,10 @@ const OTPField: React.FC<OTPInputFieldProps> = ({
         variant="outline"
         size="md"
         isDisabled={isDisabled}
-        isInvalid={isInvalid}
+        isInvalid={isInvalid || !!validationError}
         style={{
-          borderColor: borderColor,
+          borderColor: getBorderColor(),
+          borderWidth: 1,
           borderRadius: 8,
           width: size,
           height: size,

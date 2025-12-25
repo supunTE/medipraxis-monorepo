@@ -68,7 +68,6 @@ placeholder="Enter secure password"
 label="Password"
 inputType="password"
 validationSchema={passwordSchema}
-successMessage="Strong password!"
 helperText="Min 8 chars with uppercase, lowercase & number"
 />
 
@@ -79,9 +78,22 @@ helperText="Min 8 chars with uppercase, lowercase & number"
     label="Username"
     validationSchema={usernameSchema}
     showWarning={username === "admin" || username === "test"}
-    warningMessage="This username might be taken"
-    successMessage="Username available!"
     helperText="3-20 characters, letters, numbers & underscores"
 />
 
 ```
+
+# Text Input Field - OTP
+
+```ts
+const [otp1, setOtp1] = useState("");
+const otpSchema = z.string().regex(/^[0-9]$/, "Must be a number");
+
+<TextInputComponent.OTPField
+value={otp1}
+onChangeText={setOtp1}
+validationSchema={otpSchema}
+/>
+```
+
+

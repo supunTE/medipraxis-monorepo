@@ -10,7 +10,7 @@ import { z } from "zod";
 
 export default function TabTwoScreen() {
   const [textInput, setTextInput] = useState("");
-  const [otp, setOtp] = useState("");
+  const [otp1, setOtp1] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
   const passwordSchema = z.string()
@@ -22,6 +22,8 @@ export default function TabTwoScreen() {
     .min(3, "Username must be at least 3 characters")
     .max(20, "Username must not exceed 20 characters")
     .regex(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores");
+  const otpSchema = z.string().regex(/^[0-9]$/, "Must be a number");
+
   
   return (
       <View style={styles.container}>
@@ -54,7 +56,6 @@ export default function TabTwoScreen() {
           label="Password"
           inputType="password"
           validationSchema={passwordSchema}
-          successMessage="Strong password!"
           helperText="Min 8 chars with uppercase, lowercase & number"
         />
         {/* Username with Warning Example */}
@@ -65,17 +66,15 @@ export default function TabTwoScreen() {
           label="Username"
           validationSchema={usernameSchema}
           showWarning={username === "admin" || username === "test"}
-          warningMessage="This username might be taken"
-          successMessage="Username available!"
           helperText="3-20 characters, letters, numbers & underscores"
         />
         <View style={styles.separator} />
         <View>
           <TextInputComponent.OTPField
-            value={otp}
-            onChangeText={setOtp}
-            label="OTP Input"
-          />
+          value={otp1}
+          onChangeText={setOtp1}
+          validationSchema={otpSchema}
+        />
         </View>
 
       <View style={styles.buttonContainer}>
