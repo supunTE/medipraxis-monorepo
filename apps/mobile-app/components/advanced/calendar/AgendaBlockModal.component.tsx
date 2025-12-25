@@ -2,24 +2,30 @@ import TextComponent from "@/components/basic";
 import { calculateSlotDuration, getSlotTime } from "@/utils";
 import { Color, TextSize, TextVariant } from "@repo/config";
 import { Modal, Pressable, ScrollView, View } from "react-native";
-import { AgendaBlockContent } from "./AgendaTimeBlock.component";
+import { AgendaBlockContent } from "./calendar.types";
 
 interface AgendaBlockModalProps {
   visible: boolean;
   onClose: () => void;
+  groupId: string;
   startHour: number;
   endHour: number;
   slots: number;
   contents: (AgendaBlockContent | null)[];
+  onAppointmentPress?: (appointment: AgendaBlockContent, groupId: string | null) => void;
+  onEmptySlotPress?: (groupId: string, slotNumber: number) => void;
 }
 
 export function AgendaBlockModal({
   visible,
   onClose,
+  groupId,
   startHour,
   endHour,
   slots,
   contents,
+  onAppointmentPress,
+  onEmptySlotPress,
 }: AgendaBlockModalProps): React.JSX.Element {
   const slotDurationMinutes = calculateSlotDuration(startHour, endHour, slots);
   const reservedSlots = contents.filter((content) => content !== null).length;
@@ -79,8 +85,15 @@ export function AgendaBlockModal({
               );
 
               return (
-                <View
+                <Pressable
                   key={index}
+                  onPress={() => {
+                    if (content) {
+                      onAppointmentPress?.(content, groupId);
+                    } else {
+                      onEmptySlotPress?.(groupId, index);
+                    }
+                  }}
                   style={{
                     paddingVertical: 12,
                     paddingHorizontal: 16,
@@ -136,7 +149,7 @@ export function AgendaBlockModal({
                       )}
                     </View>
                   </View>
-                </View>
+                </Pressable>
               );
             })}
           </ScrollView>

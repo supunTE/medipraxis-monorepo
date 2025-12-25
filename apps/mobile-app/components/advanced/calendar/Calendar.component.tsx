@@ -21,17 +21,28 @@ import {
   WeekCalendar,
 } from "react-native-calendars";
 import { AgendaComponent } from "./Agenda.component";
-import { AgendaData } from "./calendar.types";
+import { AgendaBlockContent, AgendaData } from "./calendar.types";
 
 interface CalendarComponentProps {
   agendaData?: AgendaData;
+  selectedDate?: string;
+  onDateChange?: (date: string) => void;
+  onAppointmentPress?: (appointment: AgendaBlockContent, groupId: string | null) => void;
+  onEmptySlotPress?: (groupId: string, slotNumber: number) => void;
 }
 
-export function CalendarComponent({ agendaData }: CalendarComponentProps = {}) {
-  const [selected, setSelected] = useState("");
+export function CalendarComponent({ agendaData, selectedDate, onDateChange, onAppointmentPress, onEmptySlotPress }: CalendarComponentProps = {}) {
+  const [selected, setSelected] = useState(selectedDate || "");
   const [isExpanded, setIsExpanded] = useState(false);
   const [showFullCalendar, setShowFullCalendar] = useState(false);
   const today = new Date().toISOString().split("T")[0];
+
+  // Update internal state when selectedDate prop changes
+  useEffect(() => {
+    if (selectedDate !== undefined) {
+      setSelected(selectedDate);
+    }
+  }, [selectedDate]);
 
   const [fontsLoaded] = useFonts({
     DMSans_400Regular,
@@ -190,6 +201,7 @@ export function CalendarComponent({ agendaData }: CalendarComponentProps = {}) {
                   firstDay={1}
                   onDayPress={(day) => {
                     setSelected(day.dateString);
+                    onDateChange?.(day.dateString);
                   }}
                   markedDates={markedDates}
                   theme={calendarTheme}
@@ -203,7 +215,10 @@ export function CalendarComponent({ agendaData }: CalendarComponentProps = {}) {
                 <WeekCalendar
                   firstDay={1}
                   markedDates={markedDates}
-                  onDayPress={(day) => setSelected(day.dateString)}
+                  onDayPress={(day) => {
+                    setSelected(day.dateString);
+                    onDateChange?.(day.dateString);
+                  }}
                   theme={calendarTheme}
                   renderArrow={renderArrow}
                 />
@@ -215,7 +230,10 @@ export function CalendarComponent({ agendaData }: CalendarComponentProps = {}) {
                   <WeekCalendar
                     firstDay={1}
                     markedDates={markedDates}
-                    onDayPress={(day) => setSelected(day.dateString)}
+                    onDayPress={(day) => {
+                      setSelected(day.dateString);
+                      onDateChange?.(day.dateString);
+                    }}
                     theme={calendarTheme}
                     renderArrow={renderArrow}
                   />
@@ -226,7 +244,12 @@ export function CalendarComponent({ agendaData }: CalendarComponentProps = {}) {
           </Animated.View>
         </CalendarProvider>
       </ScrollView>
-      <AgendaComponent selectedDate={selected || today} agendaData={agendaData} />
+      <AgendaComponent
+        selectedDate={selected || today}
+        agendaData={agendaData}
+        onAppointmentPress={onAppointmentPress}
+        onEmptySlotPress={onEmptySlotPress}
+      />
     </View>
   );
 }

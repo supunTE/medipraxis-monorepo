@@ -1,12 +1,8 @@
 import TextComponent from "@/components/basic";
 import { TextSize, TextVariant } from "@repo/config";
-import { View } from "react-native";
+import { Pressable } from "react-native";
 import { HOUR_HEIGHT } from "./calendar.constants";
-
-export interface AgendaBlockContent {
-  title: string;
-  client?: string;
-}
+import { AgendaBlockContent } from "./calendar.types";
 
 interface AgendaTimeBlockProps {
   content: AgendaBlockContent;
@@ -14,6 +10,7 @@ interface AgendaTimeBlockProps {
   endHour: number;
   bgColor?: string;
   borderColor?: string;
+  onPress?: (appointment: AgendaBlockContent, groupId: string | null) => void;
 }
 
 export function AgendaTimeBlock({
@@ -22,12 +19,14 @@ export function AgendaTimeBlock({
   endHour,
   bgColor = "#E3F2FD",
   borderColor = "#2196F3",
+  onPress,
 }: AgendaTimeBlockProps): React.JSX.Element {
   const height = (endHour - startHour) * HOUR_HEIGHT;
   const topPosition = startHour * HOUR_HEIGHT;
 
   return (
-    <View
+    <Pressable
+      onPress={() => onPress?.(content, null)}
       style={{
         position: "absolute",
         height,
@@ -50,6 +49,6 @@ export function AgendaTimeBlock({
           #{content.client}
         </TextComponent>
       )}
-    </View>
+    </Pressable>
   );
 }

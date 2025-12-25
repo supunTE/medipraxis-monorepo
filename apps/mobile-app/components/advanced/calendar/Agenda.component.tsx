@@ -10,16 +10,20 @@ import {
 import { AgendaTimeBlock } from "./AgendaTimeBlock.component";
 import { AgendaTimeBlockGroup } from "./AgendaTimeBlockGroup.component";
 import { AGENDA_COLORS, HOUR_HEIGHT } from "./calendar.constants";
-import { AgendaData } from "./calendar.types";
+import { AgendaBlockContent, AgendaData } from "./calendar.types";
 
 interface AgendaComponentProps {
   selectedDate: string;
   agendaData?: AgendaData;
+  onAppointmentPress?: (appointment: AgendaBlockContent, groupId: string | null) => void;
+  onEmptySlotPress?: (groupId: string, slotNumber: number) => void;
 }
 
 export function AgendaComponent({
   selectedDate,
   agendaData,
+  onAppointmentPress,
+  onEmptySlotPress,
 }: AgendaComponentProps): React.JSX.Element {
   const [isScrolled, setIsScrolled] = useState(false);
   const hours = Array.from({ length: 25 }, (_, i) => {
@@ -105,15 +109,19 @@ export function AgendaComponent({
               endHour={block.endHour}
               bgColor={getColorByHour(block.startHour).bg}
               borderColor={getColorByHour(block.startHour).border}
+              onPress={(appointment) => onAppointmentPress?.(appointment, null)}
             />
           ))}
           {agendaData?.timeBlockGroups?.map((group, index) => (
             <AgendaTimeBlockGroup
               key={`timeblockgroup-${index}`}
+              groupId={group.id}
               startHour={group.startHour}
               endHour={group.endHour}
               slots={group.slots}
               contents={group.contents}
+              onAppointmentPress={onAppointmentPress}
+              onEmptySlotPress={onEmptySlotPress}
             />
           ))}
         </View>

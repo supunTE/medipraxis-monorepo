@@ -1,4 +1,5 @@
 export interface AgendaBlockContent {
+  id: string;
   title: string;
   client?: string;
 }
@@ -10,6 +11,7 @@ export interface AgendaTimeBlockData {
 }
 
 export interface AgendaTimeBlockGroupData {
+  id: string;
   startHour: number;
   endHour: number;
   slots: number;
@@ -20,3 +22,20 @@ export interface AgendaData {
   timeBlocks?: AgendaTimeBlockData[];
   timeBlockGroups?: AgendaTimeBlockGroupData[];
 }
+
+export enum AgendaSelectionType {
+  Appointment = "appointment",
+  EmptySlot = "empty_slot",
+}
+
+export type AgendaSelection =
+  | {
+      type: AgendaSelectionType.Appointment;
+      appointmentId: string;
+      groupId: string | null;
+    }
+  | {
+      type: AgendaSelectionType.EmptySlot;
+      groupId: string;
+      slotNumber: number;
+    };

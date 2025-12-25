@@ -4,25 +4,31 @@ import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
 import { Pressable, View } from "react-native";
 import { AgendaBlockModal } from "./AgendaBlockModal.component";
-import { AgendaBlockContent } from "./AgendaTimeBlock.component";
 import {
   AGENDA_COLORS,
   HOUR_HEIGHT,
   MIN_SLOT_DURATION_MINUTES,
 } from "./calendar.constants";
+import { AgendaBlockContent } from "./calendar.types";
 
 interface AgendaTimeBlockGroupProps {
+  groupId: string;
   startHour: number;
   endHour: number;
   slots: number;
   contents: (AgendaBlockContent | null)[];
+  onAppointmentPress?: (appointment: AgendaBlockContent, groupId: string | null) => void;
+  onEmptySlotPress?: (groupId: string, slotNumber: number) => void;
 }
 
 export function AgendaTimeBlockGroup({
+  groupId,
   startHour,
   endHour,
   slots,
   contents,
+  onAppointmentPress,
+  onEmptySlotPress,
 }: AgendaTimeBlockGroupProps): React.JSX.Element {
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -126,10 +132,13 @@ export function AgendaTimeBlockGroup({
       <AgendaBlockModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
+        groupId={groupId}
         startHour={startHour}
         endHour={endHour}
         slots={slots}
         contents={contents}
+        onAppointmentPress={onAppointmentPress}
+        onEmptySlotPress={onEmptySlotPress}
       />
     </View>
   );
