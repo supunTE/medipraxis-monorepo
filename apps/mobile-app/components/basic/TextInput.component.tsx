@@ -343,4 +343,3 @@ const styles = StyleSheet.create({
 export const TextInputComponent = Object.assign(TextInputBase, {
   OTPField: OTPField,
 }) as TextInputComponentType;
-

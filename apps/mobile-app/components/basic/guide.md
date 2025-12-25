@@ -41,7 +41,7 @@
  />
 ```
 
-# TextInput Component - Password
+## TextInput Component - Password
 
 ```ts
 import { z } from 'zod';
@@ -83,9 +83,11 @@ helperText="Min 8 chars with uppercase, lowercase & number"
 
 ```
 
-# Text Input Field - OTP
+## Text Input Field - OTP
 
 ```ts
+import { z } from 'zod';
+
 const [otp1, setOtp1] = useState("");
 const otpSchema = z.string().regex(/^[0-9]$/, "Must be a number");
 
