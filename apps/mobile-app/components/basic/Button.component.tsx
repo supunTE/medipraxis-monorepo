@@ -1,6 +1,5 @@
-import { Icons } from '@/config';
+import { Icons, type Icon } from '@/config';
 import { Color, TextSize, textStyles, TextVariant } from '@repo/config';
-import type { IconProps } from 'phosphor-react-native';
 import React, { useRef } from 'react';
 import { Animated, TextStyle as RNTextStyle, ViewStyle } from 'react-native';
 import {
@@ -20,8 +19,8 @@ type BasicButtonProps = Omit<React.ComponentPropsWithoutRef<typeof GlueStackButt
   size?: ButtonSize;
   children?: React.ReactNode;
   className?: string;
-  leftIcon?: React.ComponentType<IconProps>;
-  rightIcon?: React.ComponentType<IconProps>;
+  leftIcon?: Icon;
+  rightIcon?: Icon;
   buttonColor?: Color;
   textColor?: Color;
   iconColor?: Color;
@@ -29,10 +28,21 @@ type BasicButtonProps = Omit<React.ComponentPropsWithoutRef<typeof GlueStackButt
 
 // Map ButtonSize to TextSize
 const mapButtonSizeToTextSize = (size: ButtonSize): Exclude<TextSize, TextSize.ExtraLarge> => {
-  if (size === ButtonSize.Small) return TextSize.Small;
-  if (size === ButtonSize.Medium) return TextSize.Medium;
-  return TextSize.Large;
+  const mapping: Record<ButtonSize, Exclude<TextSize, TextSize.ExtraLarge>> = {
+    [ButtonSize.Small]: TextSize.Small,
+    [ButtonSize.Medium]: TextSize.Medium,
+    [ButtonSize.Large]: TextSize.Large,
+  };
+  return mapping[size];
 };
+
+// Map ButtonSize to Icon size
+const mapButtonSizeToIconSize = (size: ButtonSize): number =>
+  ({
+    [ButtonSize.Small]: 16,
+    [ButtonSize.Medium]: 20,
+    [ButtonSize.Large]: 24,
+  }[size]);
 
 // Default button component
 export const ButtonComponent = ({ 
@@ -55,7 +65,7 @@ export const ButtonComponent = ({
   const buttonTextStyle = textStyles[TextVariant.Button][textSize];
   
   // Set icon size based on button size
-  const defaultIconSize = size === ButtonSize.Large ? 24 : size === ButtonSize.Medium ? 20 : 16;
+  const defaultIconSize = mapButtonSizeToIconSize(size);
   
   // Set icon color or fallback to text color
   const finalIconColor = iconColor || textColor;
@@ -177,5 +187,3 @@ const BackButton: React.FC<BackButtonProps> = ({
 ButtonComponent.BackButton = BackButton;
 
 export default ButtonComponent;
-
-
