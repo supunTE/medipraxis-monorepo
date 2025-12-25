@@ -1,8 +1,9 @@
 import TextComponent from "@/components/basic";
+import { timeToDecimalHour } from "@/utils";
 import { Color, TextSize, TextVariant } from "@repo/config";
 import { LinearGradient } from "expo-linear-gradient";
 import { useState } from "react";
-import { Pressable, View } from "react-native";
+import { Pressable, View, useWindowDimensions } from "react-native";
 import { AgendaBlockModal } from "./AgendaBlockModal.component";
 import {
   AGENDA_COLORS,
@@ -13,11 +14,14 @@ import { AgendaBlockContent } from "./calendar.types";
 
 interface AgendaTimeBlockGroupProps {
   groupId: string;
-  startHour: number;
-  endHour: number;
+  startHour: string;
+  endHour: string;
   slots: number;
   contents: (AgendaBlockContent | null)[];
-  onAppointmentPress?: (appointment: AgendaBlockContent, groupId: string | null) => void;
+  onAppointmentPress?: (
+    appointment: AgendaBlockContent,
+    groupId: string | null
+  ) => void;
   onEmptySlotPress?: (groupId: string, slotNumber: number) => void;
 }
 
@@ -30,16 +34,23 @@ export function AgendaTimeBlockGroup({
   onAppointmentPress,
   onEmptySlotPress,
 }: AgendaTimeBlockGroupProps): React.JSX.Element {
+  const { width: screenWidth } = useWindowDimensions();
   const [modalVisible, setModalVisible] = useState(false);
 
-  const totalHeight = (endHour - startHour) * HOUR_HEIGHT;
+  const startHourDecimal = timeToDecimalHour(startHour);
+  const endHourDecimal = timeToDecimalHour(endHour);
+  const totalHeight = (endHourDecimal - startHourDecimal) * HOUR_HEIGHT;
   const slotHeight = totalHeight / slots;
-  const topPosition = startHour * HOUR_HEIGHT;
+  const topPosition = startHourDecimal * HOUR_HEIGHT;
   const LEFT_MARGIN = 60;
   const RIGHT_MARGIN = 16;
 
+  // Calculate width for left column (appointments) - 75% of available space
+  const availableWidth = screenWidth - LEFT_MARGIN - RIGHT_MARGIN;
+  const columnWidth = availableWidth * 0.75;
+
   // Calculate slot duration in minutes
-  const totalDurationMinutes = (endHour - startHour) * 60;
+  const totalDurationMinutes = (endHourDecimal - startHourDecimal) * 60;
   const slotDurationMinutes = totalDurationMinutes / slots;
 
   // Count reserved slots
@@ -55,7 +66,7 @@ export function AgendaTimeBlockGroup({
         height: totalHeight,
         top: topPosition,
         left: LEFT_MARGIN,
-        right: RIGHT_MARGIN,
+        width: columnWidth,
       }}
     >
       {Array.from({ length: slots }).map((_, index) => {
@@ -79,13 +90,18 @@ export function AgendaTimeBlockGroup({
           >
             {content && !showSummaryOverlay && (
               <>
-                <TextComponent size={TextSize.Small} variant={TextVariant.Body}>
+                <TextComponent
+                  size={TextSize.Small}
+                  variant={TextVariant.Body}
+                  numberOfLines={1}
+                >
                   {content.title}
                 </TextComponent>
                 {content.client && (
                   <TextComponent
                     size={TextSize.Small}
                     variant={TextVariant.Body}
+                    numberOfLines={1}
                   >
                     #{content.client}
                   </TextComponent>

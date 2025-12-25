@@ -15,7 +15,10 @@ import { AgendaBlockContent, AgendaData } from "./calendar.types";
 interface AgendaComponentProps {
   selectedDate: string;
   agendaData?: AgendaData;
-  onAppointmentPress?: (appointment: AgendaBlockContent, groupId: string | null) => void;
+  onAppointmentPress?: (
+    appointment: AgendaBlockContent,
+    groupId: string | null
+  ) => void;
   onEmptySlotPress?: (groupId: string, slotNumber: number) => void;
 }
 
@@ -105,10 +108,10 @@ export function AgendaComponent({
             <AgendaTimeBlock
               key={`timeblock-${index}`}
               content={block.content}
-              startHour={block.startHour}
-              endHour={block.endHour}
-              bgColor={getColorByHour(block.startHour).bg}
-              borderColor={getColorByHour(block.startHour).border}
+              startHour={block.startTime}
+              endHour={block.endTime}
+              bgColor={getColorByHour(index).bg}
+              borderColor={getColorByHour(index).border}
               onPress={(appointment) => onAppointmentPress?.(appointment, null)}
             />
           ))}
@@ -116,8 +119,8 @@ export function AgendaComponent({
             <AgendaTimeBlockGroup
               key={`timeblockgroup-${index}`}
               groupId={group.id}
-              startHour={group.startHour}
-              endHour={group.endHour}
+              startHour={group.startTime}
+              endHour={group.endTime}
               slots={group.slots}
               contents={group.contents}
               onAppointmentPress={onAppointmentPress}

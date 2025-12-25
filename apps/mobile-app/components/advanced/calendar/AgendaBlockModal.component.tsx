@@ -1,5 +1,10 @@
 import TextComponent from "@/components/basic";
-import { calculateSlotDuration, getSlotTime } from "@/utils";
+import {
+  formatDuration,
+  getSlotTimeFromMinutes,
+  parseTimeToMinutes,
+  timeToDecimalHour,
+} from "@/utils";
 import { Color, TextSize, TextVariant } from "@repo/config";
 import { Modal, Pressable, ScrollView, View } from "react-native";
 import { AgendaBlockContent } from "./calendar.types";
@@ -8,11 +13,14 @@ interface AgendaBlockModalProps {
   visible: boolean;
   onClose: () => void;
   groupId: string;
-  startHour: number;
-  endHour: number;
+  startHour: string;
+  endHour: string;
   slots: number;
   contents: (AgendaBlockContent | null)[];
-  onAppointmentPress?: (appointment: AgendaBlockContent, groupId: string | null) => void;
+  onAppointmentPress?: (
+    appointment: AgendaBlockContent,
+    groupId: string | null
+  ) => void;
   onEmptySlotPress?: (groupId: string, slotNumber: number) => void;
 }
 
@@ -27,7 +35,11 @@ export function AgendaBlockModal({
   onAppointmentPress,
   onEmptySlotPress,
 }: AgendaBlockModalProps): React.JSX.Element {
-  const slotDurationMinutes = calculateSlotDuration(startHour, endHour, slots);
+  const startHourDecimal = timeToDecimalHour(startHour);
+  const endHourDecimal = timeToDecimalHour(endHour);
+  const startTimeMinutes = parseTimeToMinutes(startHour);
+  const totalDurationMinutes = (endHourDecimal - startHourDecimal) * 60;
+  const slotDurationMinutes = totalDurationMinutes / slots;
   const reservedSlots = contents.filter((content) => content !== null).length;
 
   return (
@@ -73,14 +85,14 @@ export function AgendaBlockModal({
             showsVerticalScrollIndicator={true}
           >
             {contents.map((content, index) => {
-              const slotTime = getSlotTime(
+              const slotTime = getSlotTimeFromMinutes(
                 index,
-                startHour,
+                startTimeMinutes,
                 slotDurationMinutes
               );
-              const endSlotTime = getSlotTime(
+              const endSlotTime = getSlotTimeFromMinutes(
                 index + 1,
-                startHour,
+                startTimeMinutes,
                 slotDurationMinutes
               );
 
@@ -119,7 +131,7 @@ export function AgendaBlockModal({
                         variant={TextVariant.Body}
                         color={Color.Grey}
                       >
-                        {slotTime} - {endSlotTime}
+                        {slotTime} - {endSlotTime} ({formatDuration(slotDurationMinutes)})
                       </TextComponent>
                       {content ? (
                         <>

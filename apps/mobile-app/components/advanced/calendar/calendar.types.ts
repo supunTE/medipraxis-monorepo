@@ -6,14 +6,14 @@ export interface AgendaBlockContent {
 
 export interface AgendaTimeBlockData {
   content: AgendaBlockContent;
-  startHour: number;
-  endHour: number;
+  startTime: string;
+  endTime: string;
 }
 
 export interface AgendaTimeBlockGroupData {
   id: string;
-  startHour: number;
-  endHour: number;
+  startTime: string;
+  endTime: string;
   slots: number;
   contents: (AgendaBlockContent | null)[];
 }
