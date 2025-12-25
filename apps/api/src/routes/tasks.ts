@@ -1,7 +1,7 @@
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { TaskController } from "../controllers";
-import { createTaskSchema , taskDetailsSchema, updateTaskSchema } from "../../../../packages/models/tasks/task.schema";
+import { createTaskSchema , taskDetailsSchema, updateTaskSchema } from "@repo/models";
 import type { Env } from "../types";
 
 const tasks = new Hono<{ Bindings: Env }>();
