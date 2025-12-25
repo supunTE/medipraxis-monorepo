@@ -3,7 +3,7 @@ import { StyleSheet } from "react-native";
 
 import EditScreenInfo from "@/components/EditScreenInfo";
 import { View } from "@/components/Themed";
-import TextComponent, { ButtonComponent, ButtonSize, TextInputComponent } from "@/components/basic";
+import TextComponent, { ButtonComponent, ButtonSize, DropdownComponent, TextInputComponent } from "@/components/basic";
 import { Icons } from "@/config";
 import { Color, TextSize, TextVariant } from '@repo/config';
 import { z } from "zod";
@@ -13,6 +13,21 @@ export default function TabTwoScreen() {
   const [otp1, setOtp1] = useState("");
   const [password, setPassword] = useState("");
   const [username, setUsername] = useState("");
+  const [country, setCountry] = useState('');
+
+    // Country options
+  const countryOptions = [
+    { label: 'United States', value: 'us' },
+    { label: 'United Kingdom', value: 'uk' },
+    { label: 'Canada', value: 'ca' },
+    { label: 'Australia', value: 'au' },
+    { label: 'Germany', value: 'de' },
+    { label: 'France', value: 'fr' },
+    { label: 'Japan', value: 'jp' },
+    { label: 'India', value: 'in' },
+  ];
+  
+  // Validation Schemas
   const passwordSchema = z.string()
     .min(8, "Password must be at least 8 characters")
     .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
@@ -23,8 +38,8 @@ export default function TabTwoScreen() {
     .max(20, "Username must not exceed 20 characters")
     .regex(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores");
   const otpSchema = z.string().regex(/^[0-9]$/, "Must be a number");
+  const requiredSchema = z.string().min(1, 'This field is required');
 
-  
   return (
       <View style={styles.container}>
         <View>
@@ -68,13 +83,22 @@ export default function TabTwoScreen() {
           showWarning={username === "admin" || username === "test"}
           helperText="3-20 characters, letters, numbers & underscores"
         />
-        <View style={styles.separator} />
-        <View>
+                <View>
           <TextInputComponent.OTPField
-          value={otp1}
-          onChangeText={setOtp1}
-          validationSchema={otpSchema}
-        />
+            value={otp1}
+            onChangeText={setOtp1}
+            validationSchema={otpSchema}
+          />
+          <DropdownComponent
+            value={country}
+            onValueChange={setCountry}
+            options={countryOptions}
+            label="Country"
+            placeholder="Select a country"
+            validationSchema={requiredSchema}
+            helperText="Please select your country"
+            showValidation={true}
+          />
         </View>
 
       <View style={styles.buttonContainer}>
@@ -155,4 +179,3 @@ const styles = StyleSheet.create({
     width: "80%",
   }
 });
-
