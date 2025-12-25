@@ -103,15 +103,45 @@ validationSchema={otpSchema}
 ```ts
 const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 const [darkModeEnabled, setDarkModeEnabled] = useState(true);
+
 <ToggleButton 
     size="sm" 
     label="Enable toggle"
     isActive={notificationsEnabled}
     onToggle={setNotificationsEnabled}
 />
+
 <ToggleButton 
     size="sm"
     isActive={darkModeEnabled}
     onToggle={setDarkModeEnabled}
+/>
+```
+
+# Dropdown Component
+
+```ts
+const [country, setCountry] = useState('');
+
+const countryOptions = [
+    { label: 'United States', value: 'us' },
+    { label: 'United Kingdom', value: 'uk' },
+    { label: 'Canada', value: 'ca' },
+    { label: 'Australia', value: 'au' },
+    { label: 'Germany', value: 'de' },
+    { label: 'France', value: 'fr' },
+    { label: 'Japan', value: 'jp' },
+    { label: 'India', value: 'in' },
+];
+
+<DropdownComponent
+    value={country}
+    onValueChange={setCountry}
+    options={countryOptions}
+    label="Country"
+    placeholder="Select a country"
+    validationSchema={requiredSchema}
+    helperText="Please select your country"
+    showValidation={true}
 />
 ```
