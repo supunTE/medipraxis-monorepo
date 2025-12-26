@@ -161,7 +161,7 @@ export class TaskRepository {
     if (taskData.set_alarm !== undefined)
 			updateData.set_alarm = taskData.set_alarm;
 		if (taskData?.user_id !== undefined) {
-			updateData.practitioner_id = taskData?.user_id;
+			updateData.user_id = taskData?.user_id;
 		}
 
     const { data, error } = await this.db
