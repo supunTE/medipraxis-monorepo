@@ -1,37 +1,57 @@
-import { Color, Font, FontWeight, TextSize, TextStyle, textStyles, TextVariant } from '@repo/config';
-import { Text as RNText, TextProps as RNTextProps, StyleSheet } from 'react-native';
+import {
+  Color,
+  Font,
+  FontWeight,
+  TextSize,
+  TextStyle,
+  textStyles,
+  TextVariant,
+} from "@repo/config";
+import {
+  Text as RNText,
+  TextProps as RNTextProps,
+  StyleSheet,
+} from "react-native";
 
 // Import font assets
-import { DMSans_400Regular, DMSans_500Medium, DMSans_600SemiBold } from '@expo-google-fonts/dm-sans';
-import { Lato_400Regular, Lato_700Bold } from '@expo-google-fonts/lato';
-import { useFonts } from 'expo-font';
-
+import {
+  DMSans_400Regular,
+  DMSans_500Medium,
+  DMSans_600SemiBold,
+} from "@expo-google-fonts/dm-sans";
+import { Lato_400Regular, Lato_700Bold } from "@expo-google-fonts/lato";
+import { useFonts } from "expo-font";
 
 // Props type
 type TextComponentProps<T extends TextVariant = TextVariant> = {
   variant: T;
   // Only Title may use ExtraLarge. Other categories must exclude ExtraLarge
-  size: T extends TextVariant.Title ? TextSize : Exclude<TextSize, TextSize.ExtraLarge>;
+  size: T extends TextVariant.Title
+    ? TextSize
+    : Exclude<TextSize, TextSize.ExtraLarge>;
   children: React.ReactNode;
   color?: Color;
-  style?: RNTextProps['style'];
-} & Omit<RNTextProps, 'style' | 'children'>;
+  style?: RNTextProps["style"];
+} & Omit<RNTextProps, "style" | "children">;
 
 // Font mapping
 const LATO_FONT_MAP: Record<number, string> = {
-  [FontWeight.Regular]: 'Lato_400Regular',
-  [FontWeight.SemiBold]: 'Lato_400Bold',
-  [FontWeight.Bold]: 'Lato_700Bold',
-  [FontWeight.ExtraBold]: 'Lato_700Bold',
+  [FontWeight.Regular]: "Lato_400Regular",
+  [FontWeight.SemiBold]: "Lato_400Bold",
+  [FontWeight.Bold]: "Lato_700Bold",
+  [FontWeight.ExtraBold]: "Lato_700Bold",
 };
 const DMSANS_FONT_MAP: Record<number, string> = {
-  [FontWeight.Regular]: 'DMSans_400Regular',
-  [FontWeight.Medium]: 'DMSans_500Medium',
-  [FontWeight.SemiBold]: 'DMSans_600SemiBold',
+  [FontWeight.Regular]: "DMSans_400Regular",
+  [FontWeight.Medium]: "DMSans_500Medium",
+  [FontWeight.SemiBold]: "DMSans_600SemiBold",
 };
 
 // Function to get font family
-const getFontFamily = (fontFamily: Font, fontWeight: FontWeight | number): string => {
+const getFontFamily = (
+  fontFamily: Font,
+  fontWeight: FontWeight | number
+): string => {
   const weightKey = Number(fontWeight);
   if (fontFamily === Font.Lato) {
     return LATO_FONT_MAP[weightKey] ?? LATO_FONT_MAP[FontWeight.Regular];
@@ -66,9 +86,14 @@ export default function TextComponent<T extends TextVariant = TextVariant>({
   }
 
   // Get text style based on category and size
-  const getTextStyle = (variant: TextVariant, selectedSize: TextSize): TextStyle | undefined => {
+  const getTextStyle = (
+    variant: TextVariant,
+    selectedSize: TextSize
+  ): TextStyle | undefined => {
     const mapping = textStyles[variant];
-    return mapping ? (mapping as Record<TextSize, TextStyle>)[selectedSize] : undefined;
+    return mapping
+      ? (mapping as Record<TextSize, TextStyle>)[selectedSize]
+      : undefined;
   };
 
   const textStyle = getTextStyle(category as TextVariant, size as TextSize);
@@ -89,7 +114,9 @@ export default function TextComponent<T extends TextVariant = TextVariant>({
       fontStyle: textStyle.fontStyle,
       color,
       ...(textStyle.lineHeight && { lineHeight: textStyle.lineHeight }),
-      ...(textStyle.letterSpacing && { letterSpacing: textStyle.letterSpacing }),
+      ...(textStyle.letterSpacing && {
+        letterSpacing: textStyle.letterSpacing,
+      }),
     },
     style,
   ]);
