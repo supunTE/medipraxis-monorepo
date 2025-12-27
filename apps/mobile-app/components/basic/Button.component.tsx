@@ -2,7 +2,7 @@ import { Icons, type Icon } from '@/config';
 import { Color, TextSize, textStyles, TextVariant } from '@repo/config';
 import clsx from 'clsx';
 import React, { useRef } from 'react';
-import { Animated, TextStyle as RNTextStyle, ViewStyle } from 'react-native';
+import { Animated, type TextStyle as RNTextStyle, type ViewStyle } from 'react-native';
 import {
   Button as GlueStackButton,
   ButtonText as GlueStackButtonText

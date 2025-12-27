@@ -9,7 +9,7 @@ import { Color, TextSize, TextVariant } from "@repo/config";
 import clsx from "clsx";
 import { useRef } from "react";
 import { Animated, Modal, Pressable, ScrollView, View } from "react-native";
-import { AgendaBlockContent } from "./calendar.types";
+import { type AgendaBlockContent } from "./calendar.types";
 
 interface AgendaBlockModalProps {
   visible: boolean;

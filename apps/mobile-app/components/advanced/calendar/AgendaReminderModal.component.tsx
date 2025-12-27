@@ -3,7 +3,7 @@ import TextComponent from "@/components/basic";
 import { Color, TextSize, TextVariant } from "@repo/config";
 import { useRef } from "react";
 import { Animated, Modal, Pressable, ScrollView, View } from "react-native";
-import { AgendaReminderContent, AgendaReminderData } from "./calendar.types";
+import { type AgendaReminderContent, type AgendaReminderData } from "./calendar.types";
 
 interface AgendaReminderModalProps {
   visible: boolean;
