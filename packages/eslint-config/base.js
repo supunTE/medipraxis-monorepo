@@ -9,6 +9,7 @@ import onlyWarn from "eslint-plugin-only-warn";
  *
  * @type {import("eslint").Linter.Config[]}
  */
+
 export const config = [
   js.configs.recommended,
   eslintConfigPrettier,
@@ -32,7 +33,7 @@ export const config = [
       "turbo/no-undeclared-env-vars": "warn",
     },
   },
-  // Enforce type-only imports (VERY important for RPC)
+  // Enforce type-only imports (important for RPC)
   {
     rules: {
       "@typescript-eslint/consistent-type-imports": [
