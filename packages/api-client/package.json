@@ -8,7 +8,6 @@
     "@repo/typescript-config": "*"
   },
   "dependencies": {
-    "@repo/api": "*",
     "@hono/client": "^0.0.3"
   }
 }
