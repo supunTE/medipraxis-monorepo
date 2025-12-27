@@ -5,6 +5,7 @@ import type {
   TaskDetails,
   UpdateTaskInput,
 } from "../types";
+import { TaskType } from "../types";
 
 export const TASK_QUERIES = {
   TASK_STATUS_ID: "task_status_id",
@@ -117,8 +118,11 @@ export class TaskRepository {
       end_date: taskData.end_date || null,
       note: taskData.note || null,
       set_alarm: taskData.set_alarm || false,
-      modified_date: new Date().toISOString(),
-    };
+			modified_date: new Date().toISOString(),
+
+			//appointment
+			appointment_number: taskData?.appointment_number,
+		};		
 
     const { data: task, error } = await this.db
       .from("task")
@@ -155,7 +159,10 @@ export class TaskRepository {
       updateData.end_date = taskData.end_date;
     if (taskData.note !== undefined) updateData.note = taskData.note;
     if (taskData.set_alarm !== undefined)
-      updateData.set_alarm = taskData.set_alarm;
+			updateData.set_alarm = taskData.set_alarm;
+		if (taskData?.user_id !== undefined) {
+			updateData.user_id = taskData?.user_id;
+		}
 
     const { data, error } = await this.db
       .from("task")
@@ -170,5 +177,28 @@ export class TaskRepository {
     }
 
     return data as Task;
+  }
+    
+  async getAppointmentCountForDate(
+    practitionerId: string,
+    date: string
+  ): Promise<number> {
+    const startOfDay = `${date}T00:00:00`;
+		const endOfDay = `${date}T23:59:59`;
+		
+const taskType = await this.getTaskTypeByName(TaskType.APPOINTMENT);
+    const { count, error } = await this.db
+      .from("task")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", practitionerId)
+      .eq("task_type_id", taskType)
+      .gte("start_date", startOfDay)
+			.lte("start_date", endOfDay);	
+
+    if (error) {
+      throw new Error(error.message ?? "Failed to generate appointment sequence");
+    }
+
+    return count ?? 0;
   }
 }
