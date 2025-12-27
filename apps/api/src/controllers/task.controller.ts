@@ -45,7 +45,7 @@ export class TaskController {
   static async createTask(c: APIContext<{ json: CreateTaskInput }>) {
     try {
       const taskService = getTaskService(c);
-      const body = c.req.valid("json");
+      const body = c.req.valid("json") as CreateTaskInput;
 
       const task = await taskService.createTask(body);
 
@@ -63,7 +63,7 @@ export class TaskController {
     try {
       const taskService = getTaskService(c);
       const taskId = c.req.param("id");
-      const body = c.req.json() as UpdateTaskInput;
+      const body = c.req.valid("json") as UpdateTaskInput;
 
       const task = await taskService.updateTask(taskId, body);
 
