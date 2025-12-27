@@ -2,14 +2,14 @@ import {
   Color,
   Font,
   FontWeight,
-  TextSize,
-  TextStyle,
+  type TextSize,
+  type TextStyle,
   textStyles,
-  TextVariant,
+  type TextVariant,
 } from "@repo/config";
 import {
   Text as RNText,
-  TextProps as RNTextProps,
+  type TextProps as RNTextProps,
   StyleSheet,
 } from "react-native";
 
@@ -96,7 +96,7 @@ export default function TextComponent<T extends TextVariant = TextVariant>({
       : undefined;
   };
 
-  const textStyle = getTextStyle(category as TextVariant, size as TextSize);
+  const textStyle = getTextStyle(category, size);
 
   if (!textStyle) {
     console.warn(`Invalid category "${category}" or size "${size}"`);
