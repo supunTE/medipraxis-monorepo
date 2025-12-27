@@ -1,9 +1,14 @@
-import { CreateTaskInput, UpdateTaskInput } from "@repo/models";
+import {
+  CreateTaskInput,
+  GetAllTaskQuery,
+  GetTaskParam,
+  UpdateTaskInput,
+} from "@repo/models";
 import { getTaskService } from "../lib";
 import { APIContext } from "../types/api-context";
 
 export class TaskController {
-  static async getAllTasks(c: APIContext<null>) {
+  static async getAllTasks(c: APIContext<{ query: GetAllTaskQuery }>) {
     try {
       const taskService = getTaskService(c);
       const userId = c.req.query("user_id");
@@ -18,7 +23,7 @@ export class TaskController {
     }
   }
 
-  static async getTaskById(c: APIContext<null, "/:id">) {
+  static async getTaskById(c: APIContext<{ param: GetTaskParam }, "/:id">) {
     try {
       const taskService = getTaskService(c);
       const taskId = c.req.param("id");
@@ -37,10 +42,10 @@ export class TaskController {
     }
   }
 
-  static async createTask(c: APIContext<CreateTaskInput>) {
+  static async createTask(c: APIContext<{ json: CreateTaskInput }>) {
     try {
       const taskService = getTaskService(c);
-      const body: CreateTaskInput = c.req.valid("json");
+      const body = c.req.valid("json");
 
       const task = await taskService.createTask(body);
 
@@ -52,11 +57,13 @@ export class TaskController {
     }
   }
 
-  static async updateTask(c: APIContext<UpdateTaskInput, "/:id">) {
+  static async updateTask(
+    c: APIContext<{ json: UpdateTaskInput; param: GetTaskParam }, "/:id">
+  ) {
     try {
       const taskService = getTaskService(c);
       const taskId = c.req.param("id");
-      const body: UpdateTaskInput = await c.req.json();
+      const body = c.req.json() as UpdateTaskInput;
 
       const task = await taskService.updateTask(taskId, body);
 

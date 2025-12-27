@@ -25,10 +25,6 @@ export class TaskService {
   }
 
   async createTask(input: CreateTaskInput): Promise<Task> {
-    if (!input.task_title || !input.user_id || !input.end_date) {
-      throw new Error("Missing required fields: task_title, user_id, end_date");
-    }
-
     if (!input.start_date) {
       input.start_date = new Date().toISOString();
     }

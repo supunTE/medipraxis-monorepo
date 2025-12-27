@@ -1,20 +1,32 @@
 import { zValidator } from "@hono/zod-validator";
 import {
   createTaskSchema,
-  taskDetailsSchema,
+  getAllTasksQuerySchema,
+  getTaskParamSchema,
+  updateTaskParamSchema,
   updateTaskSchema,
 } from "@repo/models";
 import { Hono } from "hono";
 import { TaskController } from "../controllers";
+import { Env } from "../types";
 
-const tasks = new Hono()
-  .get("/", TaskController.getAllTasks)
+const tasks = new Hono<{ Bindings: Env }>()
+  .post("/", zValidator("json", createTaskSchema), TaskController.createTask)
+  .get(
+    "/",
+    zValidator("query", getAllTasksQuerySchema),
+    TaskController.getAllTasks
+  )
   .get(
     "/:id",
-    zValidator("json", taskDetailsSchema),
+    zValidator("param", getTaskParamSchema),
     TaskController.getTaskById
   )
-  .post("/", zValidator("json", createTaskSchema), TaskController.createTask)
-  .put("/:id", zValidator("json", updateTaskSchema), TaskController.updateTask);
+  .put(
+    "/:id",
+    zValidator("param", updateTaskParamSchema),
+    zValidator("json", updateTaskSchema),
+    TaskController.updateTask
+  );
 
 export default tasks;

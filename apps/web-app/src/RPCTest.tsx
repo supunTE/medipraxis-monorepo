@@ -7,7 +7,11 @@ const RPCTest = () => {
   // Get All Tasks
   const testGetAllTasksApiCall = async () => {
     try {
-      const res = await api.tasks.$get();
+      const res = await api.tasks.$get({
+        query: {
+          user_id: "2a3c19b8-d352-4b30-a2ac-1cdf993d3102",
+        },
+      });
       const data = await res.json();
       console.log("Get All Tasks API Response:", data);
     } catch (error) {
@@ -15,26 +19,11 @@ const RPCTest = () => {
     }
   };
 
-  // Get All Tasks with user_id filter
-  const testGetAllTasksWithFilterApiCall = async () => {
-    try {
-      const res = await api.tasks.$get({
-        query: {
-          user_id: "2a3c19b8-d352-4b30-a2ac-1cdf993d3102",
-        },
-      });
-      const data = await res.json();
-      console.log("Get All Tasks (Filtered) API Response:", data);
-    } catch (error) {
-      console.error("Get All Tasks (Filtered) API Call Error:", error);
-    }
-  };
-
   // Get Task By ID
   const testGetTaskByIdApiCall = async () => {
     try {
       const taskId = "24f21ec7-bf59-4c35-9c54-36cb24afafbe"; // Replace with actual task ID
-      
+
       const res = await api.tasks[":id"].$get({
         param: {
           id: taskId,
@@ -53,11 +42,11 @@ const RPCTest = () => {
       const res = await api.tasks.$post({
         json: {
           task_title: "Daily Blood Sugar Monitoring",
-          task_type_id: "24f21ec7-bf59-4c35-9c54-36cb24afafbe",
-          client_id: "24f21ec7-bf59-4c35-9c54-36cb24afafb3",
           user_id: "2a3c19b8-d352-4b30-a2ac-1cdf993d3102",
-          start_date: "2025-12-20T06:46:42.023",
+          task_type_id: "24f21ec7-bf59-4c35-9c54-36cb24afafbe",
           end_date: "2025-12-25T05:32:21.756",
+          client_id: "24f21ec7-bf59-4c35-9c54-36cb24afafb3",
+          start_date: "2025-12-20T06:46:42.023",
           note: "Patient needs to monitor blood sugar levels daily.",
           set_alarm: false,
           task_status_id: "24f21ec7-bf59-4c35-9c54-36cb24afafba",
@@ -74,7 +63,7 @@ const RPCTest = () => {
   const testUpdateTaskApiCall = async () => {
     try {
       const taskId = "24f21ec7-bf59-4c35-9c54-36cb24afafbe"; // Replace with actual task ID
-      
+
       const res = await api.tasks[":id"].$put({
         param: {
           id: taskId,
@@ -90,7 +79,7 @@ const RPCTest = () => {
           task_status_id: "24f21ec7-bf59-4c35-9c54-36cb24afafbb",
         },
       });
-      
+
       const data = await res.json();
       console.log("Update Task API Response:", data);
     } catch (error) {
@@ -102,7 +91,7 @@ const RPCTest = () => {
   const testPartialUpdateTaskApiCall = async () => {
     try {
       const taskId = "24f21ec7-bf59-4c35-9c54-36cb24afafbe"; // Replace with actual task ID
-      
+
       const res = await api.tasks[":id"].$put({
         param: {
           id: taskId,
@@ -112,7 +101,7 @@ const RPCTest = () => {
           set_alarm: true,
         },
       });
-      
+
       const data = await res.json();
       console.log("Partial Update Task API Response:", data);
     } catch (error) {
@@ -123,21 +112,10 @@ const RPCTest = () => {
   return (
     <>
       <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-        <button onClick={testGetAllTasksApiCall}>
-          Get All Tasks
-        </button>
-        <button onClick={testGetAllTasksWithFilterApiCall}>
-          Get All Tasks (Filtered)
-        </button>
-        <button onClick={testGetTaskByIdApiCall}>
-          Get Task By ID
-        </button>
-        <button onClick={testCreateTaskApiCall}>
-          Create Task
-        </button>
-        <button onClick={testUpdateTaskApiCall}>
-          Update Task (Full)
-        </button>
+        <button onClick={testGetAllTasksApiCall}>Get All Tasks</button>
+        <button onClick={testGetTaskByIdApiCall}>Get Task By ID</button>
+        <button onClick={testCreateTaskApiCall}>Create Task</button>
+        <button onClick={testUpdateTaskApiCall}>Update Task (Full)</button>
         <button onClick={testPartialUpdateTaskApiCall}>
           Update Task (Partial)
         </button>
