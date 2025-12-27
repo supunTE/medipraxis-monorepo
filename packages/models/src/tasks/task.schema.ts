@@ -16,6 +16,8 @@ export const taskSchema = z.object({
   modified_date: z.string().nullable(),
   note: z.string().nullable(),
   set_alarm: z.boolean(),
+  // appointment
+  appointment_number: z.number(),
 });
 
 /* ---------------- REQUEST SCHEMAS ---------------- */
@@ -42,6 +44,8 @@ export const createTaskSchema = z.object({
   start_date: z.string().optional(),
   note: z.string().optional(),
   set_alarm: z.boolean().optional(),
+  // appointment
+  appointment_number: z.number(),
 });
 
 export const updateTaskSchema = z.object({
@@ -53,6 +57,9 @@ export const updateTaskSchema = z.object({
   end_date: z.string().optional(),
   note: z.string().optional(),
   set_alarm: z.boolean().optional(),
+  user_id: z.string(),
+  // appointment
+  appointment_number: z.number(),
 });
 
 /* ---------------- TYPES (DERIVED) ---------------- */
