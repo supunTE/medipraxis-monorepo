@@ -1,0 +1,13 @@
+{
+  "name": "@repo/models",
+  "version": "0.0.0",
+  "private": true,
+  "main": "src/index.ts",
+  "devDependencies": {
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*"
+  },
+  "dependencies": {
+    "zod": "^4.2.1"
+  }
+}

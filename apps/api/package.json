@@ -8,8 +8,12 @@
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
   "dependencies": {
+    "@repo/models": "*",
+    "@repo/api-client": "*",
+    "@hono/zod-validator": "^0.7.6",
     "@supabase/supabase-js": "^2.89.0",
-    "hono": "^4.10.7"
+    "hono": "^4.10.7",
+    "zod": "^4.2.1"
   },
   "devDependencies": {
     "wrangler": "^4.4.0"
