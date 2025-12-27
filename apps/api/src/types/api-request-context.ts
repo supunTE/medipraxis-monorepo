@@ -1,7 +1,7 @@
 import { Context } from "hono";
 import { Env } from "./env.type";
 
-export type APIRequestContext<T, P extends string = "/"> = Context<
+export type APICreateRequestContext<T, P extends string = "/"> = Context<
   {
     Bindings: Env;
   },

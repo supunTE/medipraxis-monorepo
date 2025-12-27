@@ -39,7 +39,7 @@ export class TaskController {
     }
   }
 
-  static async createTask(c: APIRequestContext<CreateTaskInput>) {
+  static async createTask(c: APICreateRequestContext<CreateTaskInput>) {
     try {
       const taskService = getTaskService(c);
       const body: CreateTaskInput = c.req.valid("json");
