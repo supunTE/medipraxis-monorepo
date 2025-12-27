@@ -25,7 +25,11 @@ export const TASK_QUERIES = {
 } as const;
 
 export class TaskRepository {
-  constructor(private db: SupabaseClient) {}
+  private db: SupabaseClient;
+
+  constructor(db: SupabaseClient) {
+    this.db = db;
+  }
 
   async getTaskStatusByName(statusName: string): Promise<string | null> {
     const { data, error } = await this.db

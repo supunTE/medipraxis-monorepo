@@ -1,5 +1,5 @@
-import { Context } from "hono";
-import { Env } from "./env.type";
+import type { Context } from "hono";
+import type { Env } from "./env.type";
 
 /**
  * Generic API Context type with support for all input types

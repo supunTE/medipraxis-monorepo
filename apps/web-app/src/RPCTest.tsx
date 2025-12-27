@@ -50,6 +50,7 @@ const RPCTest = () => {
           note: "Patient needs to monitor blood sugar levels daily.",
           set_alarm: false,
           task_status_id: "24f21ec7-bf59-4c35-9c54-36cb24afafba",
+          appointment_number: 1,
         },
       });
       const data = await res.json();
@@ -77,6 +78,8 @@ const RPCTest = () => {
           note: "Updated: Patient needs to monitor blood sugar levels twice daily.",
           set_alarm: true,
           task_status_id: "24f21ec7-bf59-4c35-9c54-36cb24afafbb",
+          user_id: "2a3c19b8-d352-4b30-a2ac-1cdf993d3102",
+          appointment_number: 1,
         },
       });
 
@@ -98,6 +101,8 @@ const RPCTest = () => {
         },
         json: {
           task_title: "Partially Updated Task Title",
+          appointment_number: 3,
+          user_id: "2a3c19b8-d352-4b30-a2ac-1cdf993d3102",
           set_alarm: true,
         },
       });
