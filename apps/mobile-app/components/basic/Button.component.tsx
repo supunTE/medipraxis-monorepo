@@ -1,22 +1,29 @@
-import { Icons, type Icon } from '@/config';
-import { Color, TextSize, textStyles, TextVariant } from '@repo/config';
-import clsx from 'clsx';
-import React, { useRef } from 'react';
-import { Animated, type TextStyle as RNTextStyle, type ViewStyle } from 'react-native';
+import { Icons, type Icon } from "@/config";
+import { Color, TextSize, textStyles, TextVariant } from "@repo/config";
+import clsx from "clsx";
+import React, { useRef } from "react";
+import {
+  Animated,
+  type TextStyle as RNTextStyle,
+  type ViewStyle,
+} from "react-native";
 import {
   Button as GlueStackButton,
-  ButtonText as GlueStackButtonText
-} from '../ui/button';
+  ButtonText as GlueStackButtonText,
+} from "../ui/button";
 
 // Enum - Button size
 export enum ButtonSize {
-  Small = 'small',
-  Medium = 'medium',
-  Large = 'large',
+  Small = "small",
+  Medium = "medium",
+  Large = "large",
 }
 
 // Button component props
-type BasicButtonProps = Omit<React.ComponentPropsWithoutRef<typeof GlueStackButton>, 'size' | 'children'> & {
+type BasicButtonProps = Omit<
+  React.ComponentPropsWithoutRef<typeof GlueStackButton>,
+  "size" | "children"
+> & {
   size?: ButtonSize;
   children?: React.ReactNode;
   className?: string;
@@ -28,7 +35,9 @@ type BasicButtonProps = Omit<React.ComponentPropsWithoutRef<typeof GlueStackButt
 };
 
 // Map ButtonSize to TextSize
-const mapButtonSizeToTextSize = (size: ButtonSize): Exclude<TextSize, TextSize.ExtraLarge> => {
+const mapButtonSizeToTextSize = (
+  size: ButtonSize
+): Exclude<TextSize, TextSize.ExtraLarge> => {
   const mapping: Record<ButtonSize, Exclude<TextSize, TextSize.ExtraLarge>> = {
     [ButtonSize.Small]: TextSize.Small,
     [ButtonSize.Medium]: TextSize.Medium,
@@ -43,43 +52,44 @@ const mapButtonSizeToIconSize = (size: ButtonSize): number =>
     [ButtonSize.Small]: 16,
     [ButtonSize.Medium]: 20,
     [ButtonSize.Large]: 24,
-  }[size]);
+  })[size];
 
 // Default button component
-export const ButtonComponent = ({ 
-  size = ButtonSize.Medium, 
-  children, 
-  className, 
-  leftIcon: LeftIcon, 
-  rightIcon: RightIcon, 
+export const ButtonComponent = ({
+  size = ButtonSize.Medium,
+  children,
+  className,
+  leftIcon: LeftIcon,
+  rightIcon: RightIcon,
   buttonColor = Color.Black,
   textColor = Color.White,
   iconColor = Color.White,
-  ...rest 
+  ...rest
 }: BasicButtonProps) => {
-
   // Set up press animation
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   // Get text style for button size
   const textSize = mapButtonSizeToTextSize(size);
   const buttonTextStyle = textStyles[TextVariant.Button][textSize];
-  
+
   // Set icon size based on button size
   const defaultIconSize = mapButtonSizeToIconSize(size);
-  
+
   // Set icon color or fallback to text color
   const finalIconColor = iconColor || textColor;
   const iconSettings = { size: defaultIconSize, color: finalIconColor };
 
   // Apply custom background color if provided
-  const buttonStyle = buttonColor ? { backgroundColor: buttonColor } : undefined;
+  const buttonStyle = buttonColor
+    ? { backgroundColor: buttonColor }
+    : undefined;
 
   // Apply text color to button text style
   const textStyleWithColor: RNTextStyle = {
     fontFamily: buttonTextStyle.fontFamily,
     fontSize: buttonTextStyle.fontSize,
-    fontWeight: String(buttonTextStyle.fontWeight) as RNTextStyle['fontWeight'],
+    fontWeight: String(buttonTextStyle.fontWeight) as RNTextStyle["fontWeight"],
     fontStyle: buttonTextStyle.fontStyle,
     color: textColor,
   };
@@ -109,14 +119,14 @@ export const ButtonComponent = ({
 
   // Button styling based on size using clsx
   const buttonClassName = clsx(
-    'justify-center items-center',
+    "justify-center items-center",
     {
       // Large: Full width with fixed height, centered content
-      'px-4 h-14 w-full gap-2': size === ButtonSize.Large,
+      "px-4 h-14 w-full gap-2": size === ButtonSize.Large,
       // Medium: Hug content with padding and spacing
-      'px-4 py-2 gap-2': size === ButtonSize.Medium,
+      "px-4 py-2 gap-2": size === ButtonSize.Medium,
       // Small: Hug content with small padding and spacing
-      'px-3 py-1.5 gap-1.5': size === ButtonSize.Small,
+      "px-3 py-1.5 gap-1.5": size === ButtonSize.Small,
     },
     className
   );
@@ -126,16 +136,16 @@ export const ButtonComponent = ({
     <>
       {/* Left icon */}
       {LeftIcon && <LeftIcon {...iconSettings} />}
-      
+
       {/* Button text */}
-      {typeof children === 'string' || typeof children === 'number' ? (
+      {typeof children === "string" || typeof children === "number" ? (
         <GlueStackButtonText style={textStyleWithColor}>
           {children}
         </GlueStackButtonText>
       ) : (
         children
       )}
-      
+
       {/* Right icon */}
       {RightIcon && <RightIcon {...iconSettings} />}
     </>
@@ -144,9 +154,9 @@ export const ButtonComponent = ({
   // Render animated button
   return (
     <Animated.View style={animatedStyle}>
-      <GlueStackButton 
-        {...rest} 
-        className={buttonClassName} 
+      <GlueStackButton
+        {...rest}
+        className={buttonClassName}
         style={buttonStyle}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
@@ -158,16 +168,19 @@ export const ButtonComponent = ({
 };
 
 // BackButton component props
-type BackButtonProps = Omit<BasicButtonProps, 'leftIcon' | 'buttonColor' | 'textColor' | 'iconColor' | 'size'> & {
+type BackButtonProps = Omit<
+  BasicButtonProps,
+  "leftIcon" | "buttonColor" | "textColor" | "iconColor" | "size"
+> & {
   children?: string;
   size?: ButtonSize.Small | ButtonSize.Medium;
 };
 
 // BackButton component
-const BackButton: React.FC<BackButtonProps> = ({ 
-  children = 'Back',
+const BackButton: React.FC<BackButtonProps> = ({
+  children = "Back",
   size = ButtonSize.Medium,
-  ...props 
+  ...props
 }) => {
   return (
     <ButtonComponent
@@ -176,7 +189,7 @@ const BackButton: React.FC<BackButtonProps> = ({
       buttonColor={Color.Green}
       textColor={Color.White}
       iconColor={Color.White}
-      className='rounded-xl shadow-sm'
+      className="rounded-xl shadow-sm"
       {...props}
     >
       {children}

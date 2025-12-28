@@ -11,9 +11,9 @@ export interface Task {
   created_date: string;
   modified_date: string | null;
   note: string | null;
-  set_alarm: boolean;  
+  set_alarm: boolean;
 
-  // appointment 
+  // appointment
   appointment_number: number;
 }
 
@@ -34,7 +34,7 @@ export interface CreateTaskInput {
   start_date?: string;
   note?: string;
   set_alarm?: boolean;
-    
+
   // appointment
   appointment_number: number;
 }
@@ -48,8 +48,8 @@ export interface UpdateTaskInput {
   end_date?: string;
   note?: string;
   set_alarm?: boolean;
-    
-  // appointment 
+
+  // appointment
   appointment_number: number;
-  user_id: string
+  user_id: string;
 }

@@ -1,9 +1,14 @@
-import ButtonComponent, { ButtonSize } from "@/components/basic/Button.component";
+import ButtonComponent, {
+  ButtonSize,
+} from "@/components/basic/Button.component";
 import TextComponent from "@/components/basic";
 import { Color, TextSize, TextVariant } from "@repo/config";
 import { useRef } from "react";
 import { Animated, Modal, Pressable, ScrollView, View } from "react-native";
-import { type AgendaReminderContent, type AgendaReminderData } from "./calendar.types";
+import {
+  type AgendaReminderContent,
+  type AgendaReminderData,
+} from "./calendar.types";
 
 interface AgendaReminderModalProps {
   visible: boolean;
@@ -39,7 +44,11 @@ function ReminderItem({ reminder, onPress }: ReminderItemProps) {
   };
 
   return (
-    <Pressable onPress={onPress} onPressIn={handlePressIn} onPressOut={handlePressOut}>
+    <Pressable
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+    >
       <Animated.View
         className="py-3 px-4 mb-2 bg-[#F8F9FA] rounded-lg border-l-4 border-mp-green"
         style={{ transform: [{ scale: scaleAnim }] }}
@@ -52,10 +61,7 @@ function ReminderItem({ reminder, onPress }: ReminderItemProps) {
           {reminder.startTime}
           {reminder.endTime && ` - ${reminder.endTime}`}
         </TextComponent>
-        <TextComponent
-          size={TextSize.Small}
-          variant={TextVariant.Title}
-        >
+        <TextComponent size={TextSize.Small} variant={TextVariant.Title}>
           {reminder.content.title}
         </TextComponent>
       </Animated.View>
