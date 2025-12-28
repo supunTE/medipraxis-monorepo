@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "Running build and lint checks before push..."
+
+yarn build
+if [ $? -ne 0 ]; then
+  echo "Build failed. Push aborted."
+  exit 1
+fi
+
+yarn lint
+if [ $? -ne 0 ]; then
+  echo "Lint failed. Push aborted."
+  exit 1
+fi
+
+echo "All checks passed. Proceeding with push..."
