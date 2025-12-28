@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "wrangler dev",
+    "build": "tsc --noEmit",
     "deploy": "wrangler deploy --minify",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
@@ -16,6 +17,7 @@
     "zod": "^4.2.1"
   },
   "devDependencies": {
+    "@repo/typescript-config": "*",
     "wrangler": "^4.4.0"
   },
   "private": true
