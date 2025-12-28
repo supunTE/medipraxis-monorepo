@@ -125,8 +125,8 @@ export function AgendaComponent({
               content={block.content}
               startTime={block.startTime}
               endTime={block.endTime}
-              bgColor={getColorByIndex(index).bg}
-              borderColor={getColorByIndex(index).border}
+              bgColor={getColorByIndex(index)?.bg}
+              borderColor={getColorByIndex(index)?.border}
               onPress={(appointment) => onAppointmentPress?.(appointment, null)}
             />
           ))}
@@ -148,7 +148,7 @@ export function AgendaComponent({
               content={
                 group.count > 1
                   ? { id: `group-${index}`, title: `${group.count} Tasks` }
-                  : group.reminders[0].content
+                  : (group.reminders[0]?.content ?? { id: "", title: "" })
               }
               startTime={group.startTime}
               endTime={group.endTime}
@@ -159,7 +159,10 @@ export function AgendaComponent({
                       setSelectedReminderGroup(group.reminders);
                       setReminderModalVisible(true);
                     }
-                  : () => onReminderPress?.(group.reminders[0].content)
+                  : () =>
+                      onReminderPress?.(
+                        group.reminders[0]?.content ?? { id: "", title: "" }
+                      )
               }
             />
           ))}

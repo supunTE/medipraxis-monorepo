@@ -54,12 +54,15 @@ const getFontFamily = (
 ): string => {
   const weightKey = Number(fontWeight);
   if (fontFamily === Font.Lato) {
+    // @ts-expect-error "font always exists in map"
     return LATO_FONT_MAP[weightKey] ?? LATO_FONT_MAP[FontWeight.Regular];
   }
   if (fontFamily === Font.DMsans) {
+    // @ts-expect-error "font always exists in map"
     return DMSANS_FONT_MAP[weightKey] ?? DMSANS_FONT_MAP[FontWeight.Regular];
   }
   // Default
+  // @ts-expect-error "font always exists in map"
   return LATO_FONT_MAP[FontWeight.Regular];
 };
 

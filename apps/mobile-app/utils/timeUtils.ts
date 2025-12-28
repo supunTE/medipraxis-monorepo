@@ -77,6 +77,10 @@ export function parseTimeToMinutes(timeString: string): number {
     const isPM = cleanTime.includes("pm");
     const timePart = cleanTime.replace(/am|pm/g, "").trim();
     const [hoursStr, minutesStr] = timePart.split(":");
+    if (!hoursStr) {
+      console.warn(`parseTimeToMinutes: invalid time format "${timeString}"`);
+      return 0;
+    }
     let hours = parseInt(hoursStr, 10);
     const minutes = parseInt(minutesStr || "0", 10);
 
@@ -91,6 +95,10 @@ export function parseTimeToMinutes(timeString: string): number {
   } else {
     // Parse 24-hour format
     const [hoursStr, minutesStr] = cleanTime.split(":");
+    if (!hoursStr) {
+      console.warn(`parseTimeToMinutes: invalid time format "${timeString}"`);
+      return 0;
+    }
     const hours = parseInt(hoursStr, 10);
     const minutes = parseInt(minutesStr || "0", 10);
     return timeToMinutes(hours, minutes);
@@ -156,16 +164,30 @@ export function groupReminders<
   reminders: T[];
   count: number;
 }> {
-  if (!reminders || reminders.length === 0) {
+  if (!Array.isArray(reminders) || reminders.length === 0) {
+    return [];
+  }
+
+  // Filter out reminders with invalid or missing startTime
+  const validReminders = reminders.filter((r) => {
+    if (!r.startTime) return false;
+    const mins = parseTimeToMinutes(r.startTime);
+    return !isNaN(mins) && mins >= 0 && mins < 24 * 60;
+  });
+  if (validReminders.length === 0) {
     return [];
   }
 
   // Sort reminders by start time
-  const sorted = [...reminders].sort((a, b) => {
+  const sorted = [...validReminders].sort((a, b) => {
     const aMinutes = parseTimeToMinutes(a.startTime);
     const bMinutes = parseTimeToMinutes(b.startTime);
     return aMinutes - bMinutes;
   });
+
+  if (sorted.length === 0) {
+    return [];
+  }
 
   const groups: Array<{
     startTime: string;
@@ -174,14 +196,23 @@ export function groupReminders<
     count: number;
   }> = [];
 
-  let currentGroup: T[] = [sorted[0]];
-  let groupStartMinutes = parseTimeToMinutes(sorted[0].startTime);
-  let groupEndMinutes = sorted[0].endTime
-    ? parseTimeToMinutes(sorted[0].endTime)
-    : groupStartMinutes + defaultDurationMinutes;
+  // Initialize the first group safely
+  let currentGroup: T[] = [];
+  let groupStartMinutes = 0;
+  let groupEndMinutes = 0;
+
+  const first = sorted[0];
+  if (first && first.startTime) {
+    currentGroup = [first];
+    groupStartMinutes = parseTimeToMinutes(first.startTime);
+    groupEndMinutes = first.endTime
+      ? parseTimeToMinutes(first.endTime)
+      : groupStartMinutes + defaultDurationMinutes;
+  }
 
   for (let i = 1; i < sorted.length; i++) {
     const reminder = sorted[i];
+    if (!reminder || !reminder.startTime) continue;
     const reminderStartMinutes = parseTimeToMinutes(reminder.startTime);
     const reminderEndMinutes = reminder.endTime
       ? parseTimeToMinutes(reminder.endTime)
@@ -212,13 +243,15 @@ export function groupReminders<
     }
   }
 
-  // Add the last group
-  groups.push({
-    startTime: formatTimeFromMinutes(groupStartMinutes),
-    endTime: formatTimeFromMinutes(groupEndMinutes),
-    reminders: currentGroup,
-    count: currentGroup.length,
-  });
+  // Add the last group if not empty
+  if (currentGroup.length > 0) {
+    groups.push({
+      startTime: formatTimeFromMinutes(groupStartMinutes),
+      endTime: formatTimeFromMinutes(groupEndMinutes),
+      reminders: currentGroup,
+      count: currentGroup.length,
+    });
+  }
 
   return groups;
 }
