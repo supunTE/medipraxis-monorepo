@@ -22,7 +22,7 @@ import {
   CalendarProvider,
   WeekCalendar,
 } from "react-native-calendars";
-import { Theme } from "react-native-calendars/src/types";
+import { type Theme } from "react-native-calendars/src/types";
 import { AgendaComponent } from "./Agenda.component";
 import type {
   AgendaBlockContent,

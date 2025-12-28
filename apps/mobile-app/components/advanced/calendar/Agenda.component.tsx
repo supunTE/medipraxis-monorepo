@@ -4,8 +4,8 @@ import { Color, TextSize, TextVariant } from "@repo/config";
 import clsx from "clsx";
 import React, { useMemo, useState } from "react";
 import {
-  NativeScrollEvent,
-  NativeSyntheticEvent,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
   ScrollView,
   View,
 } from "react-native";

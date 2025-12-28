@@ -11,7 +11,7 @@ import {
   HOUR_HEIGHT,
   MIN_SLOT_DURATION_MINUTES,
 } from "./calendar.constants";
-import { AgendaBlockContent } from "./calendar.types";
+import { type AgendaBlockContent } from "./calendar.types";
 
 interface AgendaTimeBlockGroupProps {
   groupId: string;
