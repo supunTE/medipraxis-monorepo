@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "main": "src/index.ts",
+  "type": "module",
   "scripts": {
     "build": "tsc --noEmit",
     "lint": "eslint ."
