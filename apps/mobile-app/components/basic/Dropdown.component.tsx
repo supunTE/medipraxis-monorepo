@@ -1,17 +1,16 @@
-import { Icons } from '@/config';
-import { Color, Font, TextSize, TextVariant, textStyles } from '@repo/config';
-import React, { useEffect, useRef, useState } from 'react';
+import { Icons } from "@/config";
+import { Color, Font, TextSize, TextVariant, textStyles } from "@repo/config";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
   Modal,
   Pressable,
   TextStyle as RNTextStyle,
   ScrollView,
-  StyleSheet,
   Text,
   View,
-} from 'react-native';
-import { z } from 'zod';
+} from "react-native";
+import { z } from "zod";
 
 // Option type for dropdown items
 export interface DropdownOption {
@@ -72,18 +71,20 @@ const DropdownPortal: React.FC<DropdownPortalProps> = ({
 
   React.useEffect(() => {
     if (isOpen && triggerRef.current) {
-      triggerRef.current.measureInWindow((x: number, y: number, width: number, height: number) => {
-        const screenHeight = Dimensions.get("window").height;
-        const dropdownMaxHeight = 300;
-        const spaceBelow = screenHeight - (y + height);
-        const spaceAbove = y;
+      triggerRef.current.measureInWindow(
+        (x: number, y: number, width: number, height: number) => {
+          const screenHeight = Dimensions.get("window").height;
+          const dropdownMaxHeight = 300;
+          const spaceBelow = screenHeight - (y + height);
+          const spaceAbove = y;
 
-        const shouldOpenUpwards =
-          spaceBelow < dropdownMaxHeight && spaceAbove > spaceBelow;
+          const shouldOpenUpwards =
+            spaceBelow < dropdownMaxHeight && spaceAbove > spaceBelow;
 
-        setTriggerLayout({ x, y, width, height });
-        setOpenUpwards(shouldOpenUpwards);
-      });
+          setTriggerLayout({ x, y, width, height });
+          setOpenUpwards(shouldOpenUpwards);
+        }
+      );
     }
   }, [isOpen, triggerRef]);
 
@@ -110,10 +111,20 @@ const DropdownPortal: React.FC<DropdownPortalProps> = ({
 
   return (
     <Modal transparent visible={isOpen} animationType="none">
-      <Pressable style={styles.backdrop} onPress={onClose} />
+      <Pressable className="flex-1 bg-black/10" onPress={onClose} />
       {triggerLayout && (
         <Pressable
-          style={[styles.dropdownContent, getDropdownPosition()]}
+          className="absolute bg-white rounded-xl shadow-sm max-h-[300px] overflow-hidden"
+          style={[
+            getDropdownPosition(),
+            {
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.1,
+              shadowRadius: 2,
+              elevation: 2,
+            },
+          ]}
           onPress={(e) => e.stopPropagation()}
         >
           {children}
@@ -127,9 +138,9 @@ const DropdownContent: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   return (
-    <View style={styles.contentWrapper}>
+    <View className="flex-1">
       <ScrollView
-        style={styles.scrollView}
+        className="max-h-[300px]"
         showsVerticalScrollIndicator={false}
         nestedScrollEnabled
       >
@@ -144,7 +155,7 @@ const DropdownComponent: React.FC<DropdownProps> = ({
   value,
   onValueChange,
   options,
-  placeholder = 'Select an option',
+  placeholder = "Select an option",
   label,
   isDisabled = false,
   isInvalid = false,
@@ -176,7 +187,7 @@ const DropdownComponent: React.FC<DropdownProps> = ({
       return;
     }
 
-    if (!validateOnChange && value === '') {
+    if (!validateOnChange && value === "") {
       setValidationError(null);
       setIsValid(false);
       return;
@@ -189,8 +200,8 @@ const DropdownComponent: React.FC<DropdownProps> = ({
       setIsValid(true);
     } else {
       setIsValid(false);
-      if (value !== '') {
-        const zodError = result.error.issues[0]?.message || 'Invalid selection';
+      if (value !== "") {
+        const zodError = result.error.issues[0]?.message || "Invalid selection";
         setValidationError(zodError);
       } else {
         setValidationError(null);
@@ -202,7 +213,7 @@ const DropdownComponent: React.FC<DropdownProps> = ({
   const getBorderColor = () => {
     if (isInvalid || validationError) return Color.Danger;
     if (showWarning) return Color.Warnning;
-    if (isValid && value !== '') return Color.Success;
+    if (isValid && value !== "") return Color.Success;
     return borderColor;
   };
 
@@ -237,18 +248,20 @@ const DropdownComponent: React.FC<DropdownProps> = ({
   };
 
   return (
-    <View style={{ width: '100%' }}>
+    <View className="w-full">
       {label && (
         <Text
+          className="mb-2"
           style={{
-            marginBottom: 8,
             color: labelColor,
             fontFamily:
               textBodyLargeStyle.fontFamily === Font.DMsans
-                ? 'DMSans_400Regular'
-                : 'Lato_400Regular',
+                ? "DMSans_400Regular"
+                : "Lato_400Regular",
             fontSize: textBodyLargeStyle.fontSize,
-            fontWeight: String(textBodyLargeStyle.fontWeight) as RNTextStyle['fontWeight'],
+            fontWeight: String(
+              textBodyLargeStyle.fontWeight
+            ) as RNTextStyle["fontWeight"],
           }}
         >
           {label}
@@ -258,30 +271,25 @@ const DropdownComponent: React.FC<DropdownProps> = ({
       <Pressable
         ref={triggerRef}
         onPress={() => !isDisabled && !isReadOnly && setIsOpen(!isOpen)}
+        className="border rounded-lg w-full h-[50px] flex-row items-center justify-between px-4"
         style={{
           borderColor: getBorderColor(),
-          borderWidth: 1,
-          borderRadius: 8,
-          width: '100%',
-          height: 50,
           backgroundColor: isReadOnly ? Color.LightGrey : Color.White,
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingHorizontal: 16,
           opacity: isDisabled ? 0.5 : 1,
         }}
       >
         <Text
+          className="flex-1"
           style={{
             color: value ? textColor : placeholderColor,
-            flex: 1,
             fontFamily:
               textBodyLargeStyle.fontFamily === Font.DMsans
-                ? 'DMSans_400Regular'
-                : 'Lato_400Regular',
+                ? "DMSans_400Regular"
+                : "Lato_400Regular",
             fontSize: textBodyLargeStyle.fontSize,
-            fontWeight: String(textBodyLargeStyle.fontWeight) as RNTextStyle['fontWeight'],
+            fontWeight: String(
+              textBodyLargeStyle.fontWeight
+            ) as RNTextStyle["fontWeight"],
           }}
         >
           {displayValue}
@@ -295,28 +303,28 @@ const DropdownComponent: React.FC<DropdownProps> = ({
         triggerRef={triggerRef}
       >
         <DropdownContent>
-          <View style={styles.dropdownContentWrapper}>
+          <View className="bg-white">
             {options.map((option) => (
               <Pressable
                 key={option.value}
                 onPress={() => handleSelect(option.value)}
-                style={[
-                  styles.dropdownItem,
-                  value === option.value && styles.dropdownItemSelected,
-                ]}
+                className={`py-3 px-4 border-b border-gray-100 ${
+                  value === option.value ? "bg-gray-100" : ""
+                }`}
               >
                 <Text
-                  style={[
-                    styles.dropdownItemText,
-                    {
-                      fontFamily:
-                        textBodyLargeStyle.fontFamily === Font.DMsans
-                          ? 'DMSans_400Regular'
-                          : 'Lato_400Regular',
-                      fontSize: textBodyLargeStyle.fontSize,
-                    },
-                    value === option.value && styles.dropdownItemTextSelected,
-                  ]}
+                  className={
+                    value === option.value
+                      ? "font-semibold text-gray-900"
+                      : "text-gray-700"
+                  }
+                  style={{
+                    fontFamily:
+                      textBodyLargeStyle.fontFamily === Font.DMsans
+                        ? "DMSans_400Regular"
+                        : "Lato_400Regular",
+                    fontSize: textBodyLargeStyle.fontSize,
+                  }}
                 >
                   {option.label}
                 </Text>
@@ -328,16 +336,17 @@ const DropdownComponent: React.FC<DropdownProps> = ({
 
       {message && (
         <Text
+          className="mt-1 ml-1"
           style={{
-            marginTop: 4,
-            marginLeft: 4,
             color: messageColor,
             fontFamily:
               textBodySmallStyle.fontFamily === Font.DMsans
-                ? 'DMSans_400Regular'
-                : 'Lato_400Regular',
+                ? "DMSans_400Regular"
+                : "Lato_400Regular",
             fontSize: textBodySmallStyle.fontSize,
-            fontWeight: String(textBodySmallStyle.fontWeight) as RNTextStyle['fontWeight'],
+            fontWeight: String(
+              textBodySmallStyle.fontWeight
+            ) as RNTextStyle["fontWeight"],
           }}
         >
           {message}
@@ -346,54 +355,6 @@ const DropdownComponent: React.FC<DropdownProps> = ({
     </View>
   );
 };
-
-// Styles for dropdown
-const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.1)",
-  },
-  dropdownContent: {
-    position: "absolute",
-    backgroundColor: "white",
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-    maxHeight: 300,
-    overflow: "hidden",
-  },
-  contentWrapper: {
-    flex: 1,
-  },
-  scrollView: {
-    maxHeight: 300,
-  },
-  dropdownContentWrapper: {
-    backgroundColor: 'white',
-  },
-  dropdownItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
-  },
-  dropdownItemSelected: {
-    backgroundColor: '#F3F4F6',
-  },
-  dropdownItemText: {
-    color: '#374151',
-  },
-  dropdownItemTextSelected: {
-    fontWeight: '600',
-    color: '#111827',
-  },
-});
 
 // Export
 export { DropdownComponent };
