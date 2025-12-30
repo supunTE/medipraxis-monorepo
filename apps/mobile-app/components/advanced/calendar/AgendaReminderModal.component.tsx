@@ -1,7 +1,4 @@
-import ButtonComponent, {
-  ButtonSize,
-} from "@/components/basic/Button.component";
-import { TextComponent } from "@/components/basic";
+import { ButtonComponent, ButtonSize, TextComponent } from "@/components/basic";
 import { Color, TextSize, TextVariant } from "@repo/config";
 import { useRef } from "react";
 import { Animated, Modal, Pressable, ScrollView, View } from "react-native";
