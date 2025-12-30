@@ -1,4 +1,6 @@
-import ButtonComponent, { ButtonSize } from "@/components/basic/Button.component";
+import ButtonComponent, {
+  ButtonSize,
+} from "@/components/basic/Button.component";
 import TextComponent from "@/components/basic";
 import {
   formatDuration,
@@ -9,7 +11,7 @@ import { Color, TextSize, TextVariant } from "@repo/config";
 import clsx from "clsx";
 import { useRef } from "react";
 import { Animated, Modal, Pressable, ScrollView, View } from "react-native";
-import { AgendaBlockContent } from "./calendar.types";
+import { type AgendaBlockContent } from "./calendar.types";
 
 interface AgendaBlockModalProps {
   visible: boolean;
@@ -62,7 +64,11 @@ function SlotItem({
   };
 
   return (
-    <Pressable onPress={onPress} onPressIn={handlePressIn} onPressOut={handlePressOut}>
+    <Pressable
+      onPress={onPress}
+      onPressIn={handlePressIn}
+      onPressOut={handlePressOut}
+    >
       <Animated.View
         className={clsx("py-3 px-4 mb-2 rounded-lg", {
           "bg-[#F8F9FA] border-l-4 border-mp-green": content,
@@ -81,11 +87,17 @@ function SlotItem({
             </TextComponent>
             {content ? (
               <>
-                <TextComponent size={TextSize.Small} variant={TextVariant.Title}>
+                <TextComponent
+                  size={TextSize.Small}
+                  variant={TextVariant.Title}
+                >
                   {content.title}
                 </TextComponent>
                 {content.client && (
-                  <TextComponent size={TextSize.Small} variant={TextVariant.Body}>
+                  <TextComponent
+                    size={TextSize.Small}
+                    variant={TextVariant.Body}
+                  >
                     Client: {content.client}
                   </TextComponent>
                 )}

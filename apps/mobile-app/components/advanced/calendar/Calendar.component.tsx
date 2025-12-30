@@ -22,7 +22,7 @@ import {
   CalendarProvider,
   WeekCalendar,
 } from "react-native-calendars";
-import { Theme } from "react-native-calendars/src/types";
+import { type Theme } from "react-native-calendars/src/types";
 import { AgendaComponent } from "./Agenda.component";
 import type {
   AgendaBlockContent,
@@ -134,7 +134,7 @@ export function CalendarComponent({
   const [isExpanded, setIsExpanded] = useState(false);
   // Controls which calendar component renders - switches with animation timing
   const [showFullCalendar, setShowFullCalendar] = useState(false);
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toISOString().split("T")[0] || "";
   const selected = selectedDate || today;
 
   const [fontsLoaded] = useFonts({

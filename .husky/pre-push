@@ -1,0 +1,24 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "Running format, build, and lint checks before push..."
+
+yarn format:check
+if [ $? -ne 0 ]; then
+  echo "Format check failed. Please run 'yarn format' to fix formatting issues."
+  exit 1
+fi
+
+yarn build
+if [ $? -ne 0 ]; then
+  echo "Build failed. Push aborted."
+  exit 1
+fi
+
+yarn lint
+if [ $? -ne 0 ]; then
+  echo "Lint failed. Push aborted."
+  exit 1
+fi
+
+echo "All checks passed. Proceeding with push..."
