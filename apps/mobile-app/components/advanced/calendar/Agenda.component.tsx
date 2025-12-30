@@ -1,4 +1,4 @@
-import {TextComponent} from "@/components/basic";
+import { TextComponent } from "@/components/basic";
 import { groupReminders } from "@/utils";
 import { Color, TextSize, TextVariant } from "@repo/config";
 import clsx from "clsx";

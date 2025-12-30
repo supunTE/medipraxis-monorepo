@@ -1,16 +1,24 @@
 import { Input, InputField, InputSlot } from "@/components/ui/input";
 import { Icons } from "@/config";
-import {
-  Color,
-  Font,
-  KeyboardInputType,
-  TextSize,
-  TextVariant,
-  textStyles,
-} from "@repo/config";
+import { Color, Font, TextSize, TextVariant, textStyles } from "@repo/config";
 import React, { useEffect, useState } from "react";
-import { Pressable, TextStyle as RNTextStyle, Text, View } from "react-native";
+import {
+  KeyboardType,
+  Pressable,
+  TextStyle as RNTextStyle,
+  Text,
+  View,
+} from "react-native";
 import { z } from "zod";
+
+export enum TextInputType {
+  Text = "text",
+  Password = "password",
+  Number = "number",
+  Decimal = "decimal",
+  Email = "email",
+  Phone = "phone",
+}
 
 // Props for the TextInput component
 interface TextInputProps {
@@ -20,7 +28,7 @@ interface TextInputProps {
   >;
   inputField?: Omit<React.ComponentPropsWithoutRef<typeof InputField>, "style">;
   label?: string;
-  inputType?: KeyboardInputType;
+  inputType?: TextInputType;
   validationSchema?: z.ZodString;
   helperText?: string;
   hideHelperText?: boolean;
@@ -46,7 +54,7 @@ interface TextInputComponentType extends React.FC<TextInputProps> {
 }
 
 // Map inputType to React Native keyboardType
-const getKeyboardType = (type?: string) => {
+const getKeyboardType = (type?: TextInputType): KeyboardType => {
   switch (type) {
     case "number":
       return "number-pad";
@@ -67,11 +75,11 @@ const textSmallStyle = textStyles[TextVariant.Body][TextSize.Small];
 const buttonLargeStyle = textStyles[TextVariant.Button][TextSize.Large];
 
 // Default TextInput component
-const TextInputBase: React.FC<TextInputProps> = ({
+export const TextInput: React.FC<TextInputProps> = ({
   inputWrapper = {},
   inputField = {},
   label,
-  inputType = "text",
+  inputType = TextInputType.Text,
   validationSchema,
   helperText,
   hideHelperText = false,
@@ -93,7 +101,7 @@ const TextInputBase: React.FC<TextInputProps> = ({
     ...restInputField
   } = inputField;
 
-  const shouldShowToggle = inputType === "password";
+  const shouldShowToggle = inputType === TextInputType.Password;
   const isSecureEntry = shouldShowToggle && !isPasswordVisible;
 
   // Validate input - automatically gets error message from Zod schema
@@ -354,6 +362,6 @@ const OTPField: React.FC<OTPInputFieldProps> = ({
 };
 
 // Combine the components
-export const TextInputComponent = Object.assign(TextInputBase, {
+export const TextInputComponent = Object.assign(TextInput, {
   OTPField: OTPField,
 }) as TextInputComponentType;

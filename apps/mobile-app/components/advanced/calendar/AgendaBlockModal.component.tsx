@@ -1,7 +1,4 @@
-import ButtonComponent, {
-  ButtonSize,
-} from "@/components/basic/Button.component";
-import {TextComponent} from "@/components/basic";
+import { ButtonComponent, ButtonSize, TextComponent } from "@/components/basic";
 import {
   formatDuration,
   getSlotTimeFromMinutes,

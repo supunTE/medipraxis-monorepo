@@ -30,16 +30,7 @@ export enum Color {
   LightGrey = "#D3D3D3", // For borders
   Danger = "#FF5757",
   Success = "#44B619",
-  Warnning = "#FFA500",
-}
-
-export enum KeyboardInputType {
-  Text = "text",
-  Number = "number",
-  Decimal = "decimal",
-  Email = "email",
-  Phone = "phone",
-  Password = "password",
+  Warning = "#FFA500",
 }
 
 // Variant and Size enums

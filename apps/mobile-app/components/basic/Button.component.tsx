@@ -55,7 +55,7 @@ const mapButtonSizeToIconSize = (size: ButtonSize): number =>
   })[size];
 
 // Default button component
-export const ButtonComponent = ({
+const ButtonComponent = ({
   size = ButtonSize.Medium,
   children,
   className,
@@ -200,4 +200,4 @@ const BackButton: React.FC<BackButtonProps> = ({
 // Attach BackButton as a static property
 ButtonComponent.BackButton = BackButton;
 
-export default ButtonComponent;
+export { ButtonComponent };

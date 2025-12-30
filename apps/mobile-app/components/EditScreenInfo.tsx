@@ -4,7 +4,7 @@ import { StyleSheet } from "react-native";
 import { TextSize, TextVariant } from "@repo/config";
 import { ExternalLink } from "./ExternalLink";
 import { Text, View } from "./Themed";
-import {TextComponent} from "./basic/Text.component";
+import { TextComponent } from "./basic/Text.component";
 
 import Colors from "@/constants/Colors";
 

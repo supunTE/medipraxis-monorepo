@@ -72,7 +72,6 @@ const usernameSchema = z
     value: username,
     onChangeText: setUsername,
     placeholder: "Enter username",
-    placeholderTextColor: Color.Grey,
     }}
     label="Username"
     inputType={KeyboardInputType.Text}
@@ -89,7 +88,6 @@ const usernameSchema = z
     value: password,
     onChangeText: setPassword,
     placeholder: "Enter password",
-    placeholderTextColor: Color.Grey,
     }}
     label="Password"
     inputType={KeyboardInputType.Password}
