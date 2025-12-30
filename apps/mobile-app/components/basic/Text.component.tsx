@@ -2,14 +2,14 @@ import {
   Color,
   Font,
   FontWeight,
-  TextSize,
-  TextStyle,
+  type TextSize,
+  type TextStyle,
   textStyles,
-  TextVariant,
+  type TextVariant,
 } from "@repo/config";
 import {
   Text as RNText,
-  TextProps as RNTextProps,
+  type TextProps as RNTextProps,
   StyleSheet,
 } from "react-native";
 
@@ -54,12 +54,15 @@ const getFontFamily = (
 ): string => {
   const weightKey = Number(fontWeight);
   if (fontFamily === Font.Lato) {
+    // @ts-expect-error "font always exists in map"
     return LATO_FONT_MAP[weightKey] ?? LATO_FONT_MAP[FontWeight.Regular];
   }
   if (fontFamily === Font.DMsans) {
+    // @ts-expect-error "font always exists in map"
     return DMSANS_FONT_MAP[weightKey] ?? DMSANS_FONT_MAP[FontWeight.Regular];
   }
   // Default
+  // @ts-expect-error "font always exists in map"
   return LATO_FONT_MAP[FontWeight.Regular];
 };
 
@@ -96,7 +99,7 @@ export default function TextComponent<T extends TextVariant = TextVariant>({
       : undefined;
   };
 
-  const textStyle = getTextStyle(category as TextVariant, size as TextSize);
+  const textStyle = getTextStyle(category, size);
 
   if (!textStyle) {
     console.warn(`Invalid category "${category}" or size "${size}"`);

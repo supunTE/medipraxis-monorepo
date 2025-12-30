@@ -3,8 +3,8 @@ import { Alert, StyleSheet } from "react-native";
 
 import { View } from "@/components/Themed";
 import {
-  AgendaData,
-  AgendaSelection,
+  type AgendaData,
+  type AgendaSelection,
   AgendaSelectionType,
   CalendarComponent,
 } from "@/components/advanced";

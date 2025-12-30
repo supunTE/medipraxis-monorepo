@@ -4,7 +4,7 @@ import { TextSize, TextVariant } from "@repo/config";
 import { useRef } from "react";
 import { Animated, Pressable, useWindowDimensions } from "react-native";
 import { HOUR_HEIGHT } from "./calendar.constants";
-import { AgendaBlockContent } from "./calendar.types";
+import { type AgendaBlockContent } from "./calendar.types";
 
 interface AgendaTimeBlockProps {
   content: AgendaBlockContent;

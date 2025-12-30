@@ -1,0 +1,21 @@
+{
+  "name": "@repo/ai-lib",
+  "version": "0.0.0",
+  "private": true,
+  "main": "src/index.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*",
+    "eslint": "^9.18.0",
+    "typescript": "5.9.2"
+  },
+  "dependencies": {
+    "@ai-sdk/google": "^2.0.49",
+    "ai": "^5.0.115"
+  }
+}
