@@ -1,4 +1,4 @@
-import {TextComponent} from "@/components/basic";
+import { TextComponent } from "@/components/basic";
 import { parseTimeToMinutes } from "@/utils";
 import { TextSize, TextVariant } from "@repo/config";
 import { useRef } from "react";

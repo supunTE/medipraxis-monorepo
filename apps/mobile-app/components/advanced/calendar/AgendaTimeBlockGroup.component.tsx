@@ -1,4 +1,4 @@
-import {TextComponent} from "@/components/basic";
+import { TextComponent } from "@/components/basic";
 import { timeToDecimalHour } from "@/utils";
 import { Color, TextSize, TextVariant } from "@repo/config";
 import clsx from "clsx";
