@@ -8,9 +8,10 @@ import {
   ButtonSize,
   TextComponent,
   TextInputComponent,
+  TextInputType,
 } from "@/components/basic";
 import { Icons } from "@/config";
-import { Color, KeyboardInputType, TextSize, TextVariant } from "@repo/config";
+import { Color, TextSize, TextVariant } from "@repo/config";
 import { z } from "zod";
 
 export default function TabTwoScreen() {
@@ -54,10 +55,9 @@ export default function TabTwoScreen() {
             value: username,
             onChangeText: setUsername,
             placeholder: "Enter username",
-            placeholderTextColor: Color.Grey,
           }}
           label="Username"
-          inputType={KeyboardInputType.Text}
+          inputType={TextInputType.Text}
           validationSchema={usernameSchema}
           helperText="Username must be 3-20 characters"
           validateOnChange={true}
@@ -70,10 +70,9 @@ export default function TabTwoScreen() {
             value: password,
             onChangeText: setPassword,
             placeholder: "Enter password",
-            placeholderTextColor: Color.Grey,
           }}
           label="Password"
-          inputType={KeyboardInputType.Password}
+          inputType={TextInputType.Password}
           validationSchema={passwordSchema}
           helperText="Password must be at least 8 characters with uppercase, lowercase, and number"
           validateOnChange={true}
