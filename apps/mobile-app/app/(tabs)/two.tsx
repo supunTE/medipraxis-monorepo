@@ -112,8 +112,7 @@ export default function TabTwoScreen() {
             label="Country"
             placeholder="Select a country"
             validationSchema={requiredSchema}
-            helperText="Please select your country"
-            showValidation={true}
+            validateOnChange={true}
           />
         </View>
         <TextInputComponent

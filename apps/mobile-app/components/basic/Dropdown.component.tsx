@@ -1,16 +1,16 @@
 import { Icons } from "@/config";
 import { Color, Font, TextSize, TextVariant, textStyles } from "@repo/config";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
   Modal,
   Pressable,
-  TextStyle as RNTextStyle,
+  type TextStyle as RNTextStyle,
   ScrollView,
   Text,
   View,
 } from "react-native";
-import { z } from "zod";
+import { type z } from "zod";
 
 // Option type for dropdown items
 export interface DropdownOption {
@@ -25,22 +25,9 @@ interface DropdownProps {
   options: DropdownOption[];
   placeholder?: string;
   label?: string;
-  isDisabled?: boolean;
   isInvalid?: boolean;
-  isReadOnly?: boolean;
-  borderColor?: Color;
-  textColor?: Color;
-  placeholderColor?: Color;
-  labelColor?: Color;
   validationSchema?: z.ZodString;
-  helperText?: string;
-  helperTextColor?: Color;
-  errorTextColor?: Color;
-  successTextColor?: Color;
-  warningTextColor?: Color;
-  showValidation?: boolean;
   validateOnChange?: boolean;
-  showWarning?: boolean;
 }
 
 // Text styles
@@ -69,7 +56,7 @@ const DropdownPortal: React.FC<DropdownPortalProps> = ({
   } | null>(null);
   const [openUpwards, setOpenUpwards] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isOpen && triggerRef.current) {
       triggerRef.current.measureInWindow(
         (x: number, y: number, width: number, height: number) => {
@@ -157,22 +144,9 @@ const DropdownComponent: React.FC<DropdownProps> = ({
   options,
   placeholder = "Select an option",
   label,
-  isDisabled = false,
   isInvalid = false,
-  isReadOnly = false,
-  borderColor = Color.LightGrey,
-  textColor = Color.Black,
-  placeholderColor = Color.Grey,
-  labelColor = Color.Black,
   validationSchema,
-  helperText,
-  helperTextColor = Color.Grey,
-  errorTextColor = Color.Danger,
-  successTextColor = Color.Success,
-  warningTextColor = Color.Warning,
-  showValidation = true,
   validateOnChange = true,
-  showWarning = false,
 }) => {
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isValid, setIsValid] = useState(false);
@@ -181,7 +155,7 @@ const DropdownComponent: React.FC<DropdownProps> = ({
 
   // Validate input
   useEffect(() => {
-    if (!validationSchema || !showValidation) {
+    if (!validationSchema) {
       setValidationError(null);
       setIsValid(false);
       return;
@@ -207,35 +181,18 @@ const DropdownComponent: React.FC<DropdownProps> = ({
         setValidationError(null);
       }
     }
-  }, [value, validationSchema, showValidation, validateOnChange]);
+  }, [value, validationSchema, validateOnChange]);
 
   // Determine border color based on validation
   const getBorderColor = () => {
     if (isInvalid || validationError) return Color.Danger;
-    if (showWarning) return Color.Warning;
     if (isValid && value !== "") return Color.Success;
-    return borderColor;
+    return Color.LightGrey;
   };
 
-  // Determine message to display
-  const getMessage = () => {
-    if (validationError) return validationError;
-    if (showWarning) return helperText || null;
-    if (isValid) return helperText || null;
-    if (helperText && !validationError && !isValid) return helperText;
-    return null;
-  };
-
-  // Determine message color
-  const getMessageColor = () => {
-    if (validationError) return errorTextColor;
-    if (showWarning) return warningTextColor;
-    if (isValid) return successTextColor;
-    return helperTextColor;
-  };
-
-  const message = getMessage();
-  const messageColor = getMessageColor();
+  // Determine message to display and color
+  const message = validationError;
+  const messageColor = Color.Danger;
 
   // Get selected option label
   const selectedOption = options.find((opt) => opt.value === value);
@@ -253,7 +210,7 @@ const DropdownComponent: React.FC<DropdownProps> = ({
         <Text
           className="mb-2"
           style={{
-            color: labelColor,
+            color: Color.Black,
             fontFamily:
               textBodyLargeStyle.fontFamily === Font.DMsans
                 ? "DMSans_400Regular"
@@ -270,18 +227,17 @@ const DropdownComponent: React.FC<DropdownProps> = ({
 
       <Pressable
         ref={triggerRef}
-        onPress={() => !isDisabled && !isReadOnly && setIsOpen(!isOpen)}
+        onPress={() => setIsOpen(!isOpen)}
         className="border rounded-lg w-full h-[50px] flex-row items-center justify-between px-4"
         style={{
           borderColor: getBorderColor(),
-          backgroundColor: isReadOnly ? Color.LightGrey : Color.White,
-          opacity: isDisabled ? 0.5 : 1,
+          backgroundColor: Color.White,
         }}
       >
         <Text
           className="flex-1"
           style={{
-            color: value ? textColor : placeholderColor,
+            color: value ? Color.Black : Color.Grey,
             fontFamily:
               textBodyLargeStyle.fontFamily === Font.DMsans
                 ? "DMSans_400Regular"

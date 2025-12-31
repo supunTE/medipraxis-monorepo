@@ -160,7 +160,6 @@ const countryOptions = [
     label="Country"
     placeholder="Select a country"
     validationSchema={requiredSchema}
-    helperText="Please select your country"
-    showValidation={true}
+    validateOnChange={true}
 />
 ```
