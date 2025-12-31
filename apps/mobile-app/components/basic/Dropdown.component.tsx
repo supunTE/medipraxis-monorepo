@@ -39,15 +39,15 @@ interface DropdownPortalProps {
   isOpen: boolean;
   onClose: () => void;
   children: React.ReactNode;
-  triggerRef: React.RefObject<any>;
+  triggerRef: React.RefObject<View | null>;
 }
 
-const DropdownPortal: React.FC<DropdownPortalProps> = ({
+const DropdownPortal = ({
   isOpen,
   onClose,
   children,
   triggerRef,
-}) => {
+}: DropdownPortalProps) => {
   const [triggerLayout, setTriggerLayout] = useState<{
     x: number;
     y: number;
@@ -121,9 +121,11 @@ const DropdownPortal: React.FC<DropdownPortalProps> = ({
   );
 };
 
-const DropdownContent: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+interface DropdownContentProps {
+  children: React.ReactNode;
+}
+
+const DropdownContent = ({ children }: DropdownContentProps) => {
   return (
     <View className="flex-1">
       <ScrollView
@@ -138,7 +140,7 @@ const DropdownContent: React.FC<{ children: React.ReactNode }> = ({
 };
 
 // Dropdown Component
-const DropdownComponent: React.FC<DropdownProps> = ({
+const DropdownComponent = ({
   value,
   onValueChange,
   options,
@@ -147,7 +149,7 @@ const DropdownComponent: React.FC<DropdownProps> = ({
   isInvalid = false,
   validationSchema,
   validateOnChange = true,
-}) => {
+}: DropdownProps) => {
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isValid, setIsValid] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
