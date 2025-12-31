@@ -11,6 +11,7 @@ import {
   TextInputComponent,
   TextInputType,
   ToggleButton,
+  ToggleSize,
 } from "@/components/basic";
 import { Icons } from "@/config";
 import { Color, TextSize, TextVariant } from "@repo/config";
@@ -118,13 +119,13 @@ export default function TabTwoScreen() {
             validateOnChange={true}
           />
           <ToggleButton
-            size="sm"
+            size={ToggleSize.Medium}
             label="Enable toggle"
             isActive={notificationsEnabled}
             onToggle={setNotificationsEnabled}
           />
           <ToggleButton
-            size="sm"
+            size={ToggleSize.Large}
             isActive={darkModeEnabled}
             onToggle={setDarkModeEnabled}
           />

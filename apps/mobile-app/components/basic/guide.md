@@ -144,14 +144,14 @@ const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 const [darkModeEnabled, setDarkModeEnabled] = useState(true);
 
 <ToggleButton
-    size="sm"
+    size={ToggleSize.Medium}
     label="Enable toggle"
     isActive={notificationsEnabled}
     onToggle={setNotificationsEnabled}
 />
 
 <ToggleButton
-    size="sm"
+    size={ToggleSize.Large}
     isActive={darkModeEnabled}
     onToggle={setDarkModeEnabled}
 />
