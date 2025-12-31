@@ -1,104 +1,133 @@
-import { Icons } from "@/config";
-import { Color, TextSize, TextVariant, textStyles } from "@repo/config";
-import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { TextComponent } from "@/components/basic";
+import { Icons, type IconName } from "@/config";
+import { Color, TextSize, TextVariant } from "@repo/config";
+import { type FC } from "react";
+import { View } from "react-native";
 
-export type IconComponent = (typeof Icons)[keyof typeof Icons];
-
-export enum IconSize {
-  Small = 12,
-  Medium = 14,
+export enum ChipVariant {
+  DarkGreen = "darkGreen",
+  TextGreen = "textGreen",
+  Green = "green",
+  LightGreen = "lightGreen",
+  LightCream = "lightCream",
+  White = "white",
+  Black = "black",
+  Grey = "grey",
+  LightGrey = "lightGrey",
+  Danger = "danger",
+  Success = "success",
+  Warning = "warning",
 }
+
+// Define the style type
+type ChipVariantStyle = {
+  backgroundColor: Color;
+  textColor: Color;
+};
+
+// Map ChipVariant to Color enum
+const variantColorMap: Record<ChipVariant, Color> = {
+  [ChipVariant.DarkGreen]: Color.DarkGreen,
+  [ChipVariant.TextGreen]: Color.TextGreen,
+  [ChipVariant.Green]: Color.Green,
+  [ChipVariant.LightGreen]: Color.LightGreen,
+  [ChipVariant.LightCream]: Color.LightCream,
+  [ChipVariant.White]: Color.White,
+  [ChipVariant.Black]: Color.Black,
+  [ChipVariant.Grey]: Color.Grey,
+  [ChipVariant.LightGrey]: Color.LightGrey,
+  [ChipVariant.Danger]: Color.Danger,
+  [ChipVariant.Success]: Color.Success,
+  [ChipVariant.Warning]: Color.Warning,
+};
+
+// Variants that should use black text
+const lightBackgroundVariants: ChipVariant[] = [
+  ChipVariant.LightGreen,
+  ChipVariant.LightCream,
+  ChipVariant.White,
+  ChipVariant.LightGrey,
+];
+
+// Determine text color based on background
+const getTextColor = (variant: ChipVariant): Color => {
+  return lightBackgroundVariants.includes(variant) ? Color.Black : Color.White;
+};
+
+// Generate chipVariantStyles
+const chipVariantStyles: Record<ChipVariant, ChipVariantStyle> = Object.keys(
+  variantColorMap
+).reduce(
+  (acc, key) => {
+    const variant = key as ChipVariant;
+    acc[variant] = {
+      backgroundColor: variantColorMap[variant],
+      textColor: getTextColor(variant),
+    };
+    return acc;
+  },
+  {} as Record<ChipVariant, ChipVariantStyle>
+);
 
 export interface ChipComponentProps {
   text: string;
-  backgroundColor?: Color;
-  textColor?: Color;
-  textSize?: Exclude<TextSize, TextSize.ExtraLarge>;
-  iconName?: IconComponent;
-  iconSize?: IconSize;
-  iconColor?: Color;
+  variant?: ChipVariant;
+  iconName?: IconName;
   iconPosition?: "left" | "right";
 }
 
-export const ChipComponent: React.FC<ChipComponentProps> = ({
+export const ChipComponent: FC<ChipComponentProps> = ({
   text,
-  backgroundColor = Color.Green,
-  textColor = Color.White,
-  textSize = TextSize.Medium,
+  variant = ChipVariant.Green,
   iconName,
-  iconSize = IconSize.Medium,
-  iconColor,
   iconPosition = "left",
 }) => {
-  // Get text style from the design system
-  const textStyle = textStyles[TextVariant.Body][textSize];
+  // Get colors based on variant
+  const { backgroundColor, textColor } = chipVariantStyles[variant];
 
-  // Use textColor as default iconColor if not specified
-  const finalIconColor = iconColor || textColor;
+  // Get icon component from Icons
+  const IconComponent = iconName ? Icons[iconName] : null;
 
-  // Icon component is now directly passed
-  const IconComponent = iconName;
+  // Icon size
+  const iconSize = 13;
 
-  //Add bold weight for medium size icon
-  const finalIconWeight = iconSize === IconSize.Medium ? "bold" : "regular";
+  // Use bold weight
+  const iconWeight = "bold";
 
   return (
     <View
-      style={[
-        styles.container,
-        {
-          backgroundColor,
-        },
-      ]}
+      className="flex-row items-center rounded-full px-3 py-1.5 self-start"
+      style={{ backgroundColor }}
     >
       {/* Render icon on the left if specified */}
       {IconComponent && iconPosition === "left" && (
-        <View style={styles.iconContainer}>
+        <View className="mx-1">
           <IconComponent
             size={iconSize}
-            color={finalIconColor}
-            weight={finalIconWeight}
+            color={textColor}
+            weight={iconWeight}
           />
         </View>
       )}
 
-      <Text
-        style={{
-          color: textColor,
-          fontFamily: textStyle.fontFamily,
-          fontSize: textStyle.fontSize,
-          fontWeight: String(textStyle.fontWeight) as any,
-          fontStyle: textStyle.fontStyle,
-        }}
+      <TextComponent
+        variant={TextVariant.Body}
+        size={TextSize.Small}
+        color={textColor}
       >
         {text}
-      </Text>
+      </TextComponent>
 
       {/* Render icon on the right if specified */}
       {IconComponent && iconPosition === "right" && (
-        <View style={styles.iconContainer}>
+        <View className="mx-1">
           <IconComponent
             size={iconSize}
-            color={finalIconColor}
-            weight={finalIconWeight}
+            color={textColor}
+            weight={iconWeight}
           />
         </View>
       )}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    alignSelf: "flex-start",
-  },
-  iconContainer: {
-    marginHorizontal: 4,
-  },
-});

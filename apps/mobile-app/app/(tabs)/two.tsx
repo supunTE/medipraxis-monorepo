@@ -7,8 +7,8 @@ import {
   ButtonComponent,
   ButtonSize,
   ChipComponent,
+  ChipVariant,
   DropdownComponent,
-  IconSize,
   TextComponent,
   TextInputComponent,
   TextInputType,
@@ -112,24 +112,23 @@ export default function TabTwoScreen() {
         <View>
           <ChipComponent
             text="Penicillin allergy"
-            backgroundColor={Color.Danger}
-            textColor={Color.White}
-            textSize={TextSize.Small}
-            iconName={Icons.Heart}
-            iconSize={IconSize.Small}
-            iconColor={Color.LightCream}
+            variant={ChipVariant.Danger}
+            iconName="Heart"
             iconPosition="left"
           />
           <ChipComponent
             text="Warning"
-            backgroundColor={Color.Warning}
-            textColor={Color.White}
-            textSize={TextSize.Medium}
-            iconName={Icons.Check}
-            iconSize={IconSize.Medium}
-            iconColor={Color.LightCream}
+            variant={ChipVariant.Warning}
+            iconName="Check"
             iconPosition="right"
           />
+          <ChipComponent
+            text="Success"
+            variant={ChipVariant.Success}
+            iconName="Star"
+            iconPosition="left"
+          />
+          <ChipComponent text="Light Theme" variant={ChipVariant.LightGreen} />
         </View>
         <View>
           <DropdownComponent
