@@ -49,36 +49,64 @@ import { z } from 'zod';
 const [password, setPassword] = useState("");
 const [username, setUsername] = useState("");
 
-const passwordSchema = z.string()
-  .min(8, "Password must be at least 8 characters")
-  .regex(/[A-Z]/, "Must contain uppercase letter")
-  .regex(/[a-z]/, "Must contain lowercase letter")
-  .regex(/[0-9]/, "Must contain number");
-
-const usernameSchema = z.string()
-.min(3, "Username must be at least 3 characters")
-.max(20, "Username must not exceed 20 characters")
-.regex(/^[a-zA-Z0-9_]+$/, "Username can only contain letters, numbers, and underscores");
+const passwordSchema = z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number");
+const usernameSchema = z
+    .string()
+    .min(3, "Username must be at least 3 characters")
+    .max(20, "Username must not exceed 20 characters")
+    .regex(
+        /^[a-zA-Z0-9_]+$/,
+        "Username can only contain letters, numbers, and underscores");
 
 
 <TextInputComponent
-value={password}
-onChangeText={setPassword}
-placeholder="Enter secure password"
-label="Password"
-inputType="password"
-validationSchema={passwordSchema}
-helperText="Min 8 chars with uppercase, lowercase & number"
+    inputWrapper={{
+    accessibilityHint: "Enter your username",
+    }}
+    inputField={{
+    value: username,
+    onChangeText: setUsername,
+    placeholder: "Enter username",
+    }}
+    label="Username"
+    inputType={KeyboardInputType.Text}
+    validationSchema={usernameSchema}
+    helperText="Username must be 3-20 characters"
+    validateOnChange={true}
 />
 
 <TextInputComponent
-    value={username}
-    onChangeText={setUsername}
-    placeholder="johndoe123"
-    label="Username"
-    validationSchema={usernameSchema}
-    showWarning={username === "admin" || username === "test"}
-    helperText="3-20 characters, letters, numbers & underscores"
+    inputWrapper={{
+    accessibilityHint: "Enter your password",
+    }}
+    inputField={{
+    value: password,
+    onChangeText: setPassword,
+    placeholder: "Enter password",
+    }}
+    label="Password"
+    inputType={KeyboardInputType.Password}
+    validationSchema={passwordSchema}
+    helperText="Password must be at least 8 characters with uppercase, lowercase, and number"
+    validateOnChange={true}
+/>
+
+<TextInputComponent.OTPField
+    inputWrapper={{
+    accessibilityHint: "Enter OTP digit",
+    }}
+    inputField={{
+    value: otp,
+    onChangeText: setOtp,
+    }}
+    label="Enter OTP"
+    size={60}
+    validationSchema={otpSchema}
 />
 
 ```
@@ -88,13 +116,24 @@ helperText="Min 8 chars with uppercase, lowercase & number"
 ```ts
 import { z } from 'zod';
 
-const [otp1, setOtp1] = useState("");
-const otpSchema = z.string().regex(/^[0-9]$/, "Must be a number");
+const [otp, setOtp] = useState("");
+
+const otpSchema = z
+    .string()
+    .length(1, "Must be a single digit")
+    .regex(/^[0-9]$/, "Must be a number");
 
 <TextInputComponent.OTPField
-value={otp1}
-onChangeText={setOtp1}
-validationSchema={otpSchema}
+    inputWrapper={{
+    accessibilityHint: "Enter OTP digit",
+    }}
+    inputField={{
+    value: otp,
+    onChangeText: setOtp,
+    }}
+    label="Enter OTP"
+    size={60}
+    validationSchema={otpSchema}
 />
 ```
 
@@ -104,15 +143,15 @@ validationSchema={otpSchema}
 const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 const [darkModeEnabled, setDarkModeEnabled] = useState(true);
 
-<ToggleButton 
-    size="sm" 
+<ToggleButton
+    size={ToggleSize.Medium}
     label="Enable toggle"
     isActive={notificationsEnabled}
     onToggle={setNotificationsEnabled}
 />
 
-<ToggleButton 
-    size="sm"
+<ToggleButton
+    size={ToggleSize.Large}
     isActive={darkModeEnabled}
     onToggle={setDarkModeEnabled}
 />
@@ -141,8 +180,7 @@ const countryOptions = [
     label="Country"
     placeholder="Select a country"
     validationSchema={requiredSchema}
-    helperText="Please select your country"
-    showValidation={true}
+    validateOnChange={true}
 />
 ```
 

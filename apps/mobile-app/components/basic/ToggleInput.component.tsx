@@ -1,9 +1,24 @@
-import { Switch } from '@/components/ui/switch';
-import { Color, TextSize, textStyles, TextVariant } from '@repo/config';
-import React, { useState } from 'react';
-import { Text, View } from 'react-native';
+import { TextComponent } from "@/components/basic";
+import { Switch } from "@/components/ui/switch";
+import { Color, TextSize, TextVariant } from "@repo/config";
+import { useState } from "react";
+import { Platform, View } from "react-native";
 
-type ToggleSize = 'sm' | 'md' | 'lg';
+// Enum - Toggle size
+export enum ToggleSize {
+  Medium = "medium",
+  Large = "large",
+}
+
+// Type for ToggleSize values
+export type ToggleSizeType = ToggleSize.Medium | ToggleSize.Large;
+
+// Enum for actual rendering sizes
+enum InternalToggleSize {
+  Small = "small",
+  Medium = "medium",
+  Large = "large",
+}
 
 interface ToggleButtonProps {
   size?: ToggleSize;
@@ -12,17 +27,42 @@ interface ToggleButtonProps {
   label?: string;
 }
 
-export const ToggleButton: React.FC<ToggleButtonProps> = ({ 
-  size = 'md', 
+// Map user size to platform-specific internal size
+const getInternalSize = (userSize: ToggleSize): InternalToggleSize => {
+  const platform = Platform.OS;
+
+  // For macOS/iOS (Medium -> Small, Large -> Medium)
+  if (platform === "ios" || platform === "macos") {
+    switch (userSize) {
+      case ToggleSize.Medium:
+        return InternalToggleSize.Small;
+      case ToggleSize.Large:
+        return InternalToggleSize.Medium;
+    }
+  }
+
+  // For Android/Web(Medium -> Medium, Large -> Large)
+  switch (userSize) {
+    case ToggleSize.Medium:
+      return InternalToggleSize.Medium;
+    case ToggleSize.Large:
+      return InternalToggleSize.Large;
+  }
+};
+
+export const ToggleButton = ({
+  size = ToggleSize.Medium,
   isActive: controlledIsActive,
   onToggle,
   label,
-}) => {
+}: ToggleButtonProps) => {
   const [internalIsActive, setInternalIsActive] = useState(false);
-  
+  const internalSize = getInternalSize(size);
+
   // Use controlled value if provided, otherwise use internal state
-  const isActive = controlledIsActive !== undefined ? controlledIsActive : internalIsActive;
-  
+  const isActive =
+    controlledIsActive !== undefined ? controlledIsActive : internalIsActive;
+
   const handleToggle = (value: boolean) => {
     if (controlledIsActive === undefined) {
       setInternalIsActive(value);
@@ -30,30 +70,42 @@ export const ToggleButton: React.FC<ToggleButtonProps> = ({
     onToggle?.(value);
   };
 
-  // Get the appropriate text style based on toggle size
-  const getLabelStyle = () => {
-    const textSize = size === 'lg' ? TextSize.Large : TextSize.Medium;
-    const style = textStyles[TextVariant.Body][textSize];
-    
-    return {
-      fontFamily: style.fontFamily,
-      fontSize: style.fontSize,
-      fontWeight: String(style.fontWeight) as any,
-      fontStyle: style.fontStyle,
-      color: Color.Black,
-    };
+  // Map InternalToggleSize to TextSize (excluding ExtraLarge for Body variant)
+  const getTextSize = (): Exclude<TextSize, TextSize.ExtraLarge> => {
+    switch (internalSize) {
+      case InternalToggleSize.Large:
+        return TextSize.Large;
+      case InternalToggleSize.Small:
+        return TextSize.Small;
+      case InternalToggleSize.Medium:
+      default:
+        return TextSize.Medium;
+    }
+  };
+
+  // Map InternalToggleSize to Switch size prop
+  const getSwitchSize = (): "sm" | "md" | "lg" => {
+    switch (internalSize) {
+      case InternalToggleSize.Large:
+        return "lg";
+      case InternalToggleSize.Small:
+        return "sm";
+      case InternalToggleSize.Medium:
+      default:
+        return "md";
+    }
   };
 
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
       {label && (
-        <Text style={getLabelStyle()}>
+        <TextComponent variant={TextVariant.Body} size={getTextSize()}>
           {label}
-        </Text>
+        </TextComponent>
       )}
-      
+
       <Switch
-        size={size}
+        size={getSwitchSize()}
         value={isActive}
         onValueChange={handleToggle}
         trackColor={{
@@ -64,4 +116,3 @@ export const ToggleButton: React.FC<ToggleButtonProps> = ({
     </View>
   );
 };
-

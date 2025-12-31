@@ -1,18 +1,26 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet } from "react-native";
 
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
-import TextComponent from '@/components/basic';
-import { Color, TextSize, TextVariant } from '@repo/config';
+import EditScreenInfo from "@/components/EditScreenInfo";
+import { Text, View } from "@/components/Themed";
+import { TextComponent } from "@/components/basic";
+import { Color, TextSize, TextVariant } from "@repo/config";
 
 export default function TabOneScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Tab One</Text>
-      <TextComponent variant={TextVariant.Title} size={TextSize.ExtraLarge} color={Color.Green}>
+      <TextComponent
+        variant={TextVariant.Title}
+        size={TextSize.ExtraLarge}
+        color={Color.Green}
+      >
         Welcome to Medipraxis!
       </TextComponent>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
+      <View
+        style={styles.separator}
+        lightColor="#eee"
+        darkColor="rgba(255,255,255,0.1)"
+      />
       <EditScreenInfo path="app/(tabs)/index.tsx" />
     </View>
   );
@@ -21,16 +29,16 @@ export default function TabOneScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   separator: {
     marginVertical: 30,
     height: 1,
-    width: '80%',
-  }
+    width: "80%",
+  },
 });

@@ -8,7 +8,11 @@ import type {
 import { TaskStatus, TaskType } from "../types";
 
 export class TaskService {
-  constructor(private taskRepository: TaskRepository) {}
+  private taskRepository: TaskRepository;
+
+  constructor(taskRepository: TaskRepository) {
+    this.taskRepository = taskRepository;
+  }
 
   async getAllTasks(userId?: string): Promise<TaskDetails[]> {
     return await this.taskRepository.findAll(userId);
@@ -25,10 +29,6 @@ export class TaskService {
   }
 
   async createTask(input: CreateTaskInput): Promise<Task> {
-    if (!input.task_title || !input.user_id || !input.end_date) {
-      throw new Error("Missing required fields: task_title, user_id, end_date");
-    }
-
     if (!input.start_date) {
       input.start_date = new Date().toISOString();
     }
@@ -43,6 +43,31 @@ export class TaskService {
       }
 
       input.task_type_id = reminderTypeId;
+    }
+
+    const appointmentTypeId = await this.taskRepository.getTaskTypeByName(
+      TaskType.APPOINTMENT
+    );
+
+    if (!appointmentTypeId) {
+      throw new Error('Default task type "APPOINTMENT" not found in database');
+    }
+
+    if (input.task_type_id == appointmentTypeId) {
+      const appointmentDate = input.start_date;
+
+      const count = await this.taskRepository.getAppointmentCountForDate(
+        input.user_id,
+        appointmentDate
+      );
+
+      const appointmentNumber = count + 1;
+
+      input = {
+        ...input,
+        appointment_number: appointmentNumber,
+        task_type_id: appointmentTypeId,
+      };
     }
 
     if (!input.task_status_id) {
