@@ -20,16 +20,17 @@ export enum FontStyle {
 
 export enum Color {
   DarkGreen = "#01130A",
+  TextGreen = "#44B619",
   Green = "#90C67C",
   LightGreen = "#E3F0AF",
   LightCream = "#FBF6E9",
   White = "#FFFFFF",
-  Black = "#000000",
+  Black = "#01130A",
   Grey = "#7D7D7D", // For Placeholder text
   LightGrey = "#D3D3D3", // For borders
   Danger = "#FF5757",
   Success = "#44B619",
-  Warnning = "#FFA500",
+  Warning = "#FFA500",
 }
 
 // Variant and Size enums
