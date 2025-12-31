@@ -1,9 +1,9 @@
-import { Switch } from '@/components/ui/switch';
-import { Color, TextSize, textStyles, TextVariant } from '@repo/config';
-import React, { useState } from 'react';
-import { Text, View } from 'react-native';
+import { Switch } from "@/components/ui/switch";
+import { Color, TextSize, textStyles, TextVariant } from "@repo/config";
+import React, { useState } from "react";
+import { Text, View } from "react-native";
 
-type ToggleSize = 'sm' | 'md' | 'lg';
+type ToggleSize = "sm" | "md" | "lg";
 
 interface ToggleButtonProps {
   size?: ToggleSize;
@@ -12,17 +12,18 @@ interface ToggleButtonProps {
   label?: string;
 }
 
-export const ToggleButton: React.FC<ToggleButtonProps> = ({ 
-  size = 'md', 
+export const ToggleButton: React.FC<ToggleButtonProps> = ({
+  size = "md",
   isActive: controlledIsActive,
   onToggle,
   label,
 }) => {
   const [internalIsActive, setInternalIsActive] = useState(false);
-  
+
   // Use controlled value if provided, otherwise use internal state
-  const isActive = controlledIsActive !== undefined ? controlledIsActive : internalIsActive;
-  
+  const isActive =
+    controlledIsActive !== undefined ? controlledIsActive : internalIsActive;
+
   const handleToggle = (value: boolean) => {
     if (controlledIsActive === undefined) {
       setInternalIsActive(value);
@@ -32,9 +33,9 @@ export const ToggleButton: React.FC<ToggleButtonProps> = ({
 
   // Get the appropriate text style based on toggle size
   const getLabelStyle = () => {
-    const textSize = size === 'lg' ? TextSize.Large : TextSize.Medium;
+    const textSize = size === "lg" ? TextSize.Large : TextSize.Medium;
     const style = textStyles[TextVariant.Body][textSize];
-    
+
     return {
       fontFamily: style.fontFamily,
       fontSize: style.fontSize,
@@ -45,13 +46,9 @@ export const ToggleButton: React.FC<ToggleButtonProps> = ({
   };
 
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-      {label && (
-        <Text style={getLabelStyle()}>
-          {label}
-        </Text>
-      )}
-      
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+      {label && <Text style={getLabelStyle()}>{label}</Text>}
+
       <Switch
         size={size}
         value={isActive}
@@ -64,4 +61,3 @@ export const ToggleButton: React.FC<ToggleButtonProps> = ({
     </View>
   );
 };
-

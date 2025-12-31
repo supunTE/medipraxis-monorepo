@@ -143,14 +143,14 @@ const otpSchema = z
 const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 const [darkModeEnabled, setDarkModeEnabled] = useState(true);
 
-<ToggleButton 
-    size="sm" 
+<ToggleButton
+    size="sm"
     label="Enable toggle"
     isActive={notificationsEnabled}
     onToggle={setNotificationsEnabled}
 />
 
-<ToggleButton 
+<ToggleButton
     size="sm"
     isActive={darkModeEnabled}
     onToggle={setDarkModeEnabled}
