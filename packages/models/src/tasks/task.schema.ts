@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+/* ---------------- ENUMS ---------------- */
+
+export const TaskCreatorEnum = z.enum(["PRACTITIONER", "CLIENT"]);
+
 /* ---------------- RESPONSE SCHEMAS ---------------- */
 
 export const taskSchema = z.object({
@@ -17,7 +21,9 @@ export const taskSchema = z.object({
   note: z.string().nullable(),
   set_alarm: z.boolean(),
   // appointment
-  appointment_number: z.number(),
+  appointment_number: z.number().nullable(),
+  slot_window_id: z.string().nullable(),
+  created_by: TaskCreatorEnum,
 });
 
 /* ---------------- REQUEST SCHEMAS ---------------- */
@@ -45,28 +51,47 @@ export const createTaskSchema = z.object({
   note: z.string().optional(),
   set_alarm: z.boolean().optional(),
   // appointment
-  appointment_number: z.number(),
+  appointment_number: z.number().optional(),
+  slot_window_id: z.string().optional(),
+  created_by: TaskCreatorEnum.optional(),
 });
 
-export const updateTaskSchema = z.object({
-  task_title: z.string().optional(),
-  task_type_id: z.string().optional(),
-  task_status_id: z.string().optional(),
-  client_id: z.string().optional(),
-  start_date: z.string().optional(),
-  end_date: z.string().optional(),
-  note: z.string().optional(),
-  set_alarm: z.boolean().optional(),
-  user_id: z.string(),
-  // appointment
-  appointment_number: z.number(),
-});
+export const updateTaskSchema = z
+  .object({
+    task_title: z.string().optional(),
+    task_type_id: z.string().optional(),
+    task_status_id: z.string().optional(),
+    client_id: z.string().optional(),
+    start_date: z.string().optional(),
+    end_date: z.string().optional(),
+    note: z.string().optional(),
+    set_alarm: z.boolean().optional(),
+    // appointment
+    appointment_number: z.number().optional(),
+  })
+  .strict();
 
 /* ---------------- TYPES (DERIVED) ---------------- */
 
+export type TaskCreator = z.infer<typeof TaskCreatorEnum>;
 export type Task = z.infer<typeof taskSchema>;
 export type GetTaskParam = z.infer<typeof getTaskParamSchema>;
 export type UpdateTaskParam = z.infer<typeof updateTaskParamSchema>;
 export type GetAllTaskQuery = z.infer<typeof getAllTasksQuerySchema>;
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;
 export type UpdateTaskInput = z.infer<typeof updateTaskSchema>;
+
+/* Output-only type extending Task with related entity names */
+export type TaskDetails = Task & {
+  task_type_name: string;
+  task_status_name: string;
+  client_first_name: string | null;
+  client_last_name: string | null;
+};
+
+/* Task type enum for categorizing tasks */
+export enum TaskType {
+  APPOINTMENT = "APPOINTMENT",
+  REMINDER = "REMINDER",
+  NOTE = "NOTE",
+}
