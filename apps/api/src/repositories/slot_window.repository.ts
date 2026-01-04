@@ -64,6 +64,13 @@ export const SLOT_WINDOW_QUERIES = {
   `,
 } as const;
 
+export const SLOT_WINDOW_RPCS = {
+  INCREMENT_COUNTER: "increment_slot_window_counter",
+  DECREMENT_COUNTER: "decrement_slot_window_counter",
+  RESERVE_SLOT: "reserve_slot_from_slot_window",
+  RELEASE_SLOT: "release_slot_to_slot_window",
+} as const;
+
 export class SlotWindowRepository {
   private db: SupabaseClient;
 
@@ -409,9 +416,12 @@ export class SlotWindowRepository {
   async incrementSlotsFilledCounter(
     slotWindowId: string
   ): Promise<SlotWindow | null> {
-    const { data, error } = await this.db.rpc("increment_slot_window_counter", {
-      p_slot_window_id: slotWindowId,
-    });
+    const { data, error } = await this.db.rpc(
+      SLOT_WINDOW_RPCS.INCREMENT_COUNTER,
+      {
+        p_slot_window_id: slotWindowId,
+      }
+    );
 
     if (error) {
       throw new Error(`Failed to increment slots filled: ${error.message}`);
@@ -427,9 +437,12 @@ export class SlotWindowRepository {
   async decrementSlotsFilledCounter(
     slotWindowId: string
   ): Promise<SlotWindow | null> {
-    const { data, error } = await this.db.rpc("decrement_slot_window_counter", {
-      p_slot_window_id: slotWindowId,
-    });
+    const { data, error } = await this.db.rpc(
+      SLOT_WINDOW_RPCS.DECREMENT_COUNTER,
+      {
+        p_slot_window_id: slotWindowId,
+      }
+    );
 
     if (error) {
       throw new Error(`Failed to decrement slots filled: ${error.message}`);
@@ -440,6 +453,36 @@ export class SlotWindowRepository {
     }
 
     return data as SlotWindow;
+  }
+
+  async reserveSlotFromSlotWindow(slotWindowId: string): Promise<number> {
+    const { data, error } = await this.db.rpc(SLOT_WINDOW_RPCS.RESERVE_SLOT, {
+      p_slot_id: slotWindowId,
+    });
+
+    if (error) {
+      throw new Error(`Failed to reserve slot: ${error.message}`);
+    }
+
+    if (data === null || data === undefined) {
+      throw new Error("No available positions in slot window");
+    }
+
+    return data as number;
+  }
+
+  async releaseSlotToSlotWindow(
+    slotWindowId: string,
+    position: number
+  ): Promise<void> {
+    const { error } = await this.db.rpc(SLOT_WINDOW_RPCS.RELEASE_SLOT, {
+      p_slot_id: slotWindowId,
+      p_position: position,
+    });
+
+    if (error) {
+      throw new Error(`Failed to release slot: ${error.message}`);
+    }
   }
 
   async updateSlotWindowStatus(
