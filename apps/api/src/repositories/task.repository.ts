@@ -1,11 +1,11 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
   CreateTaskInput,
   Task,
   TaskDetails,
   UpdateTaskInput,
-} from "../types";
-import { TaskType } from "../types";
+} from "@repo/models";
+import { TaskType, type TaskStatus } from "@repo/models";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 export const TASK_QUERIES = {
   TASK_STATUS_ID: "task_status_id",
@@ -31,7 +31,7 @@ export class TaskRepository {
     this.db = db;
   }
 
-  async getTaskStatusByName(statusName: string): Promise<string | null> {
+  async getTaskStatusByName(statusName: TaskStatus): Promise<string | null> {
     const { data, error } = await this.db
       .from("task_status")
       .select(TASK_QUERIES.TASK_STATUS_ID)
@@ -45,7 +45,7 @@ export class TaskRepository {
     return data.task_status_id;
   }
 
-  async getTaskTypeByName(typeName: string): Promise<string | null> {
+  async getTaskTypeByName(typeName: TaskType): Promise<string | null> {
     const { data, error } = await this.db
       .from("task_type")
       .select(TASK_QUERIES.TASK_TYPE_ID)
@@ -123,9 +123,11 @@ export class TaskRepository {
       note: taskData.note || null,
       set_alarm: taskData.set_alarm || false,
       modified_date: new Date().toISOString(),
-
       //appointment
       appointment_number: taskData?.appointment_number,
+      // slot window reference
+      slot_window_id: taskData.slot_window_id || null,
+      created_by: taskData.created_by || "CLIENT",
     };
 
     const { data: task, error } = await this.db
@@ -146,27 +148,9 @@ export class TaskRepository {
     taskData: UpdateTaskInput
   ): Promise<Task | null> {
     const updateData: any = {
+      ...taskData,
       modified_date: new Date().toISOString(),
     };
-
-    if (taskData.task_title !== undefined)
-      updateData.task_title = taskData.task_title;
-    if (taskData.task_type_id !== undefined)
-      updateData.task_type_id = taskData.task_type_id;
-    if (taskData.task_status_id !== undefined)
-      updateData.task_status_id = taskData.task_status_id;
-    if (taskData.client_id !== undefined)
-      updateData.client_id = taskData.client_id;
-    if (taskData.start_date !== undefined)
-      updateData.start_date = taskData.start_date;
-    if (taskData.end_date !== undefined)
-      updateData.end_date = taskData.end_date;
-    if (taskData.note !== undefined) updateData.note = taskData.note;
-    if (taskData.set_alarm !== undefined)
-      updateData.set_alarm = taskData.set_alarm;
-    if (taskData?.user_id !== undefined) {
-      updateData.user_id = taskData?.user_id;
-    }
 
     const { data, error } = await this.db
       .from("task")
@@ -206,5 +190,48 @@ export class TaskRepository {
     }
 
     return count ?? 0;
+  }
+
+  async findBySlotWindowId(slotWindowId: string): Promise<Task[]> {
+    const { data, error } = await this.db
+      .from("task")
+      .select("*")
+      .eq("slot_window_id", slotWindowId)
+      .is("deleted_date", null);
+
+    if (error) {
+      console.error("Error fetching tasks by slot window ID:", error);
+      throw new Error("Failed to fetch tasks for the given slot window ID");
+    }
+
+    if (!data) {
+      throw new Error("No tasks found for the given slot window ID");
+    }
+
+    return data as Task[];
+  }
+
+  async softDelete(taskId: string): Promise<Task | null> {
+    const { data, error } = await this.db
+      .from("task")
+      .update({
+        deleted_date: new Date().toISOString(),
+        modified_date: new Date().toISOString(),
+      })
+      .eq("task_id", taskId)
+      .is("deleted_date", null)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error deleting task:", error);
+      throw new Error("Failed to delete the task");
+    }
+
+    if (!data) {
+      return null;
+    }
+
+    return data as Task;
   }
 }

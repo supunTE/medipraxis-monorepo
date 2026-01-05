@@ -1,11 +1,11 @@
-import { TaskRepository } from "../repositories";
 import type {
   CreateTaskInput,
   Task,
   TaskDetails,
   UpdateTaskInput,
-} from "../types";
-import { TaskStatus, TaskType } from "../types";
+} from "@repo/models";
+import { TaskStatus, TaskType } from "@repo/models";
+import { type TaskRepository } from "../repositories";
 
 export class TaskService {
   private taskRepository: TaskRepository;
