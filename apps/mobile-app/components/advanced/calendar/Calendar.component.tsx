@@ -134,7 +134,7 @@ export function CalendarComponent({
   const [isExpanded, setIsExpanded] = useState(false);
   // Controls which calendar component renders - switches with animation timing
   const [showFullCalendar, setShowFullCalendar] = useState(false);
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toISOString().split("T")[0] || "";
   const selected = selectedDate || today;
 
   const [fontsLoaded] = useFonts({

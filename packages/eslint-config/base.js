@@ -1,8 +1,8 @@
 import js from "@eslint/js";
 import eslintConfigPrettier from "eslint-config-prettier";
+import onlyWarn from "eslint-plugin-only-warn";
 import turboPlugin from "eslint-plugin-turbo";
 import tseslint from "typescript-eslint";
-import onlyWarn from "eslint-plugin-only-warn";
 
 /**
  * Shared ESLint configuration for the monorepo
@@ -21,6 +21,7 @@ export const config = [
       parserOptions: {
         projectService: true,
         tsconfigRootDir: process.cwd(),
+        allowDefaultProject: ["*.js", "*.mjs"],
       },
     },
   },
@@ -52,6 +53,13 @@ export const config = [
     },
   },
   {
-    ignores: ["dist/**"],
+    ignores: [
+      "dist/**",
+      "build/**",
+      "*.config.js",
+      "*.config.mjs",
+      "*.config.ts",
+      "*.config.cjs",
+    ],
   },
 ];

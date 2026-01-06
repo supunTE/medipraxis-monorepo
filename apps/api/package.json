@@ -4,18 +4,24 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "wrangler dev",
+    "build": "tsc --noEmit",
+    "lint": "eslint .",
     "deploy": "wrangler deploy --minify",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
   "dependencies": {
     "@repo/models": "*",
     "@repo/api-client": "*",
+    "@repo/ai-lib": "*",
     "@hono/zod-validator": "^0.7.6",
     "@supabase/supabase-js": "^2.89.0",
     "hono": "^4.10.7",
     "zod": "^4.2.1"
   },
   "devDependencies": {
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*",
+    "eslint": "^9.39.1",
     "wrangler": "^4.4.0"
   },
   "private": true

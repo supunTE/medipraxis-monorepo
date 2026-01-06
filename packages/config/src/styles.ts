@@ -30,7 +30,7 @@ export enum Color {
   LightGrey = "#D3D3D3", // For borders
   Danger = "#FF5757",
   Success = "#44B619",
-  Warnning = "#FFA500",
+  Warning = "#FFA500",
 }
 
 // Variant and Size enums

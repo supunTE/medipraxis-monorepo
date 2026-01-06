@@ -2,7 +2,7 @@ import { StyleSheet } from "react-native";
 
 import EditScreenInfo from "@/components/EditScreenInfo";
 import { Text, View } from "@/components/Themed";
-import TextComponent from "@/components/basic";
+import { TextComponent } from "@/components/basic";
 import { Color, TextSize, TextVariant } from "@repo/config";
 
 export default function TabOneScreen() {

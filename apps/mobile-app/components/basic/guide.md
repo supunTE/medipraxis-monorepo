@@ -28,3 +28,111 @@
 <ButtonComponent.BackButton size={ButtonSize.Small}>Home</ButtonComponent.BackButton>
 <ButtonComponent.BackButton>Go To Home Page</ButtonComponent.BackButton>
 ```
+
+# TextInput Component
+
+```ts
+<TextInputComponent
+    value={textInput}
+    onChangeText={setTextInput}
+    placeholder="Enter your name"
+    label="Text Input"
+    showPasswordToggle={false}
+ />
+```
+
+## TextInput Component - Password
+
+```ts
+import { z } from 'zod';
+
+const [password, setPassword] = useState("");
+const [username, setUsername] = useState("");
+
+const passwordSchema = z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number");
+const usernameSchema = z
+    .string()
+    .min(3, "Username must be at least 3 characters")
+    .max(20, "Username must not exceed 20 characters")
+    .regex(
+        /^[a-zA-Z0-9_]+$/,
+        "Username can only contain letters, numbers, and underscores");
+
+
+<TextInputComponent
+    inputWrapper={{
+    accessibilityHint: "Enter your username",
+    }}
+    inputField={{
+    value: username,
+    onChangeText: setUsername,
+    placeholder: "Enter username",
+    }}
+    label="Username"
+    inputType={KeyboardInputType.Text}
+    validationSchema={usernameSchema}
+    helperText="Username must be 3-20 characters"
+    validateOnChange={true}
+/>
+
+<TextInputComponent
+    inputWrapper={{
+    accessibilityHint: "Enter your password",
+    }}
+    inputField={{
+    value: password,
+    onChangeText: setPassword,
+    placeholder: "Enter password",
+    }}
+    label="Password"
+    inputType={KeyboardInputType.Password}
+    validationSchema={passwordSchema}
+    helperText="Password must be at least 8 characters with uppercase, lowercase, and number"
+    validateOnChange={true}
+/>
+
+<TextInputComponent.OTPField
+    inputWrapper={{
+    accessibilityHint: "Enter OTP digit",
+    }}
+    inputField={{
+    value: otp,
+    onChangeText: setOtp,
+    }}
+    label="Enter OTP"
+    size={60}
+    validationSchema={otpSchema}
+/>
+
+```
+
+## Text Input Field - OTP
+
+```ts
+import { z } from 'zod';
+
+const [otp, setOtp] = useState("");
+
+const otpSchema = z
+    .string()
+    .length(1, "Must be a single digit")
+    .regex(/^[0-9]$/, "Must be a number");
+
+<TextInputComponent.OTPField
+    inputWrapper={{
+    accessibilityHint: "Enter OTP digit",
+    }}
+    inputField={{
+    value: otp,
+    onChangeText: setOtp,
+    }}
+    label="Enter OTP"
+    size={60}
+    validationSchema={otpSchema}
+/>
+```

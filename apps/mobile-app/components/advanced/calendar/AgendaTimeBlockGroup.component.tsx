@@ -1,4 +1,4 @@
-import TextComponent from "@/components/basic";
+import { TextComponent } from "@/components/basic";
 import { timeToDecimalHour } from "@/utils";
 import { Color, TextSize, TextVariant } from "@repo/config";
 import clsx from "clsx";
@@ -25,7 +25,6 @@ interface AgendaTimeBlockGroupProps {
   ) => void;
   onEmptySlotPress?: (groupId: string, slotNumber: number) => void;
 }
-
 
 export function AgendaTimeBlockGroup({
   groupId,
@@ -104,14 +103,17 @@ export function AgendaTimeBlockGroup({
           return (
             <View
               key={index}
-              className={clsx("flex flex-row items-center gap-2 border border-l-4 pl-4", {
-                "opacity-100": content,
-                "opacity-50": !content,
-              })}
+              className={clsx(
+                "flex flex-row items-center gap-2 border border-l-4 pl-4",
+                {
+                  "opacity-100": content,
+                  "opacity-50": !content,
+                }
+              )}
               style={{
                 height: slotHeight,
-                backgroundColor: content ? color.bg : "#F3F4F6",
-                borderColor: content ? color.border : Color.LightGrey,
+                backgroundColor: content ? color?.bg : "#F3F4F6",
+                borderColor: content ? color?.border : Color.LightGrey,
               }}
             >
               {content && !showSummaryOverlay && (
