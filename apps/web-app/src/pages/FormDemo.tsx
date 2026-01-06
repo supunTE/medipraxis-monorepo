@@ -66,7 +66,5 @@ export const FormDemo: React.FC = () => {
     alert("Form submitted successfully! Check console for details.");
   };
 
-  return (
-    <DynamicForm formData={mockFormData} onSubmit={handleSubmit} />
-  );
+  return <DynamicForm formData={mockFormData} onSubmit={handleSubmit} />;
 };
