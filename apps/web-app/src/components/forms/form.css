@@ -2,6 +2,13 @@
   width: 100%;
   max-width: 800px;
   margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 768px) {
+  .dynamic-form-container {
+    max-width: 1800px;
+  }
 }
 
 .form-title {
@@ -21,6 +28,13 @@
   display: flex;
   flex-direction: column;
   gap: 2rem;
+}
+
+/* Container for file upload fields */
+.dynamic-form .file-upload-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .form-field {
@@ -79,16 +93,22 @@
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s;
+  outline: none;
 }
 
 .upload-button:hover {
   background-color: #44b619;
 }
 
+.upload-button:focus {
+  outline: none;
+}
+
 .file-preview {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  align-items: center;
 }
 
 .image-preview {
@@ -123,8 +143,9 @@
   border-radius: 6px;
   font-size: 0.875rem;
   cursor: pointer;
-  align-self: flex-start;
+  align-self: center;
   transition: background-color 0.2s;
+  outline: none;
 }
 
 .remove-button:hover {
@@ -162,10 +183,15 @@
   font-weight: 500;
   cursor: pointer;
   transition: background-color 0.2s;
+  outline: none;
 }
 
 .submit-button:hover {
   background-color: #3a9d15;
+}
+
+.submit-button:focus {
+  outline: none;
 }
 
 /* Not Implemented Field */

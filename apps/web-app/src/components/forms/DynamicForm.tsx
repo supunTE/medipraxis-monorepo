@@ -77,6 +77,40 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
     (a, b) => a.sequence - b.sequence
   );
 
+  // Group questions by type for layout purposes
+  const groupedQuestions: Array<{
+    type: "single" | "file-upload-group";
+    questions: typeof sortedQuestions;
+  }> = [];
+
+  let currentFileUploadGroup: typeof sortedQuestions = [];
+
+  sortedQuestions.forEach((question) => {
+    if (question.type === FormFieldType.FILE_UPLOAD) {
+      currentFileUploadGroup.push(question);
+    } else {
+      if (currentFileUploadGroup.length > 0) {
+        groupedQuestions.push({
+          type: "file-upload-group",
+          questions: currentFileUploadGroup,
+        });
+        currentFileUploadGroup = [];
+      }
+
+      groupedQuestions.push({
+        type: "single",
+        questions: [question],
+      });
+    }
+  });
+
+  if (currentFileUploadGroup.length > 0) {
+    groupedQuestions.push({
+      type: "file-upload-group",
+      questions: currentFileUploadGroup,
+    });
+  }
+
   return (
     <div className="dynamic-form-container">
       <h1 className="form-title">{formData.title}</h1>
@@ -85,11 +119,25 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
       )}
 
       <form onSubmit={handleSubmit} className="dynamic-form">
-        {sortedQuestions.map((question) => (
-          <div key={question.id} className="form-field">
-            {renderField(question)}
-          </div>
-        ))}
+        {groupedQuestions.map((group, idx) => {
+          if (group.type === "file-upload-group") {
+            return (
+              <div key={`file-group-${idx}`} className="file-upload-section">
+                {group.questions.map((question) => (
+                  <div key={question.id} className="form-field">
+                    {renderField(question)}
+                  </div>
+                ))}
+              </div>
+            );
+          } else {
+            return group.questions.map((question) => (
+              <div key={question.id} className="form-field">
+                {renderField(question)}
+              </div>
+            ));
+          }
+        })}
 
         <div className="form-actions">
           <button type="submit" className="submit-button">
