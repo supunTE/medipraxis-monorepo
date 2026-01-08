@@ -136,3 +136,30 @@ const otpSchema = z
     validationSchema={otpSchema}
 />
 ```
+
+# Dropdown Component
+
+```ts
+const [country, setCountry] = useState('');
+
+const countryOptions = [
+    { label: 'United States', value: 'us' },
+    { label: 'United Kingdom', value: 'uk' },
+    { label: 'Canada', value: 'ca' },
+    { label: 'Australia', value: 'au' },
+    { label: 'Germany', value: 'de' },
+    { label: 'France', value: 'fr' },
+    { label: 'Japan', value: 'jp' },
+    { label: 'India', value: 'in' },
+];
+
+<DropdownComponent
+    value={country}
+    onValueChange={setCountry}
+    options={countryOptions}
+    label="Country"
+    placeholder="Select a country"
+    validationSchema={requiredSchema}
+    validateOnChange={true}
+/>
+```

@@ -1938,7 +1938,7 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@legendapp/motion@^2.3.0":
+"@legendapp/motion@^2.4.0":
   version "2.5.3"
   resolved "https://registry.yarnpkg.com/@legendapp/motion/-/motion-2.5.3.tgz#f9a4c07c76eee757c5ca206085440d14cc28001b"
   integrity sha512-IcNiStiK3qG5LaIPLC8fVV0BHIrkf7EY5HfOv3xbuMH0z4D945yaaEDafP5bboHf/uj9XRjTQHVTtZgwpMNlHw==
@@ -2816,6 +2816,13 @@
     "@react-aria/utils" "^3.32.0"
     "@react-types/shared" "^3.32.1"
     "@swc/helpers" "^0.5.0"
+
+"@react-native-community/datetimepicker@^8.5.1":
+  version "8.6.0"
+  resolved "https://registry.yarnpkg.com/@react-native-community/datetimepicker/-/datetimepicker-8.6.0.tgz#1c4318a8bc1d5bfd111d782a87cf0b729f718e79"
+  integrity sha512-yxPSqNfxgpGaqHQIpatqe6ykeBdU/1pdsk/G3x01mY2bpTflLpmVTLqFSJYd3MiZzxNZcMs/j1dQakUczSjcYA==
+  dependencies:
+    invariant "^2.2.4"
 
 "@react-native/assets-registry@0.81.5":
   version "0.81.5"

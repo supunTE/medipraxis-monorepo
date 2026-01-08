@@ -1,5 +1,6 @@
 import {
   ArrowRightIcon,
+  CaretDownIcon,
   CaretLeftIcon,
   CheckIcon,
   EyeIcon,
@@ -21,6 +22,7 @@ export const Icons = {
   Plus: PlusIcon,
   ShoppingCart: ShoppingCartIcon,
   Star: StarIcon,
+  CaretDown: CaretDownIcon,
   Eye: EyeIcon,
   EyeSlash: EyeSlashIcon,
 } as const;
