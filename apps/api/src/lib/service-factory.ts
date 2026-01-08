@@ -1,6 +1,15 @@
 import type { Context } from "hono";
-import { SlotWindowRepository, TaskRepository } from "../repositories";
-import { AIService, SlotWindowService, TaskService } from "../services";
+import {
+  SlotWindowRepository,
+  ClientRepository,
+  TaskRepository,
+} from "../repositories";
+import {
+  AIService,
+  SlotWindowService,
+  ClientService,
+  TaskService,
+} from "../services";
 import type { Env } from "../types";
 import { createDatabaseClient } from "./database";
 
@@ -25,4 +34,10 @@ export function getSlotWindowService(c: Context<{ Bindings: Env }>) {
   const slotWindowRepository = new SlotWindowRepository(db);
   const taskRepository = new TaskRepository(db);
   return new SlotWindowService(slotWindowRepository, taskRepository);
+}
+
+export function getClientService(c: Context<{ Bindings: Env }>) {
+  const db = createDatabaseClient(c.env);
+  const clientRepository = new ClientRepository(db);
+  return new ClientService(clientRepository);
 }
