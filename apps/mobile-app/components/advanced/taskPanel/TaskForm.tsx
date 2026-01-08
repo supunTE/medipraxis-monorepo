@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
-    Modal,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Switch,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-} from 'react-native';
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 type Props = {
   visible: boolean;
@@ -17,14 +17,14 @@ type Props = {
 };
 
 export default function TaskForm({ visible, onClose }: Props) {
-  const [title, setTitle] = useState('');
-  const [eventType, setEventType] = useState('Appointment');
-  const [client, setClient] = useState('Jennifer');
-  const [startDateTime, setStartDateTime] = useState('2025-11-15T08:00');
-  const [endDateTime, setEndDateTime] = useState('2025-11-15T11:30');
-  const [note, setNote] = useState('');
+  const [title, setTitle] = useState("");
+  const [eventType, setEventType] = useState("Appointment");
+  const [client, setClient] = useState("Jennifer");
+  const [startDateTime, setStartDateTime] = useState("2025-11-15T08:00");
+  const [endDateTime, setEndDateTime] = useState("2025-11-15T11:30");
+  const [note, setNote] = useState("");
   const [alarm, setAlarm] = useState(true);
-  const [location, setLocation] = useState('Care - Medical Centre');
+  const [location, setLocation] = useState("Care - Medical Centre");
   const [attachToSlot, setAttachToSlot] = useState(false);
 
   const handleSave = () => {
@@ -39,15 +39,26 @@ export default function TaskForm({ visible, onClose }: Props) {
       location,
       attachToSlot,
     };
-    console.log('Event Saved:', eventDetails);
+    console.log("Event Saved:", eventDetails);
     onClose();
   };
 
-  const eventTypes = ['Appointment Slot Window', 'Appointment', 'Reminder/Task'];
+  const eventTypes = [
+    "Appointment Slot Window",
+    "Appointment",
+    "Reminder/Task",
+  ];
 
   return (
-    <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
-      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="pageSheet"
+    >
+      <ScrollView
+        contentContainerStyle={styles.container}
+        keyboardShouldPersistTaps="handled"
+      >
         <Text style={styles.heading}>Schedule New Event</Text>
 
         {/* Title */}
@@ -78,14 +89,14 @@ export default function TaskForm({ visible, onClose }: Props) {
         <Text style={styles.small}>Selected: {eventType}</Text>
 
         {/* Appointment-specific fields */}
-        {eventType === 'Appointment' && (
+        {eventType === "Appointment" && (
           <>
             <TouchableOpacity
               style={styles.attachRow}
               onPress={() => setAttachToSlot(!attachToSlot)}
             >
               <Text style={styles.attachText}>
-                {attachToSlot ? '✓' : '+'} Attach to an Appointment slot window
+                {attachToSlot ? "✓" : "+"} Attach to an Appointment slot window
               </Text>
             </TouchableOpacity>
 
@@ -122,7 +133,9 @@ export default function TaskForm({ visible, onClose }: Props) {
           style={styles.input}
           value={startDateTime}
           onChangeText={setStartDateTime}
-          placeholder={Platform.OS === 'web' ? 'YYYY-MM-DDTHH:MM' : '2025-11-15T08:00'}
+          placeholder={
+            Platform.OS === "web" ? "YYYY-MM-DDTHH:MM" : "2025-11-15T08:00"
+          }
         />
 
         {/* Note */}
@@ -157,46 +170,46 @@ export default function TaskForm({ visible, onClose }: Props) {
   );
 }
 
-const PRIMARY_COLOR = '#e3f0af';
+const PRIMARY_COLOR = "#e3f0af";
 
 const styles = StyleSheet.create({
   container: {
     padding: 20,
     paddingBottom: 40,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
   },
   heading: {
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: "700",
     marginBottom: 16,
-    color: '#222',
+    color: "#222",
   },
   label: {
     marginTop: 14,
     marginBottom: 6,
-    fontWeight: '500',
+    fontWeight: "500",
     fontSize: 14,
-    color: '#444',
+    color: "#444",
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderRadius: 6,
     padding: 10,
     fontSize: 14,
-    backgroundColor: '#f9f9f9',
-    color: '#222',
+    backgroundColor: "#f9f9f9",
+    color: "#222",
   },
   textarea: {
     minHeight: 80,
-    textAlignVertical: 'top',
+    textAlignVertical: "top",
   },
   radioGroup: {
     marginVertical: 8,
   },
   radioRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 8,
   },
   radioOuter: {
@@ -205,8 +218,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 2,
     borderColor: PRIMARY_COLOR,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: 8,
   },
   radioInner: {
@@ -217,11 +230,11 @@ const styles = StyleSheet.create({
   },
   radioLabel: {
     fontSize: 14,
-    color: '#444', // unified text color
+    color: "#444", // unified text color
   },
   small: {
     fontSize: 12,
-    color: '#555',
+    color: "#555",
     marginTop: 4,
   },
   attachRow: {
@@ -230,51 +243,51 @@ const styles = StyleSheet.create({
   },
   attachText: {
     fontSize: 14,
-    color: '#444', // unified with radio label color
-    fontWeight: '500',
+    color: "#444", // unified with radio label color
+    fontWeight: "500",
   },
   switchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 14,
   },
   switchLabel: {
     marginLeft: 8,
     fontSize: 14,
-    color: '#444',
+    color: "#444",
   },
   actionSection: {
     backgroundColor: PRIMARY_COLOR, // full-width footer section
-    width: '100%',
+    width: "100%",
     paddingVertical: 16,
     paddingHorizontal: 20,
   },
   buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   saveButton: {
     flex: 1,
-    backgroundColor: '#222', // dark grey / lighter black
+    backgroundColor: "#222", // dark grey / lighter black
     padding: 12,
     borderRadius: 6,
     marginRight: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   saveButtonText: {
-    color: '#fff',
-    fontWeight: '600',
+    color: "#fff",
+    fontWeight: "600",
   },
   closeButton: {
     flex: 1,
-    backgroundColor: '#ccc',
+    backgroundColor: "#ccc",
     padding: 12,
     borderRadius: 6,
     marginLeft: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   closeButtonText: {
-    color: '#444',
-    fontWeight: '600',
+    color: "#444",
+    fontWeight: "600",
   },
 });
