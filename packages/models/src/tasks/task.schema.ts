@@ -71,6 +71,19 @@ export const updateTaskSchema = z
   })
   .strict();
 
+export const reserveAppointmentByClientSchema = z
+  .object({
+    slot_window_id: z.string(),
+    client_id: z.string(),
+  })
+  .strict();
+
+export const cancelAppointmentByClientSchema = z
+  .object({
+    task_id: z.string(),
+  })
+  .strict();
+
 /* ---------------- TYPES (DERIVED) ---------------- */
 
 export type TaskCreator = z.infer<typeof TaskCreatorEnum>;
@@ -80,6 +93,12 @@ export type UpdateTaskParam = z.infer<typeof updateTaskParamSchema>;
 export type GetAllTaskQuery = z.infer<typeof getAllTasksQuerySchema>;
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;
 export type UpdateTaskInput = z.infer<typeof updateTaskSchema>;
+export type ReserveAppointmentByClientInput = z.infer<
+  typeof reserveAppointmentByClientSchema
+>;
+export type CancelAppointmentByClientInput = z.infer<
+  typeof cancelAppointmentByClientSchema
+>;
 
 /* Output-only type extending Task with related entity names */
 export type TaskDetails = Task & {

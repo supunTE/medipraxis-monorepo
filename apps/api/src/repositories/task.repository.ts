@@ -211,27 +211,39 @@ export class TaskRepository {
     return data as Task[];
   }
 
-  async softDelete(taskId: string): Promise<Task | null> {
-    const { data, error } = await this.db
+  async findByClientId(
+    clientId: string,
+    options?: {
+      taskTypeId?: string;
+      taskStatusId?: string;
+      slotWindowId?: string;
+    }
+  ): Promise<Task[]> {
+    let query = this.db
       .from("task")
-      .update({
-        deleted_date: new Date().toISOString(),
-        modified_date: new Date().toISOString(),
-      })
-      .eq("task_id", taskId)
-      .is("deleted_date", null)
-      .select()
-      .single();
+      .select("*")
+      .eq("client_id", clientId)
+      .is("deleted_date", null);
+
+    if (options?.taskTypeId) {
+      query = query.eq("task_type_id", options.taskTypeId);
+    }
+
+    if (options?.taskStatusId) {
+      query = query.eq("task_status_id", options.taskStatusId);
+    }
+
+    if (options?.slotWindowId) {
+      query = query.eq("slot_window_id", options.slotWindowId);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
-      console.error("Error deleting task:", error);
-      throw new Error("Failed to delete the task");
+      console.error("Error fetching tasks by client ID:", error);
+      throw new Error("Failed to fetch tasks for the given client ID");
     }
 
-    if (!data) {
-      return null;
-    }
-
-    return data as Task;
+    return (data as Task[]) || [];
   }
 }

@@ -532,7 +532,9 @@ export class SlotWindowService {
 
     for (const task of tasks) {
       try {
-        await this.taskRepository.softDelete(task.task_id);
+        await this.taskRepository.update(task.task_id, {
+          task_status_id: cancelledStatusId,
+        });
         cancelledCount++;
       } catch (error) {
         const msg = error instanceof Error ? error.message : "Unknown error";
@@ -586,5 +588,51 @@ export class SlotWindowService {
     }
 
     return deactivated;
+  }
+
+  // Get slot window by ID
+  async getSlotWindowById(slotWindowId: string): Promise<SlotWindow> {
+    const slotWindow =
+      await this.slotWindowRepository.findSlotWindowById(slotWindowId);
+
+    if (!slotWindow) {
+      throw new Error("Slot window not found");
+    }
+
+    return slotWindow;
+  }
+
+  // Reserve a slot from a slot window (used when creating an appointment)
+  async reserveSlotFromSlotWindow(slotWindowId: string): Promise<number> {
+    const slotWindow =
+      await this.slotWindowRepository.findSlotWindowById(slotWindowId);
+
+    if (!slotWindow) {
+      throw new Error("Slot window not found");
+    }
+
+    // Reserve the slot and get the position (RPC handles availability check)
+    const position =
+      await this.slotWindowRepository.reserveSlotFromSlotWindow(slotWindowId);
+
+    return position;
+  }
+
+  // Release a slot back to a slot window (used when canceling an appointment)
+  async releaseSlotToSlotWindow(
+    slotWindowId: string,
+    position: number
+  ): Promise<void> {
+    const slotWindow =
+      await this.slotWindowRepository.findSlotWindowById(slotWindowId);
+
+    if (!slotWindow) {
+      throw new Error("Slot window not found");
+    }
+
+    await this.slotWindowRepository.releaseSlotToSlotWindow(
+      slotWindowId,
+      position
+    );
   }
 }
