@@ -1,5 +1,6 @@
 import type {
   CreateClientInput,
+  CreateClientWithContactInput,
   GetAllClientsQuery,
   GetClientParam,
   UpdateClientInput,
@@ -46,7 +47,7 @@ export class ClientController {
   static async createClient(c: APIContext<{ json: CreateClientInput }>) {
     try {
       const clientService = getClientService(c);
-      const body = c.req.valid("json") as CreateClientInput;
+      const body = c.req.valid("json") as CreateClientWithContactInput;
 
       const client = await clientService.createClient(body);
 
