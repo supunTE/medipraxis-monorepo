@@ -47,7 +47,7 @@ export class ClientRepository {
       contact_number: contactInfo.contact_number,
     };
     const { data: contact, error } = await this.db
-      .from("contact_info")
+      .from("contact")
       .insert(data)
       .select()
       .single();
