@@ -4,6 +4,16 @@ import { z } from "zod";
 
 const PHONE_REGEX = /^[\d\s\+\-\(\)]+$/;
 
+/* ---------------- ENUMS ---------------- */
+
+export const Gender = {
+  MALE: "MALE",
+  FEMALE: "FEMALE",
+  OTHER: "OTHER",
+} as const;
+
+export const genderEnum = z.enum([Gender.MALE, Gender.FEMALE, Gender.OTHER]);
+
 /* ---------------- RESPONSE SCHEMAS ---------------- */
 
 export const contactInfoSchema = z.object({
@@ -19,7 +29,7 @@ export const clientSchema = z.object({
   first_name: z.string(),
   last_name: z.string(),
   full_name: z.string(),
-  gender: z.enum(["MALE", "FEMALE", "OTHER"]),
+  gender: genderEnum,
   date_of_birth: z.string(),
   emergency_contact_name: z.string().nullable(),
   emergency_contact_country_code: z.string().nullable(),
@@ -66,7 +76,7 @@ export const createClientSchema = z
     title: z.string(),
     first_name: z.string(),
     last_name: z.string(),
-    gender: z.enum(["MALE", "FEMALE", "OTHER"]),
+    gender: genderEnum,
     date_of_birth: z.string(),
     emergency_contact_name: z.string().nullable(),
     emergency_contact_country_code: z.string().nullable(),
@@ -130,7 +140,7 @@ export const updateClientSchema = z
     title: z.string().optional(),
     first_name: z.string().optional(),
     last_name: z.string().optional(),
-    gender: z.enum(["MALE", "FEMALE", "OTHER"]).optional(),
+    gender: genderEnum.optional(),
     date_of_birth: z.string().optional(),
     emergency_contact_name: z.string().nullable().optional(),
     emergency_contact_country_code: z.string().nullable().optional(),
@@ -143,7 +153,7 @@ export const updateClientSchema = z
     known_conditions: z.array(z.string()).nullable().optional(),
     note: z.string().nullable().optional(),
     contact_id: z.string(),
-    user_id: z.string().optional(),
+    user_id: z.string(),
   })
   .strict();
 
@@ -160,3 +170,4 @@ export type CreateContactInfoInput = z.infer<typeof createContactInfoSchema>;
 export type CreateClientWithContactInput = z.infer<
   typeof createClientWithContactSchema
 >;
+export type GenderType = z.infer<typeof genderEnum>;
