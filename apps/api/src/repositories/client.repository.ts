@@ -57,7 +57,6 @@ export class ClientRepository {
       title: clientData.title,
       first_name: clientData.first_name,
       last_name: clientData.last_name,
-      full_name: `${clientData.first_name} ${clientData.last_name}`,
       gender: clientData.gender,
       date_of_birth: clientData.date_of_birth,
       emergency_contact_name: clientData.emergency_contact_name || null,
