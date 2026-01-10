@@ -90,7 +90,10 @@ export class ClientRepository {
   ): Promise<Client | null> {
     const { data, error } = await this.db
       .from("client")
-      .update(updateData)
+      .update({
+        ...clientData,
+        modified_date: new Date().toISOString(),
+      })
       .eq("client_id", clientId)
       .is("deleted_date", null)
       .select()
