@@ -26,7 +26,7 @@ export class ClientRepository {
     contactNumber: string
   ): Promise<ContactInfo | null> {
     const { data, error } = await this.db
-      .from("contact_info")
+      .from("contact")
       .select("*")
       .eq("country_code", countryCode)
       .eq("contact_number", contactNumber)
