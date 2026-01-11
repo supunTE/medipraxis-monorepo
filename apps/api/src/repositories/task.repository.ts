@@ -208,7 +208,9 @@ export class TaskRepository {
       query = query.eq("slot_window_id", options.slotWindowId);
     }
 
-    const { data, error } = await query.order("start_date", { ascending: true });
+    const { data, error } = await query.order("start_date", {
+      ascending: true,
+    });
 
     if (error || !data) {
       return [];
@@ -252,7 +254,9 @@ export class TaskRepository {
       query = query.eq("slot_window_id", options.slotWindowId);
     }
 
-    const { data, error } = await query.order("start_date", { ascending: true });
+    const { data, error } = await query.order("start_date", {
+      ascending: true,
+    });
 
     if (error || !data) {
       return [];
