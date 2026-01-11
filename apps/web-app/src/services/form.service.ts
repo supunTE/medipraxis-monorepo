@@ -4,7 +4,7 @@ export const formService = {
   /**
    * Fetch dynamic form configuration by form ID
    */
-  async getFormById(formId: string): Promise<FormResponse> {
+  async getFormById(_formId: string): Promise<FormResponse> {
     try {
       // TODO: Replace with actual API endpoint when backend is ready
 
