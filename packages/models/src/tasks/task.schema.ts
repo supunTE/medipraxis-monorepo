@@ -4,6 +4,15 @@ import { z } from "zod";
 
 export const TaskCreatorEnum = z.enum(["PRACTITIONER", "CLIENT"]);
 
+export const TaskTypeEnum = z.enum(["APPOINTMENT", "REMINDER", "NOTE"]);
+
+export const TaskStatusEnum = z.enum([
+  "IN_PROGRESS",
+  "CANCELLED",
+  "NOT_STARTED",
+  "COMPLETED",
+]);
+
 /* ---------------- RESPONSE SCHEMAS ---------------- */
 
 export const taskSchema = z.object({
@@ -38,6 +47,15 @@ export const updateTaskParamSchema = z.object({
 
 export const getAllTasksQuerySchema = z.object({
   user_id: z.string(),
+  task_type: TaskTypeEnum.optional(),
+  task_status: TaskStatusEnum.optional(),
+  slot_window_id: z.string().optional(),
+});
+
+export const getAppointmentsByClientQuerySchema = z.object({
+  client_id: z.string(),
+  task_status: TaskStatusEnum.optional(),
+  slot_window_id: z.string().optional(),
 });
 
 export const createTaskSchema = z.object({
@@ -71,6 +89,19 @@ export const updateTaskSchema = z
   })
   .strict();
 
+export const reserveAppointmentByClientSchema = z
+  .object({
+    slot_window_id: z.string(),
+    client_id: z.string(),
+  })
+  .strict();
+
+export const cancelAppointmentByClientSchema = z
+  .object({
+    task_id: z.string(),
+  })
+  .strict();
+
 /* ---------------- TYPES (DERIVED) ---------------- */
 
 export type TaskCreator = z.infer<typeof TaskCreatorEnum>;
@@ -78,8 +109,17 @@ export type Task = z.infer<typeof taskSchema>;
 export type GetTaskParam = z.infer<typeof getTaskParamSchema>;
 export type UpdateTaskParam = z.infer<typeof updateTaskParamSchema>;
 export type GetAllTaskQuery = z.infer<typeof getAllTasksQuerySchema>;
+export type GetAppointmentsByClientQuery = z.infer<
+  typeof getAppointmentsByClientQuerySchema
+>;
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;
 export type UpdateTaskInput = z.infer<typeof updateTaskSchema>;
+export type ReserveAppointmentByClientInput = z.infer<
+  typeof reserveAppointmentByClientSchema
+>;
+export type CancelAppointmentByClientInput = z.infer<
+  typeof cancelAppointmentByClientSchema
+>;
 
 /* Output-only type extending Task with related entity names */
 export type TaskDetails = Task & {

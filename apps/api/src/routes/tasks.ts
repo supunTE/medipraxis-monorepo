@@ -1,8 +1,11 @@
 import { zValidator } from "@hono/zod-validator";
 import {
+  cancelAppointmentByClientSchema,
   createTaskSchema,
   getAllTasksQuerySchema,
+  getAppointmentsByClientQuerySchema,
   getTaskParamSchema,
+  reserveAppointmentByClientSchema,
   updateTaskParamSchema,
   updateTaskSchema,
 } from "@repo/models";
@@ -14,7 +17,12 @@ const tasks = new Hono()
   .get(
     "/",
     zValidator("query", getAllTasksQuerySchema),
-    TaskController.getAllTasks
+    TaskController.getAllTasksByUserId
+  )
+  .get(
+    "/appointments/client",
+    zValidator("query", getAppointmentsByClientQuerySchema),
+    TaskController.getAppointmentsByClientId
   )
   .get(
     "/:id",
@@ -26,6 +34,17 @@ const tasks = new Hono()
     zValidator("param", updateTaskParamSchema),
     zValidator("json", updateTaskSchema),
     TaskController.updateTask
+  )
+  // Appointment reservation routes
+  .post(
+    "/appointments/reserve",
+    zValidator("json", reserveAppointmentByClientSchema),
+    TaskController.reserveAppointmentByClient
+  )
+  .post(
+    "/appointments/cancel",
+    zValidator("json", cancelAppointmentByClientSchema),
+    TaskController.cancelAppointmentByClient
   );
 
 export default tasks;

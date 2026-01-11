@@ -1,11 +1,13 @@
 import type { Context } from "hono";
 import {
+  ClientRepository,
   SlotWindowRepository,
   TaskRepository,
   UserRepository,
 } from "../repositories";
 import {
   AIService,
+  ClientService,
   SlotWindowService,
   TaskService,
   UserService,
@@ -40,4 +42,10 @@ export function getUserService(c: Context<{ Bindings: Env }>) {
   const db = createDatabaseClient(c.env);
   const userRepository = new UserRepository(db);
   return new UserService(userRepository);
+}
+
+export function getClientService(c: Context<{ Bindings: Env }>) {
+  const db = createDatabaseClient(c.env);
+  const clientRepository = new ClientRepository(db);
+  return new ClientService(clientRepository);
 }

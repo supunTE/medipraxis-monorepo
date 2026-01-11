@@ -14,8 +14,74 @@ export class TaskService {
     this.taskRepository = taskRepository;
   }
 
-  async getAllTasks(userId?: string): Promise<TaskDetails[]> {
-    return await this.taskRepository.findAll(userId);
+  async getAllTasks(
+    userId: string,
+    taskType?: keyof typeof TaskType,
+    taskStatus?: keyof typeof TaskStatus,
+    slotWindowId?: string
+  ): Promise<TaskDetails[]> {
+    // Get task type ID if task type name is provided
+    let taskTypeId: string | undefined;
+    if (taskType) {
+      const typeId = await this.taskRepository.getTaskTypeByName(
+        TaskType[taskType]
+      );
+      if (!typeId) {
+        throw new Error(`Task type "${taskType}" not found in database`);
+      }
+      taskTypeId = typeId;
+    }
+
+    // Get task status ID if task status name is provided
+    let taskStatusId: string | undefined;
+    if (taskStatus) {
+      const statusId = await this.taskRepository.getTaskStatusByName(
+        TaskStatus[taskStatus]
+      );
+      if (!statusId) {
+        throw new Error(`Task status "${taskStatus}" not found in database`);
+      }
+      taskStatusId = statusId;
+    }
+
+    return await this.taskRepository.findByUserId(userId, {
+      taskTypeId,
+      taskStatusId,
+      slotWindowId,
+    });
+  }
+
+  async getAppointmentsByClientId(
+    clientId: string,
+    taskStatus?: keyof typeof TaskStatus,
+    slotWindowId?: string
+  ): Promise<TaskDetails[]> {
+    // Get appointment type ID
+    const appointmentTypeId = await this.taskRepository.getTaskTypeByName(
+      TaskType.APPOINTMENT
+    );
+
+    if (!appointmentTypeId) {
+      throw new Error('Task type "APPOINTMENT" not found in database');
+    }
+
+    // Get task status ID if task status name is provided
+    let taskStatusId: string | undefined;
+    if (taskStatus) {
+      const statusId = await this.taskRepository.getTaskStatusByName(
+        TaskStatus[taskStatus]
+      );
+      if (!statusId) {
+        throw new Error(`Task status "${taskStatus}" not found in database`);
+      }
+      taskStatusId = statusId;
+    }
+
+    return await this.taskRepository.findByClientId(clientId, {
+      taskTypeId: appointmentTypeId,
+      taskStatusId,
+      slotWindowId,
+    });
   }
 
   async getTaskById(taskId: string): Promise<TaskDetails> {
@@ -95,5 +161,147 @@ export class TaskService {
     }
 
     return updatedTask;
+  }
+
+  async updateTaskStatus(taskId: string, status: TaskStatus): Promise<Task> {
+    // Get the status ID by status name
+    const statusId = await this.taskRepository.getTaskStatusByName(status);
+
+    if (!statusId) {
+      throw new Error(`Task status "${status}" not found in database`);
+    }
+
+    // Update the task with the new status
+    const updatedTask = await this.taskRepository.update(taskId, {
+      task_status_id: statusId,
+    });
+
+    if (!updatedTask) {
+      throw new Error("Task not found or could not be updated");
+    }
+
+    return updatedTask;
+  }
+
+  async isTaskCancelled(taskId: string): Promise<boolean> {
+    const task = await this.getTaskById(taskId);
+    const cancelledStatusId = await this.taskRepository.getTaskStatusByName(
+      TaskStatus.CANCELLED
+    );
+
+    return task.task_status_id === cancelledStatusId;
+  }
+
+  // Check if client already has an appointment in the slot window
+  async hasExistingAppointmentInSlotWindow(
+    clientId: string,
+    slotWindowId: string
+  ): Promise<boolean> {
+    // Get appointment type ID
+    const appointmentTypeId = await this.taskRepository.getTaskTypeByName(
+      TaskType.APPOINTMENT
+    );
+
+    if (!appointmentTypeId) {
+      throw new Error('Task type "APPOINTMENT" not found in database');
+    }
+
+    // Get cancelled status ID to exclude cancelled appointments
+    const cancelledStatusId = await this.taskRepository.getTaskStatusByName(
+      TaskStatus.CANCELLED
+    );
+
+    // Find appointments for this client in this slot window
+    const existingTasks = await this.taskRepository.findByClientId(clientId, {
+      taskTypeId: appointmentTypeId,
+      slotWindowId: slotWindowId,
+    });
+
+    // Filter out cancelled appointments
+    const activeAppointments = existingTasks.filter(
+      (task) => task.task_status_id !== cancelledStatusId
+    );
+
+    return activeAppointments.length > 0;
+  }
+
+  // Calculate slot time range based on slot window and position
+  private calculateSlotTimeRange(
+    slotWindowStartDate: string,
+    slotWindowEndDate: string,
+    totalSlots: number,
+    position: number
+  ): { start_date: string; end_date: string } {
+    const startDate = new Date(slotWindowStartDate);
+    const endDate = new Date(slotWindowEndDate);
+
+    // Calculate total duration in milliseconds
+    const totalDuration = endDate.getTime() - startDate.getTime();
+
+    // Calculate duration per slot
+    const slotDuration = totalDuration / totalSlots;
+
+    // Calculate this slot's start and end times (position is 1-indexed)
+    const slotStartTime = startDate.getTime() + (position - 1) * slotDuration;
+    const slotEndTime = slotStartTime + slotDuration;
+
+    return {
+      start_date: new Date(slotStartTime).toISOString(),
+      end_date: new Date(slotEndTime).toISOString(),
+    };
+  }
+
+  // Reserve an appointment from a slot window
+  async reserveAppointmentFromSlotWindow(
+    slotWindowId: string,
+    slotWindowStartDate: string,
+    slotWindowEndDate: string,
+    totalSlots: number,
+    position: number,
+    userId: string,
+    clientId: string
+  ): Promise<Task> {
+    // Calculate the specific time slot for this appointment
+    const { start_date, end_date } = this.calculateSlotTimeRange(
+      slotWindowStartDate,
+      slotWindowEndDate,
+      totalSlots,
+      position
+    );
+
+    // Get appointment type ID
+    const appointmentTypeId = await this.taskRepository.getTaskTypeByName(
+      TaskType.APPOINTMENT
+    );
+
+    if (!appointmentTypeId) {
+      throw new Error('Task type "APPOINTMENT" not found in database');
+    }
+
+    // Get NOT_STARTED status ID
+    const notStartedStatusId = await this.taskRepository.getTaskStatusByName(
+      TaskStatus.NOT_STARTED
+    );
+
+    if (!notStartedStatusId) {
+      throw new Error('Task status "NOT_STARTED" not found in database');
+    }
+
+    // Create the appointment task
+    const task = await this.taskRepository.create({
+      task_title: "Appointment",
+      task_type_id: appointmentTypeId,
+      task_status_id: notStartedStatusId,
+      user_id: userId,
+      client_id: clientId,
+      start_date,
+      end_date,
+      slot_window_id: slotWindowId,
+      appointment_number: position,
+      set_alarm: false,
+      created_by: "CLIENT",
+    });
+
+    return task;
   }
 }
