@@ -17,17 +17,12 @@ const tasks = new Hono()
   .get(
     "/",
     zValidator("query", getAllTasksQuerySchema),
-    TaskController.getAllTasks
-  )
-  .get(
-    "/appointments",
-    zValidator("query", getAllTasksQuerySchema),
-    TaskController.getAllAppointments
+    TaskController.getAllTasksByUserId
   )
   .get(
     "/appointments/client",
     zValidator("query", getAppointmentsByClientQuerySchema),
-    TaskController.getAppointmentsByClient
+    TaskController.getAppointmentsByClientId
   )
   .get(
     "/:id",

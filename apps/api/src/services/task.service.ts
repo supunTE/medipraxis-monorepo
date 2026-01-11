@@ -14,16 +14,74 @@ export class TaskService {
     this.taskRepository = taskRepository;
   }
 
-  async getAllTasks(userId?: string): Promise<TaskDetails[]> {
-    return await this.taskRepository.findAll(userId);
+  async getAllTasks(
+    userId: string,
+    taskType?: keyof typeof TaskType,
+    taskStatus?: keyof typeof TaskStatus,
+    slotWindowId?: string
+  ): Promise<TaskDetails[]> {
+    // Get task type ID if task type name is provided
+    let taskTypeId: string | undefined;
+    if (taskType) {
+      const typeId = await this.taskRepository.getTaskTypeByName(
+        TaskType[taskType]
+      );
+      if (!typeId) {
+        throw new Error(`Task type "${taskType}" not found in database`);
+      }
+      taskTypeId = typeId;
+    }
+
+    // Get task status ID if task status name is provided
+    let taskStatusId: string | undefined;
+    if (taskStatus) {
+      const statusId = await this.taskRepository.getTaskStatusByName(
+        TaskStatus[taskStatus]
+      );
+      if (!statusId) {
+        throw new Error(`Task status "${taskStatus}" not found in database`);
+      }
+      taskStatusId = statusId;
+    }
+
+    return await this.taskRepository.findByUserId(userId, {
+      taskTypeId,
+      taskStatusId,
+      slotWindowId,
+    });
   }
 
-  async getAppointmentsByUserId(userId: string): Promise<TaskDetails[]> {
-    return await this.taskRepository.findAppointmentsByUserId(userId);
-  }
+  async getAppointmentsByClientId(
+    clientId: string,
+    taskStatus?: keyof typeof TaskStatus,
+    slotWindowId?: string
+  ): Promise<TaskDetails[]> {
+    // Get appointment type ID
+    const appointmentTypeId = await this.taskRepository.getTaskTypeByName(
+      TaskType.APPOINTMENT
+    );
 
-  async getAppointmentsByClientId(clientId: string): Promise<TaskDetails[]> {
-    return await this.taskRepository.findAppointmentsByClientId(clientId);
+    if (!appointmentTypeId) {
+      throw new Error('Task type "APPOINTMENT" not found in database');
+    }
+
+    // Get task status ID if task status name is provided
+    let taskStatusId: string | undefined;
+    if (taskStatus) {
+      const statusId = await this.taskRepository.getTaskStatusByName(
+        TaskStatus[taskStatus]
+      );
+      if (!statusId) {
+        throw new Error(`Task status "${taskStatus}" not found in database`);
+      }
+      taskStatusId = statusId;
+    }
+
+    return await this.taskRepository.findByClientId(clientId, {
+      taskTypeId: appointmentTypeId,
+      taskStatusId,
+      slotWindowId,
+    });
   }
 
   async getTaskById(taskId: string): Promise<TaskDetails> {

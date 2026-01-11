@@ -59,35 +59,6 @@ export class TaskRepository {
     return data.task_type_id;
   }
 
-  async findAll(userId?: string): Promise<TaskDetails[]> {
-    let query = this.db
-      .from("task")
-      .select(TASK_QUERIES.FIND_ALL)
-      .is("deleted_date", null)
-      .order("created_date", { ascending: false });
-
-    if (userId) {
-      query = query.eq("user_id", userId);
-    }
-
-    const { data, error } = await query;
-
-    if (error || !data) {
-      return [];
-    }
-
-    return data.map((item) => {
-      const { task_type, task_status, client, ...taskData } = item;
-      return {
-        ...taskData,
-        task_type_name: task_type?.task_type_name || "",
-        task_status_name: task_status?.task_status_name || "",
-        client_first_name: client?.first_name || null,
-        client_last_name: client?.last_name || null,
-      } as TaskDetails;
-    });
-  }
-
   async findById(taskId: string): Promise<TaskDetails | null> {
     const { data, error } = await this.db
       .from("task")
@@ -296,36 +267,6 @@ export class TaskRepository {
         client_first_name: client?.first_name || null,
         client_last_name: client?.last_name || null,
       } as TaskDetails;
-    });
-  }
-
-  async findAppointmentsByUserId(userId: string): Promise<TaskDetails[]> {
-    // Get appointment type ID
-    const appointmentTypeId = await this.getTaskTypeByName(
-      TaskType.APPOINTMENT
-    );
-
-    if (!appointmentTypeId) {
-      throw new Error('Task type "APPOINTMENT" not found in database');
-    }
-
-    return await this.findByUserId(userId, {
-      taskTypeId: appointmentTypeId,
-    });
-  }
-
-  async findAppointmentsByClientId(clientId: string): Promise<TaskDetails[]> {
-    // Get appointment type ID
-    const appointmentTypeId = await this.getTaskTypeByName(
-      TaskType.APPOINTMENT
-    );
-
-    if (!appointmentTypeId) {
-      throw new Error('Task type "APPOINTMENT" not found in database');
-    }
-
-    return await this.findByClientId(clientId, {
-      taskTypeId: appointmentTypeId,
     });
   }
 }

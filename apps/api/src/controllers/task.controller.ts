@@ -5,6 +5,7 @@ import type {
   GetAppointmentsByClientQuery,
   GetTaskParam,
   ReserveAppointmentByClientInput,
+  TaskType,
   UpdateTaskInput,
 } from "@repo/models";
 import { TaskStatus } from "@repo/models";
@@ -12,12 +13,24 @@ import { getSlotWindowService, getTaskService } from "../lib";
 import type { APIContext } from "../types/api-context";
 
 export class TaskController {
-  static async getAllTasks(c: APIContext<{ query: GetAllTaskQuery }>) {
+  static async getAllTasksByUserId(c: APIContext<{ query: GetAllTaskQuery }>) {
     try {
       const taskService = getTaskService(c);
-      const userId = c.req.query("user_id");
+      const userId = c.req.query("user_id") as string;
+      const taskType = c.req.query("task_type") as
+        | keyof typeof TaskType
+        | undefined;
+      const taskStatus = c.req.query("task_status") as
+        | keyof typeof TaskStatus
+        | undefined;
+      const slotWindowId = c.req.query("slot_window_id");
 
-      const tasks = await taskService.getAllTasks(userId);
+      const tasks = await taskService.getAllTasks(
+        userId,
+        taskType,
+        taskStatus,
+        slotWindowId
+      );
 
       return c.json({ tasks, count: tasks.length });
     } catch (error) {
@@ -27,39 +40,22 @@ export class TaskController {
     }
   }
 
-  static async getAllAppointments(c: APIContext<{ query: GetAllTaskQuery }>) {
-    try {
-      const taskService = getTaskService(c);
-      const userId = c.req.query("user_id");
-
-      if (!userId) {
-        return c.json({ error: "user_id is required" }, 400);
-      }
-
-      const appointments = await taskService.getAppointmentsByUserId(userId);
-
-      return c.json({ appointments, count: appointments.length });
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Failed to get appointments";
-      return c.json({ error: message }, 500);
-    }
-  }
-
-  static async getAppointmentsByClient(
+  static async getAppointmentsByClientId(
     c: APIContext<{ query: GetAppointmentsByClientQuery }>
   ) {
     try {
       const taskService = getTaskService(c);
-      const clientId = c.req.query("client_id");
+      const clientId = c.req.query("client_id") as string;
+      const taskStatus = c.req.query("task_status") as
+        | keyof typeof TaskStatus
+        | undefined;
+      const slotWindowId = c.req.query("slot_window_id");
 
-      if (!clientId) {
-        return c.json({ error: "client_id is required" }, 400);
-      }
-
-      const appointments = await taskService.getAppointmentsByClientId(clientId);
+      const appointments = await taskService.getAppointmentsByClientId(
+        clientId,
+        taskStatus,
+        slotWindowId
+      );
 
       return c.json({ appointments, count: appointments.length });
     } catch (error) {
@@ -214,10 +210,7 @@ export class TaskController {
       // Check if appointment is already cancelled
       const isCancelled = await taskService.isTaskCancelled(body.task_id);
       if (isCancelled) {
-        return c.json(
-          { error: "Appointment is already cancelled" },
-          400
-        );
+        return c.json({ error: "Appointment is already cancelled" }, 400);
       }
 
       // Release the slot back to slot window
@@ -244,9 +237,9 @@ export class TaskController {
               error.message.includes("not an appointment")
             ? 400
             : error instanceof Error &&
-              error.message.includes("already cancelled")
-            ? 400
-            : 500;
+                error.message.includes("already cancelled")
+              ? 400
+              : 500;
       return c.json({ error: message }, status);
     }
   }

@@ -4,6 +4,15 @@ import { z } from "zod";
 
 export const TaskCreatorEnum = z.enum(["PRACTITIONER", "CLIENT"]);
 
+export const TaskTypeEnum = z.enum(["APPOINTMENT", "REMINDER", "NOTE"]);
+
+export const TaskStatusEnum = z.enum([
+  "IN_PROGRESS",
+  "CANCELLED",
+  "NOT_STARTED",
+  "COMPLETED",
+]);
+
 /* ---------------- RESPONSE SCHEMAS ---------------- */
 
 export const taskSchema = z.object({
@@ -38,10 +47,15 @@ export const updateTaskParamSchema = z.object({
 
 export const getAllTasksQuerySchema = z.object({
   user_id: z.string(),
+  task_type: TaskTypeEnum.optional(),
+  task_status: TaskStatusEnum.optional(),
+  slot_window_id: z.string().optional(),
 });
 
 export const getAppointmentsByClientQuerySchema = z.object({
   client_id: z.string(),
+  task_status: TaskStatusEnum.optional(),
+  slot_window_id: z.string().optional(),
 });
 
 export const createTaskSchema = z.object({
