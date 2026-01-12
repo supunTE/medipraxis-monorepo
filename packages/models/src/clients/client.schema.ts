@@ -78,15 +78,16 @@ const createClientBaseSchema = z
     last_name: z.string(),
     gender: genderEnum,
     date_of_birth: z.string(),
-    emergency_contact_name: z.string().nullable(),
-    emergency_contact_country_code: z.string().nullable(),
+    emergency_contact_name: z.string().optional().nullable(),
+    emergency_contact_country_code: z.string().optional().nullable(),
     emergency_contact_number: z
       .string()
       .regex(PHONE_REGEX, "Invalid emergency contact phone number format")
+      .optional()
       .nullable(),
-    emergency_contact_relationship: z.string().nullable(),
-    known_conditions: z.array(z.string()).nullable(),
-    note: z.string().nullable(),
+    emergency_contact_relationship: z.string().optional().nullable(),
+    known_conditions: z.array(z.string()).optional().nullable(),
+    note: z.string().optional().nullable(),
     contact_id: z.string(),
     user_id: z.string(),
   })
