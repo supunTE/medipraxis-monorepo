@@ -1,6 +1,7 @@
 import type {
   CreateSlotWindowInput,
   CreateSlotWindowTemplateInput,
+  GetAllTaskQuery,
   UpdateSlotWindowTemplateInput,
 } from "@repo/models";
 import { getSlotWindowService } from "../lib";
@@ -10,6 +11,52 @@ type SlotWindowTemplateParam = { id: string };
 type SlotWindowParam = { id: string };
 
 export class SlotWindowController {
+  // Get all slot windows for a user
+  static async getAllSlotWindows(c: APIContext<{ query: GetAllTaskQuery }>) {
+    try {
+      const slotWindowService = getSlotWindowService(c);
+      const userId = c.req.query("user_id");
+
+      if (!userId) {
+        return c.json({ error: "user_id is required" }, 400);
+      }
+
+      const slotWindows =
+        await slotWindowService.getAllSlotWindowsByUserId(userId);
+
+      return c.json({ slotWindows, count: slotWindows.length });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to get slot windows";
+      return c.json({ error: message }, 500);
+    }
+  }
+
+  // Get all slot window templates for a user
+  static async getAllSlotWindowTemplates(
+    c: APIContext<{ query: GetAllTaskQuery }>
+  ) {
+    try {
+      const slotWindowService = getSlotWindowService(c);
+      const userId = c.req.query("user_id");
+
+      if (!userId) {
+        return c.json({ error: "user_id is required" }, 400);
+      }
+
+      const templates =
+        await slotWindowService.getAllSlotWindowTemplatesByUserId(userId);
+
+      return c.json({ templates, count: templates.length });
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to get slot window templates";
+      return c.json({ error: message }, 500);
+    }
+  }
+
   // Create a recurring appointment template and generate slot windows for upcoming week
   static async createAppointmentSlotWindowTemplate(
     c: APIContext<{ json: CreateSlotWindowTemplateInput }>

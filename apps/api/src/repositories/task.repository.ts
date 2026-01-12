@@ -59,35 +59,6 @@ export class TaskRepository {
     return data.task_type_id;
   }
 
-  async findAll(userId?: string): Promise<TaskDetails[]> {
-    let query = this.db
-      .from("task")
-      .select(TASK_QUERIES.FIND_ALL)
-      .is("deleted_date", null)
-      .order("created_date", { ascending: false });
-
-    if (userId) {
-      query = query.eq("user_id", userId);
-    }
-
-    const { data, error } = await query;
-
-    if (error || !data) {
-      return [];
-    }
-
-    return data.map((item) => {
-      const { task_type, task_status, client, ...taskData } = item;
-      return {
-        ...taskData,
-        task_type_name: task_type?.task_type_name || "",
-        task_status_name: task_status?.task_status_name || "",
-        client_first_name: client?.first_name || null,
-        client_last_name: client?.last_name || null,
-      } as TaskDetails;
-    });
-  }
-
   async findById(taskId: string): Promise<TaskDetails | null> {
     const { data, error } = await this.db
       .from("task")
@@ -211,27 +182,95 @@ export class TaskRepository {
     return data as Task[];
   }
 
-  async softDelete(taskId: string): Promise<Task | null> {
-    const { data, error } = await this.db
+  async findByClientId(
+    clientId: string,
+    options?: {
+      taskTypeId?: string;
+      taskStatusId?: string;
+      slotWindowId?: string;
+    }
+  ): Promise<TaskDetails[]> {
+    let query = this.db
       .from("task")
-      .update({
-        deleted_date: new Date().toISOString(),
-        modified_date: new Date().toISOString(),
-      })
-      .eq("task_id", taskId)
-      .is("deleted_date", null)
-      .select()
-      .single();
+      .select(TASK_QUERIES.FIND_ALL)
+      .eq("client_id", clientId)
+      .is("deleted_date", null);
 
-    if (error) {
-      console.error("Error deleting task:", error);
-      throw new Error("Failed to delete the task");
+    if (options?.taskTypeId) {
+      query = query.eq("task_type_id", options.taskTypeId);
     }
 
-    if (!data) {
-      return null;
+    if (options?.taskStatusId) {
+      query = query.eq("task_status_id", options.taskStatusId);
     }
 
-    return data as Task;
+    if (options?.slotWindowId) {
+      query = query.eq("slot_window_id", options.slotWindowId);
+    }
+
+    const { data, error } = await query.order("start_date", {
+      ascending: true,
+    });
+
+    if (error || !data) {
+      return [];
+    }
+
+    return data.map((item) => {
+      const { task_type, task_status, client, ...taskData } = item;
+      return {
+        ...taskData,
+        task_type_name: task_type?.task_type_name || "",
+        task_status_name: task_status?.task_status_name || "",
+        client_first_name: client?.first_name || null,
+        client_last_name: client?.last_name || null,
+      } as TaskDetails;
+    });
+  }
+
+  async findByUserId(
+    userId: string,
+    options?: {
+      taskTypeId?: string;
+      taskStatusId?: string;
+      slotWindowId?: string;
+    }
+  ): Promise<TaskDetails[]> {
+    let query = this.db
+      .from("task")
+      .select(TASK_QUERIES.FIND_ALL)
+      .eq("user_id", userId)
+      .is("deleted_date", null);
+
+    if (options?.taskTypeId) {
+      query = query.eq("task_type_id", options.taskTypeId);
+    }
+
+    if (options?.taskStatusId) {
+      query = query.eq("task_status_id", options.taskStatusId);
+    }
+
+    if (options?.slotWindowId) {
+      query = query.eq("slot_window_id", options.slotWindowId);
+    }
+
+    const { data, error } = await query.order("start_date", {
+      ascending: true,
+    });
+
+    if (error || !data) {
+      return [];
+    }
+
+    return data.map((item) => {
+      const { task_type, task_status, client, ...taskData } = item;
+      return {
+        ...taskData,
+        task_type_name: task_type?.task_type_name || "",
+        task_status_name: task_status?.task_status_name || "",
+        client_first_name: client?.first_name || null,
+        client_last_name: client?.last_name || null,
+      } as TaskDetails;
+    });
   }
 }
