@@ -12,7 +12,7 @@ import {
   ClientService,
   UserService,
   TaskService,
-  SlotWindowService
+  SlotWindowService,
 } from "../services";
 
 import type { Env } from "../types";
