@@ -71,7 +71,7 @@ export const getAllClientsQuerySchema = z.object({
   user_id: z.string(),
 });
 
-export const createClientSchema = z
+const createClientBaseSchema = z
   .object({
     title: z.string(),
     first_name: z.string(),
@@ -90,50 +90,62 @@ export const createClientSchema = z
     contact_id: z.string(),
     user_id: z.string(),
   })
-  .strict()
-  // DOB validation
-  .refine(
-    (data) => {
-      const dob = new Date(data.date_of_birth);
-      const today = new Date();
+  .strict();
 
-      if (dob > today) return false;
+const addClientValidations = <T extends z.ZodTypeAny>(schema: T) => {
+  return (
+    schema
+      // DOB validation
+      .refine(
+        (data: any) => {
+          const dob = new Date(data.date_of_birth);
+          const today = new Date();
 
-      const age =
-        (today.getTime() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000);
+          if (dob > today) return false;
 
-      return age >= 0 && age <= 150;
-    },
-    {
-      message: "Date of birth is invalid",
-      path: ["date_of_birth"],
-    }
-  )
-  // Emergency contact consistency
-  .superRefine((data, ctx) => {
-    if (data.emergency_contact_name && !data.emergency_contact_number) {
-      ctx.addIssue({
-        path: ["emergency_contact_number"],
-        message:
-          "Emergency contact number is required when emergency contact name is provided",
-        code: z.ZodIssueCode.custom,
-      });
-    }
+          const age =
+            (today.getTime() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000);
 
-    if (data.emergency_contact_number && !data.emergency_contact_name) {
-      ctx.addIssue({
-        path: ["emergency_contact_name"],
-        message:
-          "Emergency contact name is required when emergency contact number is provided",
-        code: z.ZodIssueCode.custom,
-      });
-    }
-  });
+          return age >= 0 && age <= 150;
+        },
+        {
+          message: "Date of birth is invalid",
+          path: ["date_of_birth"],
+        }
+      )
+      // Emergency contact consistency
+      .superRefine((data: any, ctx) => {
+        if (data.emergency_contact_name && !data.emergency_contact_number) {
+          ctx.addIssue({
+            path: ["emergency_contact_number"],
+            message:
+              "Emergency contact number is required when emergency contact name is provided",
+            code: z.ZodIssueCode.custom,
+          });
+        }
 
-export const createClientWithContactSchema = createClientSchema.extend({
-  country_code: z.string(),
-  contact_number: z.string().regex(PHONE_REGEX, "Invalid phone number format"),
-});
+        if (data.emergency_contact_number && !data.emergency_contact_name) {
+          ctx.addIssue({
+            path: ["emergency_contact_name"],
+            message:
+              "Emergency contact name is required when emergency contact number is provided",
+            code: z.ZodIssueCode.custom,
+          });
+        }
+      })
+  );
+};
+
+export const createClientSchema = addClientValidations(createClientBaseSchema);
+
+export const createClientWithContactSchema = addClientValidations(
+  createClientBaseSchema.extend({
+    country_code: z.string(),
+    contact_number: z
+      .string()
+      .regex(PHONE_REGEX, "Invalid phone number format"),
+  })
+);
 
 export const updateClientSchema = z
   .object({

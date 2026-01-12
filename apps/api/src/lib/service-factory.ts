@@ -1,5 +1,6 @@
 import type { Context } from "hono";
 import {
+  ClientReportRepository,
   ClientRepository,
   SlotWindowRepository,
   TaskRepository,
@@ -7,6 +8,7 @@ import {
 } from "../repositories";
 import {
   AIService,
+  ClientReportService,
   ClientService,
   SlotWindowService,
   TaskService,
@@ -48,4 +50,10 @@ export function getClientService(c: Context<{ Bindings: Env }>) {
   const db = createDatabaseClient(c.env);
   const clientRepository = new ClientRepository(db);
   return new ClientService(clientRepository);
+}
+
+export function getClientReportService(c: Context<{ Bindings: Env }>) {
+  const db = createDatabaseClient(c.env);
+  const clientReportRepository = new ClientReportRepository(db);
+  return new ClientReportService(clientReportRepository);
 }
