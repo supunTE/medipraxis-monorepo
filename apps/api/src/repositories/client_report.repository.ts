@@ -1,0 +1,178 @@
+import type { ClientReport, CreateClientReportInput } from "@repo/models";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+export const CLIENT_REPORT_QUERIES = {
+  // Table name
+  CLIENT_REPORT_TABLE: "client_report",
+
+  // Storage bucket
+  STORAGE_BUCKET: "reports",
+
+  // Field names
+  REPORT_ID: "report_id",
+  REPORT_TITLE: "report_title",
+  FILE_PATH: "file_path",
+  CLIENT_ID: "client_id",
+  USER_ID: "user_id",
+  CREATED_DATE: "created_date",
+
+  // Select queries
+  FIND_ALL: "*",
+  FIND_BY_ID: "*",
+} as const;
+
+export class ClientReportRepository {
+  private db: SupabaseClient;
+
+  constructor(db: SupabaseClient) {
+    this.db = db;
+  }
+
+  /**
+   * Upload file to Supabase storage
+   */
+  async uploadFile(
+    file: File,
+    userId: string,
+    clientId: string
+  ): Promise<string> {
+    const fileExt = file.name.split(".").pop();
+    const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const filePath = `${userId}/${clientId}/${fileName}`;
+
+    const { error } = await this.db.storage
+      .from(CLIENT_REPORT_QUERIES.STORAGE_BUCKET)
+      .upload(filePath, file, {
+        cacheControl: "3600",
+        upsert: false,
+      });
+
+    if (error) {
+      throw new Error(`Failed to upload file: ${error.message}`);
+    }
+
+    return filePath;
+  }
+
+  /**
+   * Create a new client report record
+   */
+  async create(
+    input: CreateClientReportInput,
+    filePath: string
+  ): Promise<ClientReport> {
+    const { data, error } = await this.db
+      .from(CLIENT_REPORT_QUERIES.CLIENT_REPORT_TABLE)
+      .insert({
+        [CLIENT_REPORT_QUERIES.REPORT_TITLE]: input.report_title,
+        [CLIENT_REPORT_QUERIES.FILE_PATH]: filePath,
+        [CLIENT_REPORT_QUERIES.CLIENT_ID]: input.client_id,
+        [CLIENT_REPORT_QUERIES.USER_ID]: input.user_id,
+      })
+      .select(CLIENT_REPORT_QUERIES.FIND_BY_ID)
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to create client report: ${error.message}`);
+    }
+
+    return data as ClientReport;
+  }
+
+  /**
+   * Find all client reports (optionally filter by user_id or client_id)
+   */
+  async findAll(userId?: string, clientId?: string): Promise<ClientReport[]> {
+    let query = this.db
+      .from(CLIENT_REPORT_QUERIES.CLIENT_REPORT_TABLE)
+      .select(CLIENT_REPORT_QUERIES.FIND_ALL);
+
+    if (userId) {
+      query = query.eq(CLIENT_REPORT_QUERIES.USER_ID, userId);
+    }
+
+    if (clientId) {
+      query = query.eq(CLIENT_REPORT_QUERIES.CLIENT_ID, clientId);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      throw new Error(`Failed to fetch client reports: ${error.message}`);
+    }
+
+    return (data as ClientReport[]) || [];
+  }
+
+  /**
+   * Find a single client report by ID
+   */
+  async findById(reportId: string): Promise<ClientReport | null> {
+    const { data, error } = await this.db
+      .from(CLIENT_REPORT_QUERIES.CLIENT_REPORT_TABLE)
+      .select(CLIENT_REPORT_QUERIES.FIND_BY_ID)
+      .eq(CLIENT_REPORT_QUERIES.REPORT_ID, reportId)
+      .single();
+
+    if (error || !data) {
+      return null;
+    }
+
+    return data as ClientReport;
+  }
+
+  /**
+   * Delete a client report (also removes file from storage)
+   */
+  async delete(reportId: string): Promise<boolean> {
+    // Get the file path
+    const report = await this.findById(reportId);
+
+    if (!report) {
+      return false;
+    }
+
+    // Delete from database
+    const { error: dbError } = await this.db
+      .from(CLIENT_REPORT_QUERIES.CLIENT_REPORT_TABLE)
+      .delete()
+      .eq(CLIENT_REPORT_QUERIES.REPORT_ID, reportId);
+
+    if (dbError) {
+      throw new Error(`Failed to delete client report: ${dbError.message}`);
+    }
+
+    // Delete from storage if file exists
+    if (report.file_path) {
+      const { error: storageError } = await this.db.storage
+        .from(CLIENT_REPORT_QUERIES.STORAGE_BUCKET)
+        .remove([report.file_path]);
+
+      if (storageError) {
+        console.error(
+          `Failed to delete file from storage: ${storageError.message}`
+        );
+      }
+    }
+
+    return true;
+  }
+
+  /**
+   * Get signed URL for file download
+   */
+  async getFileUrl(
+    filePath: string,
+    expiresIn: number = 3600
+  ): Promise<string> {
+    const { data, error } = await this.db.storage
+      .from(CLIENT_REPORT_QUERIES.STORAGE_BUCKET)
+      .createSignedUrl(filePath, expiresIn);
+
+    if (error || !data) {
+      throw new Error(`Failed to generate file URL: ${error?.message}`);
+    }
+
+    return data.signedUrl;
+  }
+}
