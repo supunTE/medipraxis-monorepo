@@ -9,6 +9,7 @@ import {
   AIService,
   ClientReportService,
   ClientService,
+  OtpService,
   SlotWindowService,
   TaskService,
 } from "../services";
@@ -48,4 +49,14 @@ export function getClientReportService(c: Context<{ Bindings: Env }>) {
   const db = createDatabaseClient(c.env);
   const clientReportRepository = new ClientReportRepository(db);
   return new ClientReportService(clientReportRepository);
+}
+
+export function getOtpService(c: Context<{ Bindings: Env }>) {
+  const apiKey = c.env.TEXT_LK_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("TEXT_LK_API_KEY not configured");
+  }
+
+  return new OtpService(apiKey);
 }
