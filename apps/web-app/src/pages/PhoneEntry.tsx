@@ -2,7 +2,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
 const PHONE_REGEX = /^[\d\s\+\-\(\)]+$/;
-const API_BASE_URL = "http://localhost:8787/api"; // Update with your API URL
+const API_BASE_URL = "http://localhost:8787/api"; 
 
 export function PhoneEntry() {
   const navigate = useNavigate();
