@@ -1,5 +1,8 @@
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { DynamicForm } from "../components/forms/DynamicForm";
+import type { FormResponse, FormValues } from "../types/form.types";
+import { FormFieldType } from "../types/form.types";
 
 const API_BASE_URL = "http://localhost:8787/api";
 
@@ -13,15 +16,15 @@ interface ReportField {
   display_label: string;
 }
 
-interface PendingReportDetails {
+interface RequestReportResponse {
   request_report_id: string;
   created_date: string;
+  user_id: string;
   client_id: string;
-  client_name: string;
-  user_id: string | null;
-  user_name: string | null;
+  form_id: string;
   requested_reports: ReportField[];
-  form_id: string | null;
+  expired: boolean;
+  deleted: boolean;
 }
 
 interface UploadReportProps {
@@ -29,57 +32,58 @@ interface UploadReportProps {
   requestReportId: string;
 }
 
-interface FileUpload {
-  fieldId: string;
-  file: File | null;
-}
-
 export function UploadReport({
   contactId,
   requestReportId,
 }: UploadReportProps) {
-  const [reportDetails, setReportDetails] =
-    useState<PendingReportDetails | null>(null);
+  const [formData, setFormData] = useState<FormResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [fileUploads, setFileUploads] = useState<FileUpload[]>([]);
   const [uploading, setUploading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchReportDetails();
-  }, [contactId, requestReportId]);
+  }, [requestReportId]);
 
   const fetchReportDetails = async () => {
     try {
       setLoading(true);
       const response = await fetch(
-        `${API_BASE_URL}/client-reports/pending/${contactId}`
+        `${API_BASE_URL}/request-reports/${requestReportId}`
       );
 
       if (!response.ok) {
         throw new Error("Failed to fetch report details");
       }
 
-      const data = await response.json();
-      const report = data.pending_reports.find(
-        (r: PendingReportDetails) => r.request_report_id === requestReportId
-      );
+      const data: RequestReportResponse = await response.json();
 
-      if (!report) {
-        throw new Error("Report not found");
-      }
+      // Filter active fields and sort by sequence
+      const activeFields = data.requested_reports
+        .filter((field) => field.active)
+        .sort((a, b) => a.sequence - b.sequence);
 
-      setReportDetails(report);
+      // Transform API response to FormResponse format
+      const transformedFormData: FormResponse = {
+        title: "Upload Reports",
+        description: "Please upload the requested documents",
+        questions: activeFields.map((field) => ({
+          id: field.id,
+          type: FormFieldType.FILE_UPLOAD,
+          question: field.display_label,
+          helpText: field.help_text,
+          compulsory: true,
+          sequence: field.sequence,
+          notes: field.description,
+          fileConfig: {
+            allowedTypes: ["pdf", "jpg", "png"],
+            maxSizeMB: 5,
+          },
+        })),
+      };
 
-      // Initialize file upload state for each report field
-      const initialUploads = report.requested_reports.map(
-        (field: ReportField) => ({
-          fieldId: field.id,
-          file: null,
-        })
-      );
-      setFileUploads(initialUploads);
+      setFormData(transformedFormData);
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to load report details"
@@ -89,36 +93,19 @@ export function UploadReport({
     }
   };
 
-  const handleFileChange = (fieldId: string, file: File | null) => {
-    setFileUploads((prev) =>
-      prev.map((upload) =>
-        upload.fieldId === fieldId ? { ...upload, file } : upload
-      )
-    );
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validate that all required files are selected
-    const missingFiles = fileUploads.filter((upload) => !upload.file);
-    if (missingFiles.length > 0) {
-      setError("Please select files for all report fields");
-      return;
-    }
-
+  const handleSubmit = async (values: FormValues) => {
     try {
       setUploading(true);
       setError("");
 
       const formData = new FormData();
       formData.append("request_report_id", requestReportId);
-      formData.append("client_id", reportDetails!.client_id);
 
-      fileUploads.forEach((upload, index) => {
-        if (upload.file) {
-          formData.append(`files[${index}]`, upload.file);
-          formData.append(`field_ids[${index}]`, upload.fieldId);
+      // Add files to form data
+      Object.entries(values).forEach(([fieldId, file]) => {
+        if (file instanceof File) {
+          formData.append(`files`, file);
+          formData.append(`field_ids`, fieldId);
         }
       });
 
@@ -143,13 +130,6 @@ export function UploadReport({
     }
   };
 
-  const handleCancel = () => {
-    navigate({
-      to: "/$contactId",
-      params: { contactId },
-    });
-  };
-
   if (loading) {
     return (
       <div
@@ -167,7 +147,7 @@ export function UploadReport({
     );
   }
 
-  if (error && !reportDetails) {
+  if (error && !formData) {
     return (
       <div
         style={{
@@ -186,7 +166,12 @@ export function UploadReport({
             {error}
           </p>
           <button
-            onClick={handleCancel}
+            onClick={() =>
+              navigate({
+                to: "/$contactId",
+                params: { contactId },
+              })
+            }
             style={{
               padding: "10px 20px",
               backgroundColor: "#6b7280",
@@ -205,6 +190,10 @@ export function UploadReport({
     );
   }
 
+  if (!formData) {
+    return null;
+  }
+
   return (
     <div
       style={{
@@ -219,182 +208,23 @@ export function UploadReport({
           margin: "0 auto",
         }}
       >
-        {/* Header */}
-        <div style={{ marginBottom: "32px" }}>
-          <h1
+        {error && (
+          <div
             style={{
-              fontSize: "32px",
-              fontWeight: "600",
-              marginBottom: "8px",
-              color: "#333",
+              padding: "12px 16px",
+              backgroundColor: "#fee2e2",
+              border: "1px solid #fecaca",
+              borderRadius: "6px",
+              marginBottom: "24px",
             }}
           >
-            Upload Reports
-          </h1>
-          <p style={{ fontSize: "16px", color: "#666" }}>
-            Requested by <strong>{reportDetails?.user_name}</strong> for{" "}
-            <strong>{reportDetails?.client_name}</strong>
-          </p>
-          <p style={{ fontSize: "14px", color: "#666", marginTop: "4px" }}>
-            Requested on{" "}
-            {reportDetails?.created_date &&
-              new Date(reportDetails.created_date).toLocaleDateString()}
-          </p>
-        </div>
+            <p style={{ color: "#dc2626", fontSize: "14px", margin: 0 }}>
+              {error}
+            </p>
+          </div>
+        )}
 
-        {/* Upload Form */}
-        <div
-          style={{
-            backgroundColor: "white",
-            borderRadius: "8px",
-            padding: "32px",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-          }}
-        >
-          <form onSubmit={handleSubmit}>
-            {error && (
-              <div
-                style={{
-                  padding: "12px 16px",
-                  backgroundColor: "#fee2e2",
-                  border: "1px solid #fecaca",
-                  borderRadius: "6px",
-                  marginBottom: "24px",
-                }}
-              >
-                <p style={{ color: "#dc2626", fontSize: "14px", margin: 0 }}>
-                  {error}
-                </p>
-              </div>
-            )}
-
-            <div
-              style={{ display: "flex", flexDirection: "column", gap: "24px" }}
-            >
-              {reportDetails?.requested_reports
-                .sort((a, b) => a.sequence - b.sequence)
-                .map((field) => {
-                  const upload = fileUploads.find(
-                    (u) => u.fieldId === field.id
-                  );
-                  return (
-                    <div key={field.id}>
-                      <label
-                        style={{
-                          display: "block",
-                          fontSize: "16px",
-                          fontWeight: "500",
-                          color: "#333",
-                          marginBottom: "8px",
-                        }}
-                      >
-                        {field.display_label}
-                        <span style={{ color: "#dc2626" }}>*</span>
-                      </label>
-                      {field.description && (
-                        <p
-                          style={{
-                            fontSize: "14px",
-                            color: "#666",
-                            marginBottom: "8px",
-                          }}
-                        >
-                          {field.description}
-                        </p>
-                      )}
-                      {field.help_text && (
-                        <p
-                          style={{
-                            fontSize: "12px",
-                            color: "#999",
-                            marginBottom: "12px",
-                          }}
-                        >
-                          {field.help_text}
-                        </p>
-                      )}
-                      <input
-                        type="file"
-                        accept=".pdf,.jpg,.jpeg,.png"
-                        onChange={(e) =>
-                          handleFileChange(
-                            field.id,
-                            e.target.files?.[0] ?? null
-                          )
-                        }
-                        style={{
-                          display: "block",
-                          width: "100%",
-                          padding: "10px",
-                          border: "1px solid #d1d5db",
-                          borderRadius: "6px",
-                          fontSize: "14px",
-                          backgroundColor: "white",
-                        }}
-                        required
-                      />
-                      {upload?.file && (
-                        <p
-                          style={{
-                            fontSize: "12px",
-                            color: "#059669",
-                            marginTop: "8px",
-                          }}
-                        >
-                          Selected: {upload.file.name}
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
-            </div>
-
-            {/* Action Buttons */}
-            <div
-              style={{
-                display: "flex",
-                gap: "12px",
-                marginTop: "32px",
-                justifyContent: "flex-end",
-              }}
-            >
-              <button
-                type="button"
-                onClick={handleCancel}
-                disabled={uploading}
-                style={{
-                  padding: "12px 24px",
-                  backgroundColor: "white",
-                  color: "#333",
-                  border: "1px solid #d1d5db",
-                  borderRadius: "6px",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  cursor: uploading ? "not-allowed" : "pointer",
-                  opacity: uploading ? 0.5 : 1,
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={uploading}
-                style={{
-                  padding: "12px 24px",
-                  backgroundColor: uploading ? "#93c5fd" : "#2563eb",
-                  color: "white",
-                  border: "none",
-                  borderRadius: "6px",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  cursor: uploading ? "not-allowed" : "pointer",
-                }}
-              >
-                {uploading ? "Uploading..." : "Upload Reports"}
-              </button>
-            </div>
-          </form>
-        </div>
+        <DynamicForm formData={formData} onSubmit={handleSubmit} />
       </div>
     </div>
   );
