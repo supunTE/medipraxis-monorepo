@@ -10,4 +10,5 @@ ios
 yarn.lock
 package-lock.json
 pnpm-lock.yaml
-**/routeTree.gen.ts
+routeTree.gen.ts
+.expo
