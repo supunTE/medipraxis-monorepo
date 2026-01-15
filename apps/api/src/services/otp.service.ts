@@ -25,7 +25,7 @@ export class OtpService {
     const recipient = `${countryCode}${contactNumber}`
       .replace(/\+/g, "")
       .replace(/\s/g, "");
-    
+
     const payload = {
       recipient,
       sender_id: "TextLKDemo",
