@@ -18,13 +18,11 @@ interface TextLKResponse {
 export class OtpService {
   private apiKey: string;
   private baseUrl = "https://app.text.lk/api/v3/sms/send";
-  private isDevelopment: boolean;
   private otpRepository: OtpRepository;
 
   constructor(apiKey: string, otpRepository: OtpRepository) {
     this.apiKey = apiKey;
     this.otpRepository = otpRepository;
-    this.isDevelopment = !apiKey || apiKey === "dev";
   }
 
   private async hashOtp(otp: string): Promise<string> {
