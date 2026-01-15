@@ -39,7 +39,7 @@ export function UploadReport({
   const [formData, setFormData] = useState<FormResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [uploading, setUploading] = useState(false);
+  const [, setUploading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
