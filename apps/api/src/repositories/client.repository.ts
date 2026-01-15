@@ -25,10 +25,13 @@ export class ClientRepository {
     countryCode: string,
     contactNumber: string
   ): Promise<ContactInfo | null> {
+    // Remove leading plus sign from country code
+    const cleanCountryCode = countryCode.replace(/^\+/, "");
+
     const { data, error } = await this.db
       .from("contact")
       .select("*")
-      .eq("country_code", countryCode)
+      .eq("country_code", cleanCountryCode)
       .eq("contact_number", contactNumber)
       .single();
 
@@ -42,8 +45,9 @@ export class ClientRepository {
   async createContactInfo(
     contactInfo: CreateContactInfoInput
   ): Promise<ContactInfo> {
+    // Remove leading plus sign from country code
     const data = {
-      country_code: contactInfo.country_code,
+      country_code: contactInfo.country_code.replace(/^\+/, ""),
       contact_number: contactInfo.contact_number,
     };
     const { data: contact, error } = await this.db
@@ -112,27 +116,26 @@ export class ClientRepository {
   async findByPhone(
     countryCode: string,
     contactNumber: string
-  ): Promise<Client | null> {
+  ): Promise<Client[]> {
     // First find the contact_id
     const contact = await this.findContactInfo(countryCode, contactNumber);
 
     if (!contact) {
-      return null;
+      return [];
     }
 
-    // Then find the client with that contact_id
+    // Then find all clients with that contact_id
     const { data, error } = await this.db
       .from("client")
       .select(CLIENT_QUERIES.FIND_BY_ID)
       .eq("contact_id", contact.contact_id)
-      .is("deleted_date", null)
-      .single();
+      .eq("deleted", false);
 
     if (error || !data) {
-      return null;
+      return [];
     }
 
-    return data as Client;
+    return data as Client[];
   }
 
   async create(clientData: CreateClientInput): Promise<Client> {

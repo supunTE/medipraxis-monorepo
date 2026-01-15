@@ -9,12 +9,12 @@ export class OtpController {
       const otpService = getOtpService(c);
       const body = c.req.valid("json");
 
-      const client = await clientService.getClientByPhone(
+      const clients = await clientService.getClientByPhone(
         body.country_code,
         body.contact_number
       );
 
-      if (!client) {
+      if (clients.length === 0) {
         return c.json(
           { error: "Client not found with this phone number" },
           404
@@ -32,7 +32,7 @@ export class OtpController {
       return c.json({
         success: true,
         message: "OTP sent successfully",
-        contact_id: client.contact_id,
+        contact_id: clients[0]!.contact_id,
       });
     } catch (error) {
       const message =
@@ -54,7 +54,7 @@ export class OtpController {
         return c.json({ error: "Invalid or expired OTP" }, 400);
       }
 
-      const client = await clientService.getClientByPhone(
+      const clients = await clientService.getClientByPhone(
         body.country_code,
         body.contact_number
       );
@@ -62,7 +62,7 @@ export class OtpController {
       return c.json({
         success: true,
         message: "OTP verified successfully",
-        contact_id: client?.contact_id,
+        contact_id: clients.length > 0 ? clients[0]!.contact_id : undefined,
       });
     } catch (error) {
       const message =

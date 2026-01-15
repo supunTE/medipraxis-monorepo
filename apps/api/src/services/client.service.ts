@@ -29,8 +29,12 @@ export class ClientService {
   async getClientByPhone(
     countryCode: string,
     contactNumber: string
-  ): Promise<Client | null> {
-    return await this.clientRepository.findByPhone(countryCode, contactNumber);
+  ): Promise<Client[]> {
+    const clients = await this.clientRepository.findByPhone(
+      countryCode,
+      contactNumber
+    );
+    return clients;
   }
 
   async createClient(input: CreateClientWithContactInput): Promise<Client> {
