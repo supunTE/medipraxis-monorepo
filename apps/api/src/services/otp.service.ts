@@ -76,7 +76,7 @@ export class OtpService {
 
   async storeOtp(key: string, otp: number): Promise<void> {
     const hashedOtp = await bcrypt.hash(otp.toString(), this.saltRounds);
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+    const expiresAt = new Date(Date.now() + 60 * 1000);
     await this.otpRepository.storeOtp(key, hashedOtp, expiresAt);
   }
 
@@ -84,6 +84,11 @@ export class OtpService {
     const record = await this.otpRepository.getOtp(key);
 
     if (!record) {
+      return false;
+    }
+
+    if (record.attempts >= 3) {
+      await this.otpRepository.deleteOtp(key);
       return false;
     }
 
@@ -97,6 +102,8 @@ export class OtpService {
 
     if (isValid) {
       await this.otpRepository.deleteOtp(key);
+    } else {
+      await this.otpRepository.incrementAttempts(key);
     }
 
     return isValid;

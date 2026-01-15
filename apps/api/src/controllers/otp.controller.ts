@@ -30,7 +30,7 @@ export class OtpController {
 
       // Store OTP for verification
       const otpKey = `${body.country_code}${body.contact_number}`;
-      otpService.storeOtp(otpKey, otp);
+      await otpService.storeOtp(otpKey, otp);
 
       return c.json({
         success: true,
@@ -49,7 +49,7 @@ export class OtpController {
       const body = c.req.valid("json");
 
       const otpKey = `${body.country_code}${body.contact_number}`;
-      const isValid = otpService.verifyOtp(otpKey, body.otp);
+      const isValid = await otpService.verifyOtp(otpKey, body.otp);
 
       if (!isValid) {
         return c.json({ error: "Invalid or expired OTP" }, 400);

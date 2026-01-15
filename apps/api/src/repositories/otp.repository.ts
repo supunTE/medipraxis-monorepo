@@ -7,6 +7,7 @@ export const OTP_QUERIES = {
   OTP_CODE: "otp_code",
   CREATED_DATE: "created_date",
   EXPIRES_DATE: "expires_date",
+  ATTEMPTS: "attempts",
 } as const;
 
 interface OtpRecord {
@@ -15,6 +16,7 @@ interface OtpRecord {
   otp_code: string;
   created_date: string;
   expires_date: string;
+  attempts: number;
 }
 
 export class OtpRepository {
@@ -34,6 +36,7 @@ export class OtpRepository {
         [OTP_QUERIES.PHONE_KEY]: phoneKey,
         [OTP_QUERIES.OTP_CODE]: hashedOtp,
         [OTP_QUERIES.EXPIRES_DATE]: expiresAt.toISOString(),
+        [OTP_QUERIES.ATTEMPTS]: 0,
       },
       {
         onConflict: OTP_QUERIES.PHONE_KEY,
@@ -67,6 +70,20 @@ export class OtpRepository {
 
     if (error) {
       throw new Error(`Failed to delete OTP: ${error.message}`);
+    }
+  }
+
+  async incrementAttempts(phoneKey: string): Promise<void> {
+    const record = await this.getOtp(phoneKey);
+    if (!record) return;
+
+    const { error } = await this.db
+      .from(OTP_QUERIES.OTP_CODES_TABLE)
+      .update({ [OTP_QUERIES.ATTEMPTS]: record.attempts + 1 })
+      .eq(OTP_QUERIES.PHONE_KEY, phoneKey);
+
+    if (error) {
+      throw new Error(`Failed to increment attempts: ${error.message}`);
     }
   }
 
