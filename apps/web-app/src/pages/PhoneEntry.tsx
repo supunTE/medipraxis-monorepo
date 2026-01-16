@@ -121,6 +121,20 @@ export function PhoneEntry() {
     setIsSubmitting(true);
 
     try {
+      // DEV MODE: Skip client check and OTP sending, use dummy OTP 12345
+      console.log("Development mode: Using dummy OTP 12345");
+
+      sessionStorage.setItem("client_phone_number", phoneNumber);
+      sessionStorage.setItem("client_country_code", countryCode);
+      sessionStorage.setItem("contact_id", "dev-contact-id");
+
+      setOtpSent(true);
+      setTimer(60);
+      setCanResend(false);
+      setTimeout(() => inputRefs.current[0]?.focus(), 100);
+
+      // Production code (commented out for dev)
+      /*
       // Check if client exists
       const checkResponse = await fetch(
         `${API_BASE_URL}/clients/check-phone?country_code=${encodeURIComponent(countryCode)}&contact_number=${encodeURIComponent(phoneNumber)}`
@@ -162,6 +176,10 @@ export function PhoneEntry() {
       sessionStorage.setItem("contact_id", otpData.contact_id);
 
       setOtpSent(true);
+      setTimer(60);
+      setCanResend(false);
+      setTimeout(() => inputRefs.current[0]?.focus(), 100);
+      */
     } catch (err) {
       setError(
         err instanceof Error
@@ -186,6 +204,19 @@ export function PhoneEntry() {
     setIsSubmitting(true);
 
     try {
+      // DEV MODE: Check for dummy OTP 12345
+      if (otpValue !== "12345") {
+        throw new Error("Invalid OTP. Use 12345 for testing.");
+      }
+
+      console.log("Development mode: OTP verified with dummy code");
+
+      const contactId =
+        sessionStorage.getItem("contact_id") || "dev-contact-id";
+      navigate({ to: `/${contactId}` });
+
+      // Production code (commented out for dev)
+      /*
       const response = await fetch(`${API_BASE_URL}/otp/verify`, {
         method: "POST",
         headers: {
@@ -194,7 +225,7 @@ export function PhoneEntry() {
         body: JSON.stringify({
           country_code: countryCode,
           contact_number: phoneNumber,
-          otp: otp,
+          otp: otpValue,
         }),
       });
 
@@ -212,6 +243,7 @@ export function PhoneEntry() {
       } else {
         throw new Error("Contact ID not found");
       }
+      */
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Invalid OTP. Please try again."
@@ -292,10 +324,6 @@ export function PhoneEntry() {
                 )}
               </div>
             </div>
-
-            {error && (
-              <p className="text-[#FF5757] text-xs -mt-2 mb-4">{error}</p>
-            )}
 
             <button
               type="submit"
