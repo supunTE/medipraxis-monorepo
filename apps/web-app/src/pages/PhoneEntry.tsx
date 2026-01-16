@@ -4,6 +4,14 @@ import { useState } from "react";
 const PHONE_REGEX = /^[\d\s\+\-\(\)]+$/;
 const API_BASE_URL = "http://localhost:8787/api";
 
+const countryOptions = [
+  { code: "+1", abbr: "US", name: "United States" },
+  { code: "+44", abbr: "GB", name: "United Kingdom" },
+  { code: "+91", abbr: "IN", name: "India" },
+  { code: "+94", abbr: "LK", name: "Sri Lanka" },
+  { code: "+61", abbr: "AU", name: "Australia" },
+];
+
 export function PhoneEntry() {
   const navigate = useNavigate();
   const [countryCode, setCountryCode] = useState("+94");
@@ -20,6 +28,11 @@ export function PhoneEntry() {
     // Validate phone number
     if (!phoneNumber.trim()) {
       setError("Phone number is required");
+      return;
+    }
+
+    if (phoneNumber.length !== 10) {
+      setError("Phone number must be exactly 10 digits");
       return;
     }
 
@@ -130,44 +143,16 @@ export function PhoneEntry() {
     }
   };
 
+  const selectedCountry =
+    countryOptions.find((c) => c.code === countryCode) ?? countryOptions[3];
+
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#f5f5f5",
-        padding: "20px",
-      }}
-    >
-      <div
-        style={{
-          backgroundColor: "white",
-          padding: "40px",
-          borderRadius: "8px",
-          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-          maxWidth: "400px",
-          width: "100%",
-        }}
-      >
-        <h1
-          style={{
-            fontSize: "24px",
-            fontWeight: "600",
-            marginBottom: "8px",
-            color: "#333",
-          }}
-        >
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-5">
+      <div className="bg-white p-10 rounded-lg shadow-lg max-w-md w-full">
+        <h1 className="text-2xl font-semibold mb-2 text-gray-800 font-[family-name:var(--font-secondary)]">
           Welcome to MediPraxis
         </h1>
-        <p
-          style={{
-            color: "#666",
-            marginBottom: "32px",
-            fontSize: "14px",
-          }}
-        >
+        <p className="text-gray-600 mb-8 text-sm">
           {otpSent
             ? "Enter the OTP sent to your phone"
             : "Please enter your phone number to continue"}
@@ -175,128 +160,71 @@ export function PhoneEntry() {
 
         {!otpSent ? (
           <form onSubmit={handlePhoneSubmit}>
-            <div style={{ marginBottom: "16px" }}>
-              <label
-                htmlFor="countryCode"
-                style={{
-                  display: "block",
-                  marginBottom: "8px",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  color: "#333",
-                }}
-              >
-                Country Code
-              </label>
-              <select
-                id="countryCode"
-                value={countryCode}
-                onChange={(e) => setCountryCode(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  border: "1px solid #ddd",
-                  borderRadius: "4px",
-                  fontSize: "14px",
-                  backgroundColor: "white",
-                }}
-              >
-                <option value="+1">+1 (US/Canada)</option>
-                <option value="+44">+44 (UK)</option>
-                <option value="+91">+91 (India)</option>
-                <option value="+94">+94 (Sri Lanka)</option>
-                <option value="+61">+61 (Australia)</option>
-              </select>
+            <div className="flex gap-3 mb-6">
+              {/* Country Code Dropdown with Flag */}
+              <div className="w-28 relative">
+                <div className="absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none select-none bg-[#44B619] text-white text-xs font-bold px-1.5 py-0.5 rounded">
+                  {selectedCountry?.abbr}
+                </div>
+                <select
+                  id="countryCode"
+                  value={countryCode}
+                  onChange={(e) => setCountryCode(e.target.value)}
+                  className="w-full h-12 pl-12 pr-2 border border-gray-300 rounded focus:border-[#44B619] focus:outline-none bg-white cursor-pointer text-sm font-medium"
+                >
+                  {countryOptions.map((country) => (
+                    <option key={country.code} value={country.code}>
+                      {country.code}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Phone Number Input */}
+              <div className="flex-1">
+                <input
+                  type="tel"
+                  id="phoneNumber"
+                  value={phoneNumber}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, "");
+                    if (value.length <= 10) {
+                      setPhoneNumber(value);
+                    }
+                  }}
+                  placeholder="Enter phone number"
+                  maxLength={10}
+                  className={`w-full h-12 px-3 border rounded text-sm focus:outline-none transition-colors ${
+                    error
+                      ? "border-[#FF5757] focus:border-[#FF5757]"
+                      : "border-gray-300 focus:border-[#44B619]"
+                  }`}
+                />
+              </div>
             </div>
 
-            <div style={{ marginBottom: "24px" }}>
-              <label
-                htmlFor="phoneNumber"
-                style={{
-                  display: "block",
-                  marginBottom: "8px",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  color: "#333",
-                }}
-              >
-                Phone Number
-              </label>
-              <input
-                type="tel"
-                id="phoneNumber"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder="Enter your phone number"
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  border: error ? "1px solid #ef4444" : "1px solid #ddd",
-                  borderRadius: "4px",
-                  fontSize: "14px",
-                  outline: "none",
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = error ? "#ef4444" : "#3b82f6";
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = error ? "#ef4444" : "#ddd";
-                }}
-              />
-              {error && (
-                <p
-                  style={{
-                    color: "#ef4444",
-                    fontSize: "12px",
-                    marginTop: "4px",
-                  }}
-                >
-                  {error}
-                </p>
-              )}
-            </div>
+            {error && (
+              <p className="text-[#FF5757] text-xs -mt-2 mb-4">{error}</p>
+            )}
 
             <button
               type="submit"
               disabled={isSubmitting}
-              style={{
-                width: "100%",
-                padding: "12px",
-                backgroundColor: isSubmitting ? "#93c5fd" : "#3b82f6",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                fontSize: "16px",
-                fontWeight: "500",
-                cursor: isSubmitting ? "not-allowed" : "pointer",
-                transition: "background-color 0.2s",
-              }}
-              onMouseEnter={(e) => {
-                if (!isSubmitting) {
-                  e.currentTarget.style.backgroundColor = "#2563eb";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isSubmitting) {
-                  e.currentTarget.style.backgroundColor = "#3b82f6";
-                }
-              }}
+              className={`w-full py-3.5 rounded text-white text-base font-semibold transition-all font-[family-name:var(--font-primary)] ${
+                isSubmitting
+                  ? "bg-[#D3D3D3] cursor-not-allowed"
+                  : "bg-[#44B619] hover:bg-[#44B619] hover:-translate-y-0.5 hover:shadow-[0_4px_8px_rgba(68,182,25,0.3)] cursor-pointer"
+              }`}
             >
-              {isSubmitting ? "Sending OTP..." : "Send OTP"}
+              {isSubmitting ? "Sending OTP..." : "Continue"}
             </button>
           </form>
         ) : (
           <form onSubmit={handleOtpSubmit}>
-            <div style={{ marginBottom: "24px" }}>
+            <div className="mb-6">
               <label
                 htmlFor="otp"
-                style={{
-                  display: "block",
-                  marginBottom: "8px",
-                  fontSize: "14px",
-                  fontWeight: "500",
-                  color: "#333",
-                }}
+                className="block mb-2 text-sm font-medium text-gray-800"
               >
                 OTP Code
               </label>
@@ -307,62 +235,23 @@ export function PhoneEntry() {
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
                 placeholder="Enter 5-digit OTP"
                 maxLength={5}
-                style={{
-                  width: "100%",
-                  padding: "12px",
-                  border: error ? "1px solid #ef4444" : "1px solid #ddd",
-                  borderRadius: "4px",
-                  outline: "none",
-                  textAlign: "center",
-                  letterSpacing: "8px",
-                  fontSize: "20px",
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = error ? "#ef4444" : "#3b82f6";
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = error ? "#ef4444" : "#ddd";
-                }}
+                className={`w-full p-3 border rounded text-center tracking-[0.5em] text-xl focus:outline-none transition-colors ${
+                  error
+                    ? "border-[#FF5757] focus:border-[#FF5757]"
+                    : "border-gray-300 focus:border-[#44B619]"
+                }`}
               />
-              {error && (
-                <p
-                  style={{
-                    color: "#ef4444",
-                    fontSize: "12px",
-                    marginTop: "4px",
-                  }}
-                >
-                  {error}
-                </p>
-              )}
+              {error && <p className="text-[#FF5757] text-xs mt-1">{error}</p>}
             </div>
 
             <button
               type="submit"
               disabled={isSubmitting}
-              style={{
-                width: "100%",
-                padding: "12px",
-                backgroundColor: isSubmitting ? "#93c5fd" : "#3b82f6",
-                color: "white",
-                border: "none",
-                borderRadius: "4px",
-                fontSize: "16px",
-                fontWeight: "500",
-                cursor: isSubmitting ? "not-allowed" : "pointer",
-                transition: "background-color 0.2s",
-                marginBottom: "12px",
-              }}
-              onMouseEnter={(e) => {
-                if (!isSubmitting) {
-                  e.currentTarget.style.backgroundColor = "#2563eb";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isSubmitting) {
-                  e.currentTarget.style.backgroundColor = "#3b82f6";
-                }
-              }}
+              className={`w-full py-3 rounded text-white text-base font-medium mb-3 transition-colors font-[family-name:var(--font-primary)] ${
+                isSubmitting
+                  ? "bg-[#D3D3D3] cursor-not-allowed"
+                  : "bg-[#44B619] hover:bg-[#3a9915] cursor-pointer"
+              }`}
             >
               {isSubmitting ? "Verifying..." : "Verify OTP"}
             </button>
@@ -374,17 +263,7 @@ export function PhoneEntry() {
                 setOtp("");
                 setError("");
               }}
-              style={{
-                width: "100%",
-                padding: "12px",
-                backgroundColor: "transparent",
-                color: "#3b82f6",
-                border: "1px solid #3b82f6",
-                borderRadius: "4px",
-                fontSize: "14px",
-                fontWeight: "500",
-                cursor: "pointer",
-              }}
+              className="w-full py-3 bg-transparent text-[#44B619] border border-[#44B619] rounded text-sm font-medium cursor-pointer hover:bg-[#44B619] hover:text-white transition-colors"
             >
               Back to Phone Entry
             </button>
