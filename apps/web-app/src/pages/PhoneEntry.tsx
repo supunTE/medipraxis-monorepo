@@ -126,7 +126,10 @@ export function PhoneEntry() {
 
       sessionStorage.setItem("client_phone_number", phoneNumber);
       sessionStorage.setItem("client_country_code", countryCode);
-      sessionStorage.setItem("contact_id", "dev-contact-id");
+      sessionStorage.setItem(
+        "contact_id",
+        "57e0f5d8-92ad-44c9-b546-ccd3502af7d0"
+      );
 
       setOtpSent(true);
       setTimer(60);
@@ -213,7 +216,7 @@ export function PhoneEntry() {
 
       const contactId =
         sessionStorage.getItem("contact_id") || "dev-contact-id";
-      navigate({ to: `/${contactId}` });
+      navigate({ to: "/dashboard" });
 
       // Production code (commented out for dev)
       /*
@@ -239,7 +242,7 @@ export function PhoneEntry() {
       const contactId =
         verifyData.contact_id || sessionStorage.getItem("contact_id");
       if (contactId) {
-        navigate({ to: `/${contactId}` });
+        navigate({ to: "/dashboard" });
       } else {
         throw new Error("Contact ID not found");
       }

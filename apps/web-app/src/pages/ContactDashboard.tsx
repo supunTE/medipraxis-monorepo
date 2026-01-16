@@ -78,12 +78,22 @@ export function ContactDashboard({ contactId }: ContactDashboardProps) {
           style={{
             fontSize: "32px",
             fontWeight: "600",
-            marginBottom: "32px",
+            marginBottom: "8px",
             color: "#333",
           }}
         >
           Dashboard
         </h1>
+        <p
+          style={{
+            fontSize: "16px",
+            color: "#666",
+            marginBottom: "32px",
+          }}
+        >
+          Welcome back, your dashboard is ready with your latest appointments,
+          and updates.
+        </p>
 
         {/* Pending Actions Section */}
         <div
@@ -172,14 +182,39 @@ export function ContactDashboard({ contactId }: ContactDashboardProps) {
                       }}
                     >
                       Requested on{" "}
-                      {new Date(report.created_date).toLocaleDateString()}
+                      {new Date(report.created_date)
+                        .toLocaleDateString("en-GB", {
+                          day: "numeric",
+                          month: "long",
+                          year: "numeric",
+                        })
+                        .replace(/^(\d+)/, (match) => {
+                          const day = parseInt(match);
+                          const suffix =
+                            day === 1 || day === 21 || day === 31
+                              ? "st"
+                              : day === 2 || day === 22
+                                ? "nd"
+                                : day === 3 || day === 23
+                                  ? "rd"
+                                  : "th";
+                          return day + suffix;
+                        })}{" "}
+                      at{" "}
+                      {new Date(report.created_date)
+                        .toLocaleTimeString("en-US", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                          hour12: true,
+                        })
+                        .toLowerCase()}
                     </p>
                   </div>
                   <button
                     onClick={() => handleUploadReport(report)}
                     style={{
                       padding: "10px 20px",
-                      backgroundColor: "#2563eb",
+                      backgroundColor: "#90C67C",
                       color: "white",
                       border: "none",
                       borderRadius: "6px",
@@ -190,10 +225,10 @@ export function ContactDashboard({ contactId }: ContactDashboardProps) {
                       marginLeft: "16px",
                     }}
                     onMouseOver={(e) =>
-                      (e.currentTarget.style.backgroundColor = "#1d4ed8")
+                      (e.currentTarget.style.backgroundColor = "#7AB568")
                     }
                     onMouseOut={(e) =>
-                      (e.currentTarget.style.backgroundColor = "#2563eb")
+                      (e.currentTarget.style.backgroundColor = "#90C67C")
                     }
                   >
                     Upload Report

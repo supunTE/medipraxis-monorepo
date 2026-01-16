@@ -9,12 +9,18 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as ContactIdRouteImport } from './routes/$contactId'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RegisterIndexRouteImport } from './routes/register/index'
 import { Route as ContactIdUploadReportRequestReportIdRouteImport } from './routes/$contactId.upload-report.$requestReportId'
 
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
@@ -46,6 +52,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$contactId': typeof ContactIdRouteWithChildren
   '/about': typeof AboutRoute
+  '/dashboard': typeof DashboardRoute
   '/register': typeof RegisterIndexRoute
   '/$contactId/upload-report/$requestReportId': typeof ContactIdUploadReportRequestReportIdRoute
 }
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$contactId': typeof ContactIdRouteWithChildren
   '/about': typeof AboutRoute
+  '/dashboard': typeof DashboardRoute
   '/register': typeof RegisterIndexRoute
   '/$contactId/upload-report/$requestReportId': typeof ContactIdUploadReportRequestReportIdRoute
 }
@@ -61,6 +69,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/$contactId': typeof ContactIdRouteWithChildren
   '/about': typeof AboutRoute
+  '/dashboard': typeof DashboardRoute
   '/register/': typeof RegisterIndexRoute
   '/$contactId/upload-report/$requestReportId': typeof ContactIdUploadReportRequestReportIdRoute
 }
@@ -70,6 +79,7 @@ export interface FileRouteTypes {
     | '/'
     | '/$contactId'
     | '/about'
+    | '/dashboard'
     | '/register'
     | '/$contactId/upload-report/$requestReportId'
   fileRoutesByTo: FileRoutesByTo
@@ -77,6 +87,7 @@ export interface FileRouteTypes {
     | '/'
     | '/$contactId'
     | '/about'
+    | '/dashboard'
     | '/register'
     | '/$contactId/upload-report/$requestReportId'
   id:
@@ -84,6 +95,7 @@ export interface FileRouteTypes {
     | '/'
     | '/$contactId'
     | '/about'
+    | '/dashboard'
     | '/register/'
     | '/$contactId/upload-report/$requestReportId'
   fileRoutesById: FileRoutesById
@@ -92,11 +104,19 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ContactIdRoute: typeof ContactIdRouteWithChildren
   AboutRoute: typeof AboutRoute
+  DashboardRoute: typeof DashboardRoute
   RegisterIndexRoute: typeof RegisterIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
@@ -152,6 +172,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ContactIdRoute: ContactIdRouteWithChildren,
   AboutRoute: AboutRoute,
+  DashboardRoute: DashboardRoute,
   RegisterIndexRoute: RegisterIndexRoute,
 }
 export const routeTree = rootRouteImport
