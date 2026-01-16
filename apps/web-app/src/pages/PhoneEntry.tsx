@@ -1,5 +1,6 @@
 import { useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import logo from "../assets/images/logo.png";
 
 const PHONE_REGEX = /^[\d\s\+\-\(\)]+$/;
 const API_BASE_URL = "http://localhost:8787/api";
@@ -19,7 +20,88 @@ export function PhoneEntry() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
-  const [otp, setOtp] = useState("");
+  const [otp, setOtp] = useState(["", "", "", "", ""]);
+  const [timer, setTimer] = useState(60);
+  const [canResend, setCanResend] = useState(false);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  useEffect(() => {
+    if (otpSent && timer > 0) {
+      const interval = setInterval(() => {
+        setTimer((prev) => {
+          if (prev <= 1) {
+            setCanResend(true);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [otpSent, timer]);
+
+  const handleOtpChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return;
+
+    const newOtp = [...otp];
+    newOtp[index] = value.slice(-1);
+    setOtp(newOtp);
+
+    // Auto-focus next input
+    if (value && index < 4) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (!canResend) return;
+
+    setIsSubmitting(true);
+    setError("");
+
+    try {
+      // DEV MODE: Skip OTP resend API call
+      console.log("Development mode: Skipping OTP resend, use 12345");
+
+      setTimer(60);
+      setCanResend(false);
+      setOtp(["", "", "", "", ""]);
+      setTimeout(() => inputRefs.current[0]?.focus(), 100);
+
+      // Production code (commented out for dev)
+      /*
+      const otpResponse = await fetch(`${API_BASE_URL}/otp/send`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          country_code: countryCode,
+          contact_number: phoneNumber,
+        }),
+      });
+
+      if (!otpResponse.ok) {
+        throw new Error("Failed to resend OTP");
+      }
+
+      setTimer(60);
+      setCanResend(false);
+      setOtp(["", "", "", "", ""]);
+      setTimeout(() => inputRefs.current[0]?.focus(), 100);
+      */
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to resend OTP");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,13 +113,8 @@ export function PhoneEntry() {
       return;
     }
 
-    if (phoneNumber.length !== 10) {
-      setError("Phone number must be exactly 10 digits");
-      return;
-    }
-
-    if (!PHONE_REGEX.test(phoneNumber)) {
-      setError("Invalid phone number format");
+    if (phoneNumber.length !== 10 || !PHONE_REGEX.test(phoneNumber)) {
+      setError("Invalid phone number");
       return;
     }
 
@@ -57,7 +134,7 @@ export function PhoneEntry() {
 
       if (!checkData.exists) {
         setError(
-          "Phone number not registered. Please contact your healthcare provider."
+          "Phone number is not registered. Please contact your healthcare provider."
         );
         return;
       }
@@ -100,7 +177,8 @@ export function PhoneEntry() {
     e.preventDefault();
     setError("");
 
-    if (!otp.trim() || otp.length !== 5) {
+    const otpValue = otp.join("");
+    if (!otpValue.trim() || otpValue.length !== 5) {
       setError("Please enter the 5-digit OTP");
       return;
     }
@@ -149,28 +227,35 @@ export function PhoneEntry() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-5">
       <div className="bg-white p-10 rounded-lg shadow-lg max-w-md w-full">
-        <h1 className="text-2xl font-semibold mb-2 text-gray-800 font-[family-name:var(--font-secondary)]">
-          Welcome to MediPraxis
-        </h1>
-        <p className="text-gray-600 mb-8 text-sm">
-          {otpSent
-            ? "Enter the OTP sent to your phone"
-            : "Please enter your phone number to continue"}
-        </p>
+        {!otpSent && (
+          <>
+            <img
+              src={logo}
+              alt="MediPraxis Logo"
+              className="h-12 mb-6 mx-auto"
+            />
+            <h1 className="text-2xl font-semibold mb-2 text-gray-800 font-[family-name:var(--font-secondary)] text-left">
+              Welcome to MediPraxis
+            </h1>
+            <p className="text-gray-600 mb-8 text-sm text-left">
+              Please enter your phone number to continue
+            </p>
+          </>
+        )}
 
         {!otpSent ? (
           <form onSubmit={handlePhoneSubmit}>
             <div className="flex gap-3 mb-6">
               {/* Country Code Dropdown with Flag */}
               <div className="w-28 relative">
-                <div className="absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none select-none bg-[#44B619] text-white text-xs font-bold px-1.5 py-0.5 rounded">
+                <div className="absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none select-none bg-[#90C67C] text-white text-xs font-bold px-1.5 py-0.5 rounded">
                   {selectedCountry?.abbr}
                 </div>
                 <select
                   id="countryCode"
                   value={countryCode}
                   onChange={(e) => setCountryCode(e.target.value)}
-                  className="w-full h-12 pl-12 pr-2 border border-gray-300 rounded focus:border-[#44B619] focus:outline-none bg-white cursor-pointer text-sm font-medium"
+                  className="w-full h-12 pl-12 pr-2 border border-gray-300 rounded focus:border-[#90C67C] focus:outline-none bg-white cursor-pointer text-sm font-medium"
                 >
                   {countryOptions.map((country) => (
                     <option key={country.code} value={country.code}>
@@ -192,14 +277,19 @@ export function PhoneEntry() {
                       setPhoneNumber(value);
                     }
                   }}
-                  placeholder="Enter phone number"
+                  placeholder="07XXXXXXXX"
                   maxLength={10}
                   className={`w-full h-12 px-3 border rounded text-sm focus:outline-none transition-colors ${
                     error
                       ? "border-[#FF5757] focus:border-[#FF5757]"
-                      : "border-gray-300 focus:border-[#44B619]"
+                      : "border-gray-300 focus:border-[#90C67C]"
                   }`}
                 />
+                {error && (
+                  <p className="text-[#FF5757] text-xs mt-1 text-left">
+                    {error}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -213,7 +303,7 @@ export function PhoneEntry() {
               className={`w-full py-3.5 rounded text-white text-base font-semibold transition-all font-[family-name:var(--font-primary)] ${
                 isSubmitting
                   ? "bg-[#D3D3D3] cursor-not-allowed"
-                  : "bg-[#44B619] hover:bg-[#44B619] hover:-translate-y-0.5 hover:shadow-[0_4px_8px_rgba(68,182,25,0.3)] cursor-pointer"
+                  : "bg-[#90C67C] hover:bg-[#7AB568] hover:-translate-y-0.5 hover:shadow-[0_4px_8px_rgba(144,198,124,0.3)] cursor-pointer"
               }`}
             >
               {isSubmitting ? "Sending OTP..." : "Continue"}
@@ -221,52 +311,88 @@ export function PhoneEntry() {
           </form>
         ) : (
           <form onSubmit={handleOtpSubmit}>
-            <div className="mb-6">
-              <label
-                htmlFor="otp"
-                className="block mb-2 text-sm font-medium text-gray-800"
+            <img
+              src={logo}
+              alt="MediPraxis Logo"
+              className="h-12 mb-6 mx-auto"
+            />
+            <h2 className="text-xl font-semibold mb-2 text-gray-800 text-left">
+              Enter 5 digit verification code
+            </h2>
+            <p className="text-sm text-gray-600 mb-6 text-left">
+              We sent an OTP verification code to <br />
+              <span className="text-black font-bold">
+                {countryCode} {phoneNumber}
+              </span>{" "}
+              <button
+                type="button"
+                onClick={() => {
+                  setOtpSent(false);
+                  setOtp(["", "", "", "", ""]);
+                  setError("");
+                  setTimer(60);
+                  setCanResend(false);
+                }}
+                className="text-[#90C67C] font-bold hover:text-[#7AB568] transition-colors"
+                title="Edit phone number"
               >
-                OTP Code
-              </label>
-              <input
-                type="text"
-                id="otp"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-                placeholder="Enter 5-digit OTP"
-                maxLength={5}
-                className={`w-full p-3 border rounded text-center tracking-[0.5em] text-xl focus:outline-none transition-colors ${
-                  error
-                    ? "border-[#FF5757] focus:border-[#FF5757]"
-                    : "border-gray-300 focus:border-[#44B619]"
-                }`}
-              />
-              {error && <p className="text-[#FF5757] text-xs mt-1">{error}</p>}
+                Change?
+              </button>
+            </p>
+
+            <div className="flex justify-center gap-3 mb-6">
+              {otp.map((digit, index) => (
+                <input
+                  key={index}
+                  ref={(el) => {
+                    inputRefs.current[index] = el;
+                  }}
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={1}
+                  value={digit}
+                  onChange={(e) => handleOtpChange(index, e.target.value)}
+                  onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                  className={`w-12 h-14 text-center text-xl font-semibold border-2 rounded-lg focus:outline-none transition-colors ${
+                    error
+                      ? "border-[#FF5757] focus:border-[#FF5757]"
+                      : "border-gray-300 focus:border-[#90C67C]"
+                  }`}
+                />
+              ))}
             </div>
+
+            {error && (
+              <p className="text-[#FF5757] text-xs mb-4 text-center">{error}</p>
+            )}
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`w-full py-3 rounded text-white text-base font-medium mb-3 transition-colors font-[family-name:var(--font-primary)] ${
+              className={`w-full py-3.5 rounded text-white text-base font-semibold mb-4 transition-all font-[family-name:var(--font-primary)] ${
                 isSubmitting
                   ? "bg-[#D3D3D3] cursor-not-allowed"
-                  : "bg-[#44B619] hover:bg-[#3a9915] cursor-pointer"
+                  : "bg-[#90C67C] hover:bg-[#7AB568] cursor-pointer"
               }`}
             >
-              {isSubmitting ? "Verifying..." : "Verify OTP"}
+              {isSubmitting ? "Verifying..." : "Verify"}
             </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                setOtpSent(false);
-                setOtp("");
-                setError("");
-              }}
-              className="w-full py-3 bg-transparent text-[#44B619] border border-[#44B619] rounded text-sm font-medium cursor-pointer hover:bg-[#44B619] hover:text-white transition-colors"
-            >
-              Back to Phone Entry
-            </button>
+            <div className="text-sm text-gray-600 text-left">
+              You didn't receive any code?{" "}
+              <button
+                type="button"
+                onClick={handleResendOtp}
+                disabled={!canResend}
+                className={`font-bold transition-colors ${
+                  canResend
+                    ? "text-[#90C67C] cursor-pointer hover:text-[#7AB568]"
+                    : "text-gray-400 cursor-not-allowed"
+                }`}
+              >
+                {canResend ? "Resend code" : `Resend code (${timer}s)`}
+              </button>
+            </div>
           </form>
         )}
       </div>
