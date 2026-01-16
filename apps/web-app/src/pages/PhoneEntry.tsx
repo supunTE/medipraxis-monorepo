@@ -66,16 +66,6 @@ export function PhoneEntry() {
     setError("");
 
     try {
-      // DEV MODE: Skip OTP resend API call
-      console.log("Development mode: Skipping OTP resend, use 12345");
-
-      setTimer(60);
-      setCanResend(false);
-      setOtp(["", "", "", "", ""]);
-      setTimeout(() => inputRefs.current[0]?.focus(), 100);
-
-      // Production code (commented out for dev)
-      /*
       const otpResponse = await fetch(`${API_BASE_URL}/otp/send`, {
         method: "POST",
         headers: {
@@ -95,7 +85,6 @@ export function PhoneEntry() {
       setCanResend(false);
       setOtp(["", "", "", "", ""]);
       setTimeout(() => inputRefs.current[0]?.focus(), 100);
-      */
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to resend OTP");
     } finally {
@@ -121,23 +110,6 @@ export function PhoneEntry() {
     setIsSubmitting(true);
 
     try {
-      // DEV MODE: Skip client check and OTP sending, use dummy OTP 12345
-      console.log("Development mode: Using dummy OTP 12345");
-
-      sessionStorage.setItem("client_phone_number", phoneNumber);
-      sessionStorage.setItem("client_country_code", countryCode);
-      sessionStorage.setItem(
-        "contact_id",
-        "57e0f5d8-92ad-44c9-b546-ccd3502af7d0"
-      );
-
-      setOtpSent(true);
-      setTimer(60);
-      setCanResend(false);
-      setTimeout(() => inputRefs.current[0]?.focus(), 100);
-
-      // Production code (commented out for dev)
-      /*
       // Check if client exists
       const checkResponse = await fetch(
         `${API_BASE_URL}/clients/check-phone?country_code=${encodeURIComponent(countryCode)}&contact_number=${encodeURIComponent(phoneNumber)}`
@@ -182,7 +154,6 @@ export function PhoneEntry() {
       setTimer(60);
       setCanResend(false);
       setTimeout(() => inputRefs.current[0]?.focus(), 100);
-      */
     } catch (err) {
       setError(
         err instanceof Error
@@ -207,19 +178,6 @@ export function PhoneEntry() {
     setIsSubmitting(true);
 
     try {
-      // DEV MODE: Check for dummy OTP 12345
-      if (otpValue !== "12345") {
-        throw new Error("Invalid OTP. Use 12345 for testing.");
-      }
-
-      console.log("Development mode: OTP verified with dummy code");
-
-      const contactId =
-        sessionStorage.getItem("contact_id") || "dev-contact-id";
-      navigate({ to: "/dashboard" });
-
-      // Production code (commented out for dev)
-      /*
       const response = await fetch(`${API_BASE_URL}/otp/verify`, {
         method: "POST",
         headers: {
@@ -246,7 +204,6 @@ export function PhoneEntry() {
       } else {
         throw new Error("Contact ID not found");
       }
-      */
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Invalid OTP. Please try again."

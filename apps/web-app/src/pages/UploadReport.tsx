@@ -28,19 +28,16 @@ interface RequestReportResponse {
 }
 
 interface UploadReportProps {
-  contactId: string;
   requestReportId: string;
 }
 
-export function UploadReport({
-  contactId,
-  requestReportId,
-}: UploadReportProps) {
+export function UploadReport({ requestReportId }: UploadReportProps) {
   const [formData, setFormData] = useState<FormResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [, setUploading] = useState(false);
   const navigate = useNavigate();
+  const contactId = sessionStorage.getItem("contact_id") || "";
 
   useEffect(() => {
     fetchReportDetails();
@@ -120,8 +117,7 @@ export function UploadReport({
 
       // Navigate back to dashboard after successful upload
       navigate({
-        to: "/$contactId",
-        params: { contactId },
+        to: "/dashboard",
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to upload reports");
@@ -168,8 +164,7 @@ export function UploadReport({
           <button
             onClick={() =>
               navigate({
-                to: "/$contactId",
-                params: { contactId },
+                to: "/dashboard",
               })
             }
             style={{

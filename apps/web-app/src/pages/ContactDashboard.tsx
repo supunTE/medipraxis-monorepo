@@ -52,9 +52,8 @@ export function ContactDashboard({ contactId }: ContactDashboardProps) {
 
   const handleUploadReport = (report: PendingReport) => {
     navigate({
-      to: "/$contactId/upload-report/$requestReportId",
+      to: "/upload-report/$requestReportId",
       params: {
-        contactId: contactId,
         requestReportId: report.request_report_id,
       },
     });

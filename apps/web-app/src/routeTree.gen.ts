@@ -14,6 +14,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as ContactIdRouteImport } from './routes/$contactId'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RegisterIndexRouteImport } from './routes/register/index'
+import { Route as UploadReportRequestReportIdRouteImport } from './routes/upload-report.$requestReportId'
 import { Route as ContactIdUploadReportRequestReportIdRouteImport } from './routes/$contactId.upload-report.$requestReportId'
 
 const DashboardRoute = DashboardRouteImport.update({
@@ -41,6 +42,12 @@ const RegisterIndexRoute = RegisterIndexRouteImport.update({
   path: '/register/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UploadReportRequestReportIdRoute =
+  UploadReportRequestReportIdRouteImport.update({
+    id: '/upload-report/$requestReportId',
+    path: '/upload-report/$requestReportId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ContactIdUploadReportRequestReportIdRoute =
   ContactIdUploadReportRequestReportIdRouteImport.update({
     id: '/upload-report/$requestReportId',
@@ -53,6 +60,7 @@ export interface FileRoutesByFullPath {
   '/$contactId': typeof ContactIdRouteWithChildren
   '/about': typeof AboutRoute
   '/dashboard': typeof DashboardRoute
+  '/upload-report/$requestReportId': typeof UploadReportRequestReportIdRoute
   '/register': typeof RegisterIndexRoute
   '/$contactId/upload-report/$requestReportId': typeof ContactIdUploadReportRequestReportIdRoute
 }
@@ -61,6 +69,7 @@ export interface FileRoutesByTo {
   '/$contactId': typeof ContactIdRouteWithChildren
   '/about': typeof AboutRoute
   '/dashboard': typeof DashboardRoute
+  '/upload-report/$requestReportId': typeof UploadReportRequestReportIdRoute
   '/register': typeof RegisterIndexRoute
   '/$contactId/upload-report/$requestReportId': typeof ContactIdUploadReportRequestReportIdRoute
 }
@@ -70,6 +79,7 @@ export interface FileRoutesById {
   '/$contactId': typeof ContactIdRouteWithChildren
   '/about': typeof AboutRoute
   '/dashboard': typeof DashboardRoute
+  '/upload-report/$requestReportId': typeof UploadReportRequestReportIdRoute
   '/register/': typeof RegisterIndexRoute
   '/$contactId/upload-report/$requestReportId': typeof ContactIdUploadReportRequestReportIdRoute
 }
@@ -80,6 +90,7 @@ export interface FileRouteTypes {
     | '/$contactId'
     | '/about'
     | '/dashboard'
+    | '/upload-report/$requestReportId'
     | '/register'
     | '/$contactId/upload-report/$requestReportId'
   fileRoutesByTo: FileRoutesByTo
@@ -88,6 +99,7 @@ export interface FileRouteTypes {
     | '/$contactId'
     | '/about'
     | '/dashboard'
+    | '/upload-report/$requestReportId'
     | '/register'
     | '/$contactId/upload-report/$requestReportId'
   id:
@@ -96,6 +108,7 @@ export interface FileRouteTypes {
     | '/$contactId'
     | '/about'
     | '/dashboard'
+    | '/upload-report/$requestReportId'
     | '/register/'
     | '/$contactId/upload-report/$requestReportId'
   fileRoutesById: FileRoutesById
@@ -105,6 +118,7 @@ export interface RootRouteChildren {
   ContactIdRoute: typeof ContactIdRouteWithChildren
   AboutRoute: typeof AboutRoute
   DashboardRoute: typeof DashboardRoute
+  UploadReportRequestReportIdRoute: typeof UploadReportRequestReportIdRoute
   RegisterIndexRoute: typeof RegisterIndexRoute
 }
 
@@ -145,6 +159,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RegisterIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/upload-report/$requestReportId': {
+      id: '/upload-report/$requestReportId'
+      path: '/upload-report/$requestReportId'
+      fullPath: '/upload-report/$requestReportId'
+      preLoaderRoute: typeof UploadReportRequestReportIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/$contactId/upload-report/$requestReportId': {
       id: '/$contactId/upload-report/$requestReportId'
       path: '/upload-report/$requestReportId'
@@ -173,6 +194,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactIdRoute: ContactIdRouteWithChildren,
   AboutRoute: AboutRoute,
   DashboardRoute: DashboardRoute,
+  UploadReportRequestReportIdRoute: UploadReportRequestReportIdRoute,
   RegisterIndexRoute: RegisterIndexRoute,
 }
 export const routeTree = rootRouteImport
