@@ -38,6 +38,7 @@ export function PhoneEntry() {
       }, 1000);
       return () => clearInterval(interval);
     }
+    return undefined;
   }, [otpSent, timer]);
 
   const handleOtpChange = (index: number, value: string) => {
