@@ -25,10 +25,13 @@ export class ClientRepository {
     countryCode: string,
     contactNumber: string
   ): Promise<ContactInfo | null> {
+    // Remove leading plus sign from country code
+    const cleanCountryCode = countryCode.replace(/^\+/, "");
+
     const { data, error } = await this.db
       .from("contact")
       .select("*")
-      .eq("country_code", countryCode)
+      .eq("country_code", cleanCountryCode)
       .eq("contact_number", contactNumber)
       .single();
 
@@ -42,8 +45,9 @@ export class ClientRepository {
   async createContactInfo(
     contactInfo: CreateContactInfoInput
   ): Promise<ContactInfo> {
+    // Remove leading plus sign from country code
     const data = {
-      country_code: contactInfo.country_code,
+      country_code: contactInfo.country_code.replace(/^\+/, ""),
       contact_number: contactInfo.contact_number,
     };
     const { data: contact, error } = await this.db
@@ -93,6 +97,45 @@ export class ClientRepository {
     }
 
     return data as Client;
+  }
+
+  async findByContactId(contactId: string): Promise<Client[]> {
+    const { data, error } = await this.db
+      .from("client")
+      .select(CLIENT_QUERIES.FIND_ALL)
+      .eq("contact_id", contactId)
+      .is("deleted_date", null);
+
+    if (error) {
+      throw new Error(`Failed to fetch clients: ${error.message}`);
+    }
+
+    return (data as Client[]) || [];
+  }
+
+  async findByPhone(
+    countryCode: string,
+    contactNumber: string
+  ): Promise<Client[]> {
+    // First find the contact_id
+    const contact = await this.findContactInfo(countryCode, contactNumber);
+
+    if (!contact) {
+      return [];
+    }
+
+    // Then find all clients with that contact_id
+    const { data, error } = await this.db
+      .from("client")
+      .select(CLIENT_QUERIES.FIND_BY_ID)
+      .eq("contact_id", contact.contact_id)
+      .eq("deleted", false);
+
+    if (error || !data) {
+      return [];
+    }
+
+    return data as Client[];
   }
 
   async create(clientData: CreateClientInput): Promise<Client> {

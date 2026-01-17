@@ -8,15 +8,29 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import { Route as ContactIdRouteImport } from './routes/$contactId'
+import { Route as ContactIdUploadReportRequestReportIdRouteImport } from './routes/$contactId.upload-report.$requestReportId'
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RegisterIndexRouteImport } from './routes/register/index'
 import { Route as SchedulesIdRouteImport } from './routes/schedules/$id'
+import { Route as UploadReportRequestReportIdRouteImport } from './routes/upload-report.$requestReportId'
 
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactIdRoute = ContactIdRouteImport.update({
+  id: '/$contactId',
+  path: '/$contactId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -34,25 +48,49 @@ const SchedulesIdRoute = SchedulesIdRouteImport.update({
   path: '/schedules/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UploadReportRequestReportIdRoute =
+  UploadReportRequestReportIdRouteImport.update({
+    id: '/upload-report/$requestReportId',
+    path: '/upload-report/$requestReportId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ContactIdUploadReportRequestReportIdRoute =
+  ContactIdUploadReportRequestReportIdRouteImport.update({
+    id: '/upload-report/$requestReportId',
+    path: '/upload-report/$requestReportId',
+    getParentRoute: () => ContactIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$contactId': typeof ContactIdRouteWithChildren
   '/about': typeof AboutRoute
   '/schedules/$id': typeof SchedulesIdRoute
+  '/dashboard': typeof DashboardRoute
+  '/upload-report/$requestReportId': typeof UploadReportRequestReportIdRoute
   '/register': typeof RegisterIndexRoute
+  '/$contactId/upload-report/$requestReportId': typeof ContactIdUploadReportRequestReportIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$contactId': typeof ContactIdRouteWithChildren
   '/about': typeof AboutRoute
   '/schedules/$id': typeof SchedulesIdRoute
+  '/dashboard': typeof DashboardRoute
+  '/upload-report/$requestReportId': typeof UploadReportRequestReportIdRoute
   '/register': typeof RegisterIndexRoute
+  '/$contactId/upload-report/$requestReportId': typeof ContactIdUploadReportRequestReportIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$contactId': typeof ContactIdRouteWithChildren
   '/about': typeof AboutRoute
   '/schedules/$id': typeof SchedulesIdRoute
+  '/dashboard': typeof DashboardRoute
+  '/upload-report/$requestReportId': typeof UploadReportRequestReportIdRoute
   '/register/': typeof RegisterIndexRoute
+  '/$contactId/upload-report/$requestReportId': typeof ContactIdUploadReportRequestReportIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -60,22 +98,65 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to: '/' | '/about' | '/schedules/$id' | '/register'
   id: '__root__' | '/' | '/about' | '/schedules/$id' | '/register/'
+  fullPaths:
+    | '/'
+    | '/$contactId'
+    | '/about'
+    | '/dashboard'
+    | '/upload-report/$requestReportId'
+    | '/register'
+    | '/$contactId/upload-report/$requestReportId'
+  fileRoutesByTo: FileRoutesByTo
+  to:
+    | '/'
+    | '/$contactId'
+    | '/about'
+    | '/dashboard'
+    | '/upload-report/$requestReportId'
+    | '/register'
+    | '/$contactId/upload-report/$requestReportId'
+  id:
+    | '__root__'
+    | '/'
+    | '/$contactId'
+    | '/about'
+    | '/dashboard'
+    | '/upload-report/$requestReportId'
+    | '/register/'
+    | '/$contactId/upload-report/$requestReportId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ContactIdRoute: typeof ContactIdRouteWithChildren
   AboutRoute: typeof AboutRoute
   SchedulesIdRoute: typeof SchedulesIdRoute
+  DashboardRoute: typeof DashboardRoute
+  UploadReportRequestReportIdRoute: typeof UploadReportRequestReportIdRoute
   RegisterIndexRoute: typeof RegisterIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/about': {
       id: '/about'
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$contactId': {
+      id: '/$contactId'
+      path: '/$contactId'
+      fullPath: '/$contactId'
+      preLoaderRoute: typeof ContactIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -99,13 +180,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SchedulesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/upload-report/$requestReportId': {
+      id: '/upload-report/$requestReportId'
+      path: '/upload-report/$requestReportId'
+      fullPath: '/upload-report/$requestReportId'
+      preLoaderRoute: typeof UploadReportRequestReportIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$contactId/upload-report/$requestReportId': {
+      id: '/$contactId/upload-report/$requestReportId'
+      path: '/upload-report/$requestReportId'
+      fullPath: '/$contactId/upload-report/$requestReportId'
+      preLoaderRoute: typeof ContactIdUploadReportRequestReportIdRouteImport
+      parentRoute: typeof ContactIdRoute
+    }
   }
 }
 
+interface ContactIdRouteChildren {
+  ContactIdUploadReportRequestReportIdRoute: typeof ContactIdUploadReportRequestReportIdRoute
+}
+
+const ContactIdRouteChildren: ContactIdRouteChildren = {
+  ContactIdUploadReportRequestReportIdRoute:
+    ContactIdUploadReportRequestReportIdRoute,
+}
+
+const ContactIdRouteWithChildren = ContactIdRoute._addFileChildren(
+  ContactIdRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ContactIdRoute: ContactIdRouteWithChildren,
   AboutRoute: AboutRoute,
   SchedulesIdRoute: SchedulesIdRoute,
+  DashboardRoute: DashboardRoute,
+  UploadReportRequestReportIdRoute: UploadReportRequestReportIdRoute,
   RegisterIndexRoute: RegisterIndexRoute,
 }
 export const routeTree = rootRouteImport

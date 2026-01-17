@@ -1,3 +1,4 @@
+import { UploadSimple } from "@phosphor-icons/react";
 import React, { useRef, useState } from "react";
 import type { FormQuestion } from "../../types/form.types";
 
@@ -77,8 +78,6 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         {question.compulsory && <span className="required">*</span>}
       </label>
 
-      {question.helpText && <p className="help-text">{question.helpText}</p>}
-
       {question.notes && <p className="notes">{question.notes}</p>}
 
       <div className="file-upload-area">
@@ -93,9 +92,31 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         />
 
         {!value ? (
-          <button type="button" onClick={handleClick} className="upload-button">
-            Choose File
-          </button>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "0.5rem",
+              width: "100%",
+            }}
+          >
+            <button
+              type="button"
+              onClick={handleClick}
+              className="upload-button"
+            >
+              <UploadSimple
+                size={20}
+                weight="bold"
+                style={{ marginRight: "8px" }}
+              />
+              Choose File
+            </button>
+            {question.helpText && (
+              <p className="help-text">{question.helpText}</p>
+            )}
+          </div>
         ) : (
           <div className="file-preview">
             {preview && (
@@ -119,13 +140,6 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       </div>
 
       {error && <p className="error-text">{error}</p>}
-
-      {question.fileConfig && (
-        <p className="file-requirements">
-          Allowed: {question.fileConfig.allowedTypes.join(", ")} | Max size:{" "}
-          {question.fileConfig.maxSizeMB}MB
-        </p>
-      )}
     </div>
   );
 };

@@ -63,7 +63,9 @@
 }
 
 :root {
-  font-family: "DM Sans", system-ui, sans-serif;
+  --font-primary: "Lato", system-ui, sans-serif;
+  --font-secondary: "DM Sans", system-ui, sans-serif;
+  font-family: var(--font-secondary);
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -139,4 +141,39 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Splash Screen Animations */
+@keyframes slideInFromLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-100vw);
+  }
+  60% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutToLeft {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-100vw);
+  }
+}
+
+.animate-slide-in {
+  animation: slideInFromLeft 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.animate-slide-out {
+  animation: slideOutToLeft 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
 }

@@ -3,6 +3,8 @@ import ai from "./ai";
 import clientReports from "./client_reports";
 import clients from "./clients";
 import shareableCalendarLinks from "./shareable-calendar-links";
+import otp from "./otp";
+import requestReports from "./request_reports";
 import slotWindows from "./slot_windows";
 import tasks from "./tasks";
 import users from "./user";
@@ -15,5 +17,7 @@ const routes = new Hono()
   .route("/clients", clients)
   .route("/client-reports", clientReports)
   .route("/shareable-calendar-links", shareableCalendarLinks);
+  .route("/otp", otp)
+  .route("/request-reports", requestReports);
 
 export default routes;

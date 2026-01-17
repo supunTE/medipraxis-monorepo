@@ -2,12 +2,13 @@ import type {
   CreateClientInput,
   CreateClientWithContactInput,
   GetAllClientsQuery,
+  GetClientByPhoneQuery,
   GetClientParam,
   UpdateClientInput,
   UpdateClientParam,
 } from "@repo/models";
-import type { APIContext } from "../types";
 import { getClientService } from "../lib";
+import type { APIContext } from "../types";
 
 export class ClientController {
   static async getAllClients(c: APIContext<{ query: GetAllClientsQuery }>) {
@@ -41,6 +42,33 @@ export class ClientController {
           ? 404
           : 500;
       return c.json({ error: message }, status);
+    }
+  }
+
+  static async getClientByPhone(
+    c: APIContext<{ query: GetClientByPhoneQuery }>
+  ) {
+    try {
+      const clientService = getClientService(c);
+      const countryCode = c.req.query("country_code");
+      const contactNumber = c.req.query("contact_number");
+
+      const clients = await clientService.getClientByPhone(
+        countryCode!,
+        contactNumber!
+      );
+
+      if (clients.length === 0) {
+        return c.json({ exists: false, clients: [] });
+      }
+
+      return c.json({ exists: true, clients });
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to check client existence";
+      return c.json({ error: message }, 500);
     }
   }
 

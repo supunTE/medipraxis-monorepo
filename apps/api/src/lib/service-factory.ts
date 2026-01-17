@@ -2,6 +2,8 @@ import type { Context } from "hono";
 import {
   ClientReportRepository,
   ClientRepository,
+  OtpRepository,
+  RequestReportRepository,
   ShareableCalendarLinkRepository,
   SlotWindowRepository,
   TaskRepository,
@@ -11,6 +13,8 @@ import {
   AIService,
   ClientReportService,
   ClientService,
+  OtpService,
+  RequestReportService,
   ShareableCalendarLinkService,
   SlotWindowService,
   TaskService,
@@ -58,7 +62,35 @@ export function getClientService(c: Context<{ Bindings: Env }>) {
 export function getClientReportService(c: Context<{ Bindings: Env }>) {
   const db = createDatabaseClient(c.env);
   const clientReportRepository = new ClientReportRepository(db);
-  return new ClientReportService(clientReportRepository);
+  const clientRepository = new ClientRepository(db);
+  const requestReportRepository = new RequestReportRepository(db);
+  const userRepository = new UserRepository(db);
+  return new ClientReportService(
+    clientReportRepository,
+    clientRepository,
+    requestReportRepository,
+    userRepository
+  );
+}
+
+export function getOtpService(c: Context<{ Bindings: Env }>) {
+  const apiKey = c.env.TEXT_LK_API_KEY || "dev";
+  const db = createDatabaseClient(c.env);
+  const otpRepository = new OtpRepository(db);
+
+  return new OtpService(apiKey, otpRepository);
+}
+
+export function getRequestReportService(c: Context<{ Bindings: Env }>) {
+  const db = createDatabaseClient(c.env);
+  const requestReportRepository = new RequestReportRepository(db);
+  const userRepository = new UserRepository(db);
+  const clientRepository = new ClientRepository(db);
+  return new RequestReportService(
+    requestReportRepository,
+    userRepository,
+    clientRepository
+  );
 }
 
 export function getShareableCalendarLinkService(c: Context<{ Bindings: Env }>) {

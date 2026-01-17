@@ -8,6 +8,8 @@ export const clientReportSchema = z.object({
   file_path: z.string().nullable(),
   client_id: z.string().nullable(),
   user_id: z.string().nullable(),
+  request_report_id: z.string().nullable(),
+  expiry_date: z.string().nullable(),
   created_date: z.string(),
 });
 
@@ -15,9 +17,17 @@ export const clientReportSchema = z.object({
 
 export const createClientReportSchema = z
   .object({
-    report_title: z.string().min(1, "Report title is required"),
     client_id: z.string().uuid("Invalid client ID"),
     user_id: z.string().uuid("Invalid user ID"),
+    request_report_id: z.string().uuid("Invalid request report ID"),
+    expiry_date: z.string().optional(),
+    reports: z
+      .array(
+        z.object({
+          report_title: z.string().min(1, "Report title is required"),
+        })
+      )
+      .min(1, "At least one report is required"),
   })
   .strict();
 
