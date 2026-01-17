@@ -288,4 +288,33 @@ export class TaskRepository {
       } as TaskDetails;
     });
   }
+
+  // Find the most recent appointment for a client
+  async findMostRecentAppointmentByClientId(
+    clientId: string,
+    appointmentTypeId: string
+  ): Promise<TaskDetails | null> {
+    const { data, error } = await this.db
+      .from("task")
+      .select(TASK_QUERIES.FIND_ALL)
+      .eq("client_id", clientId)
+      .eq("task_type_id", appointmentTypeId)
+      .is("deleted_date", null)
+      .order("created_date", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error || !data) {
+      return null;
+    }
+
+    const { task_type, task_status, client, ...taskData } = data;
+    return {
+      ...taskData,
+      task_type_name: task_type?.task_type_name || "",
+      task_status_name: task_status?.task_status_name || "",
+      client_first_name: client?.first_name || null,
+      client_last_name: client?.last_name || null,
+    } as TaskDetails;
+  }
 }

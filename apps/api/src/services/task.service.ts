@@ -5,6 +5,7 @@ import type {
   UpdateTaskInput,
 } from "@repo/models";
 import { TaskStatus, TaskType } from "@repo/models";
+import { APPOINTMENT_COOLDOWN_MINUTES } from "../constants";
 import { type TaskRepository } from "../repositories";
 
 export class TaskService {
@@ -223,6 +224,56 @@ export class TaskService {
     );
 
     return activeAppointments.length > 0;
+  }
+
+  // Check if client is within cooldown period after last appointment action
+  async isClientInCooldown(clientId: string): Promise<{
+    inCooldown: boolean;
+    lastAppointmentDate?: Date;
+    remainingMinutes?: number;
+  }> {
+    // Get appointment type ID
+    const appointmentTypeId = await this.taskRepository.getTaskTypeByName(
+      TaskType.APPOINTMENT
+    );
+
+    if (!appointmentTypeId) {
+      throw new Error('Task type "APPOINTMENT" not found in database');
+    }
+
+    // Get most recent appointment (any status)
+    const mostRecentAppointment =
+      await this.taskRepository.findMostRecentAppointmentByClientId(
+        clientId,
+        appointmentTypeId
+      );
+
+    if (!mostRecentAppointment) {
+      return { inCooldown: false };
+    }
+
+    // Ensure we parse the database timestamp as UTC
+    // If the timestamp doesn't have timezone info, append 'Z' to treat it as UTC
+    const dateString = mostRecentAppointment.created_date;
+    const utcDateString = dateString.endsWith("Z")
+      ? dateString
+      : `${dateString}Z`;
+    const lastAppointmentDate = new Date(utcDateString);
+    const nowUtc = Date.now(); // Current time in UTC milliseconds
+    const minutesSinceLastAppointment =
+      (nowUtc - lastAppointmentDate.getTime()) / (1000 * 60);
+
+    const inCooldown =
+      minutesSinceLastAppointment < APPOINTMENT_COOLDOWN_MINUTES;
+    const remainingMinutes = inCooldown
+      ? Math.ceil(APPOINTMENT_COOLDOWN_MINUTES - minutesSinceLastAppointment)
+      : 0;
+
+    return {
+      inCooldown,
+      lastAppointmentDate,
+      remainingMinutes,
+    };
   }
 
   // Calculate slot time range based on slot window and position

@@ -28,16 +28,19 @@ export const useReserveAppointment = (
 
       if (!res.ok) {
         // Handle specific error cases with user-friendly messages
-        if (res.status === 400) {
-          throw new Error(
-            "Unable to book this appointment. Please try a different time slot"
-          );
-        } else if (res.status === 404) {
+        if (res.status === 404) {
           throw new Error("This time slot is no longer available");
         } else if (res.status === 409) {
           // Conflict - client already has appointment
           throw new Error(
             "You already have an appointment booked for this time slot"
+          );
+        } else if (res.status === 429) {
+          // Too Many Requests - cooldown period
+          const errorData = await res.json();
+          throw new Error(
+            errorData.error ||
+              "Please wait before reserving another appointment"
           );
         } else if (res.status >= 500) {
           throw new Error(
