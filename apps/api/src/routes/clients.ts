@@ -3,6 +3,7 @@ import {
   createClientSchema,
   deleteClientParamSchema,
   getAllClientsQuerySchema,
+  getClientByPhoneQuerySchema,
   getClientParamSchema,
   updateClientParamSchema,
   updateClientSchema,
@@ -20,6 +21,11 @@ const clients = new Hono()
     "/",
     zValidator("query", getAllClientsQuerySchema),
     ClientController.getAllClients
+  )
+  .get(
+    "/check-phone",
+    zValidator("query", getClientByPhoneQuerySchema),
+    ClientController.getClientByPhone
   )
   .get(
     "/:id",
