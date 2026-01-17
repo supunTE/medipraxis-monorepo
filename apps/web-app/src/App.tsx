@@ -5,6 +5,7 @@ import "./components/forms/form.css";
 import SplashScreen from "./components/SplashScreen";
 
 // Import the generated route tree
+import { Toaster } from "@/components/ui/sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { routeTree } from "./routeTree.gen";
 
@@ -45,6 +46,7 @@ function App() {
         <SplashScreen onFinish={handleSplashFinish} duration={3000} />
       )}
       <RouterProvider router={router} />
+      <Toaster />
     </QueryClientProvider>
   );
 }

@@ -3,5 +3,6 @@ export * from "./client-reports";
 export * from "./clients";
 export * from "./otp";
 export * from "./request-reports";
+export * from "./shareable-calendar-links";
 export * from "./slot-windows";
 export * from "./tasks";

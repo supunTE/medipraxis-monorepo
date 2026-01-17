@@ -133,6 +133,20 @@ export class TaskController {
       const taskService = getTaskService(c);
       const body = c.req.valid("json") as ReserveAppointmentByClientInput;
 
+      // Check if client is in cooldown period
+      const cooldownCheck = await taskService.isClientInCooldown(
+        body.client_id
+      );
+
+      if (cooldownCheck.inCooldown) {
+        return c.json(
+          {
+            error: `Please wait ${cooldownCheck.remainingMinutes} more minute(s) before reserving another appointment`,
+          },
+          429
+        );
+      }
+
       // Check if client already has an appointment in this slot window
       const hasExisting = await taskService.hasExistingAppointmentInSlotWindow(
         body.client_id,

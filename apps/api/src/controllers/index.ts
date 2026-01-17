@@ -3,6 +3,7 @@ export * from "./client.controller";
 export * from "./client_report.controller";
 export * from "./otp.controller";
 export * from "./request_report.controller";
+export * from "./shareable-calendar-link.controller";
 export * from "./slot_window.controller";
 export * from "./task.controller";
 export * from "./user.controller";

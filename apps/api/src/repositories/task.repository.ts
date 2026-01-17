@@ -188,6 +188,9 @@ export class TaskRepository {
       taskTypeId?: string;
       taskStatusId?: string;
       slotWindowId?: string;
+      slotWindowIds?: string[];
+      userId?: string;
+      excludeStatusId?: string;
     }
   ): Promise<TaskDetails[]> {
     let query = this.db
@@ -195,6 +198,10 @@ export class TaskRepository {
       .select(TASK_QUERIES.FIND_ALL)
       .eq("client_id", clientId)
       .is("deleted_date", null);
+
+    if (options?.userId) {
+      query = query.eq("user_id", options.userId);
+    }
 
     if (options?.taskTypeId) {
       query = query.eq("task_type_id", options.taskTypeId);
@@ -204,8 +211,16 @@ export class TaskRepository {
       query = query.eq("task_status_id", options.taskStatusId);
     }
 
+    if (options?.excludeStatusId) {
+      query = query.neq("task_status_id", options.excludeStatusId);
+    }
+
     if (options?.slotWindowId) {
       query = query.eq("slot_window_id", options.slotWindowId);
+    }
+
+    if (options?.slotWindowIds && options.slotWindowIds.length > 0) {
+      query = query.in("slot_window_id", options.slotWindowIds);
     }
 
     const { data, error } = await query.order("start_date", {
@@ -272,5 +287,34 @@ export class TaskRepository {
         client_last_name: client?.last_name || null,
       } as TaskDetails;
     });
+  }
+
+  // Find the most recent appointment for a client
+  async findMostRecentAppointmentByClientId(
+    clientId: string,
+    appointmentTypeId: string
+  ): Promise<TaskDetails | null> {
+    const { data, error } = await this.db
+      .from("task")
+      .select(TASK_QUERIES.FIND_ALL)
+      .eq("client_id", clientId)
+      .eq("task_type_id", appointmentTypeId)
+      .is("deleted_date", null)
+      .order("created_date", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error || !data) {
+      return null;
+    }
+
+    const { task_type, task_status, client, ...taskData } = data;
+    return {
+      ...taskData,
+      task_type_name: task_type?.task_type_name || "",
+      task_status_name: task_status?.task_status_name || "",
+      client_first_name: client?.first_name || null,
+      client_last_name: client?.last_name || null,
+    } as TaskDetails;
   }
 }

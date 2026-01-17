@@ -4,6 +4,7 @@ import {
   ClientRepository,
   OtpRepository,
   RequestReportRepository,
+  ShareableCalendarLinkRepository,
   SlotWindowRepository,
   TaskRepository,
   UserRepository,
@@ -14,6 +15,7 @@ import {
   ClientService,
   OtpService,
   RequestReportService,
+  ShareableCalendarLinkService,
   SlotWindowService,
   TaskService,
   UserService,
@@ -88,5 +90,19 @@ export function getRequestReportService(c: Context<{ Bindings: Env }>) {
     requestReportRepository,
     userRepository,
     clientRepository
+  );
+}
+
+export function getShareableCalendarLinkService(c: Context<{ Bindings: Env }>) {
+  const db = createDatabaseClient(c.env);
+  const shareableCalendarLinkRepository = new ShareableCalendarLinkRepository(
+    db
+  );
+  const slotWindowRepository = new SlotWindowRepository(db);
+  const taskRepository = new TaskRepository(db);
+  return new ShareableCalendarLinkService(
+    shareableCalendarLinkRepository,
+    slotWindowRepository,
+    taskRepository
   );
 }
