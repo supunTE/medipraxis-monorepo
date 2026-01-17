@@ -1,43 +1,78 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { DaySelector } from "./DaySelector";
 import { SlotWindow } from "./SlotWindow";
+import { useShareableCalendarLink } from "@/services/ShareableCalendarLink/useShareableCalendarLink";
 
 export const Route = createFileRoute("/schedules/$id")({
   component: ScheduleDetail,
 });
 
-type TimeSlot = {
-  id: number;
-  time: string;
-  clinic: string;
-  address: string;
-  slots: number;
-  available: boolean;
-};
-
 function ScheduleDetail() {
   const { id } = Route.useParams();
   const [selectedDay, setSelectedDay] = useState(0); // Start with today (index 0)
 
-  const timeSlots: TimeSlot[] = [
-    {
-      id: 1,
-      time: "6AM-9AM",
-      clinic: "Heart Health Clinic",
-      address: "123 Medical Plaza, Suite 200, New York, NY 10001",
-      slots: 9,
-      available: true,
-    },
-    {
-      id: 2,
-      time: "5PM-10PM",
-      clinic: "Newmedi Clinic",
-      address: "123 Medical Plaza, Suite 200, New York, NY 10001",
-      slots: 0,
-      available: false,
-    },
-  ];
+  // Fetch shareable calendar link data with slot windows
+  const { data, isLoading, error } = useShareableCalendarLink(id);
+
+  // Filter slot windows for the selected day
+  const filteredSlotWindows = useMemo(() => {
+    if (!data?.success || !data.data.slotWindows) return [];
+
+    const today = new Date();
+    const selectedDate = new Date(today);
+    selectedDate.setDate(today.getDate() + selectedDay);
+    selectedDate.setHours(0, 0, 0, 0);
+
+    const nextDay = new Date(selectedDate);
+    nextDay.setDate(selectedDate.getDate() + 1);
+
+    return data.data.slotWindows.filter((slot) => {
+      const slotDate = new Date(slot.start_date);
+      return slotDate >= selectedDate && slotDate < nextDay;
+    });
+  }, [data, selectedDay]);
+
+  // Format time range from ISO datetime
+  const formatTimeRange = (startDate: string, endDate: string): string => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    const formatTime = (date: Date) => {
+      const hours = date.getHours();
+      const ampm = hours >= 12 ? "PM" : "AM";
+      const displayHours = hours % 12 || 12;
+      return `${displayHours}${ampm}`;
+    };
+
+    return `${formatTime(start)}-${formatTime(end)}`;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-mp-white px-6 py-8 max-w-2xl mx-auto">
+        <div className="text-center text-mp-dark-green font-dm-sans">
+          Loading...
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-mp-white px-6 py-8 max-w-2xl mx-auto">
+        <div className="text-center text-red-600 font-dm-sans">
+          {error instanceof Error ? error.message : "Failed to load schedule"}
+        </div>
+      </div>
+    );
+  }
+
+  const doctorName = data?.data?.user
+    ? `Dr. ${data.data.user.first_name} ${data.data.user.last_name}`
+    : "Doctor";
+
+  const numberOfDays = data?.data?.visible_days_ahead || 7;
 
   return (
     <div className="min-h-screen bg-mp-white px-6 py-8 max-w-2xl mx-auto">
@@ -53,7 +88,7 @@ function ScheduleDetail() {
           </span>
           <button className="bg-mp-green px-6 py-2 rounded-md hover:bg-mp-green/90 transition-colors">
             <span className="text-lg font-semibold text-mp-dark-green font-lato">
-              Dr. Sarah Gracia
+              {doctorName}
             </span>
           </button>
         </div>
@@ -61,28 +96,37 @@ function ScheduleDetail() {
 
       {/* Day Selector - Single Row */}
       <DaySelector
-        numberOfDays={7}
+        numberOfDays={numberOfDays}
         selectedDay={selectedDay}
         onDaySelect={setSelectedDay}
       />
 
       {/* Time Slots */}
       <div className="space-y-8">
-        {timeSlots.map((slot) => (
-          <SlotWindow
-            key={slot.id}
-            id={slot.id}
-            time={slot.time}
-            clinic={slot.clinic}
-            address={slot.address}
-            slots={slot.slots}
-            available={slot.available}
-            onReserve={(id) => {
-              console.log(`Reserving slot ${id}`);
-              // Add your reservation logic here
-            }}
-          />
-        ))}
+        {filteredSlotWindows.length === 0 ? (
+          <div className="text-center text-mp-dark-green font-dm-sans">
+            No available slots for this day
+          </div>
+        ) : (
+          filteredSlotWindows.map((slot) => {
+            const availableSlots = slot.total_slots - slot.slots_filled;
+            return (
+              <SlotWindow
+                key={slot.slot_window_id}
+                id={slot.slot_window_id}
+                time={formatTimeRange(slot.start_date, slot.end_date)}
+                clinic={slot.location || "Clinic"}
+                address={slot.note || "Address not provided"}
+                slots={availableSlots}
+                available={availableSlots > 0}
+                onReserve={(slotWindowId) => {
+                  console.log(`Reserving slot window ${slotWindowId}`);
+                  // Add your reservation logic here
+                }}
+              />
+            );
+          })
+        )}
       </div>
     </div>
   );

@@ -43,12 +43,12 @@ export function DaySelector({
 
   return (
     <div className="mb-10">
-      <div className="flex gap-2 justify-center overflow-x-auto pb-8">
+      <div className="flex gap-2 sm:justify-center overflow-x-auto pb-8">
         {days.map((dayOption, index) => (
           <button
             key={index}
             onClick={() => onDaySelect(index)}
-            className={`relative flex flex-col items-center justify-center p-4 rounded-2xl transition-colors w-22.5 h-22.5 ${
+            className={`relative flex flex-col items-center justify-center shrink-0 p-4 rounded-2xl transition-colors w-20 h-24 ${
               selectedDay === index ? "bg-mp-green" : "bg-mp-light-green"
             }`}
           >
