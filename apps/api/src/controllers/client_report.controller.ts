@@ -7,22 +7,41 @@ import type { APIContext } from "../types";
 
 export class ClientReportController {
   static async createReport(
-    c: APIContext<{ form: CreateClientReportInput & { file: File } }>
+    c: APIContext<{ form: CreateClientReportInput & { files: File[] } }>
   ) {
     try {
       const clientReportService = getClientReportService(c);
       const body = await c.req.parseBody();
 
-      const file = body["file"] as File;
+      // Extract files and report titles
+      const filesWithTitles: Array<{ file: File; title: string }> = [];
+
+      // Parse files and their corresponding titles from the multipart form data
+      for (const [key, value] of Object.entries(body)) {
+        if (key === "files" || value instanceof File) {
+          const file = value as File;
+          // Look for corresponding title field
+          const titleKey = key.replace("file", "title");
+          const title = body[titleKey] as string;
+
+          if (title) {
+            filesWithTitles.push({ file, title });
+          }
+        }
+      }
+
       const input: CreateClientReportInput = {
-        report_title: body["report_title"] as string,
         client_id: body["client_id"] as string,
         user_id: body["user_id"] as string,
+        request_report_id: body["request_report_id"] as string,
+        expiry_date: body["expiry_date"] as string | undefined,
+        reports: filesWithTitles.map((item) => ({ report_title: item.title })),
       };
 
-      const report = await clientReportService.createReport(input, file);
+      const files = filesWithTitles.map((item) => item.file);
+      const reports = await clientReportService.createReport(input, files);
 
-      return c.json({ report }, 201);
+      return c.json({ reports, count: reports.length }, 201);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to create report";

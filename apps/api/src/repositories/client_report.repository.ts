@@ -1,4 +1,4 @@
-import type { ClientReport, CreateClientReportInput } from "@repo/models";
+import type { ClientReport } from "@repo/models";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export const CLIENT_REPORT_QUERIES = {
@@ -59,17 +59,30 @@ export class ClientReportRepository {
    * Create a new client report record
    */
   async create(
-    input: CreateClientReportInput,
+    input: {
+      report_title: string;
+      client_id: string;
+      user_id: string;
+      request_report_id?: string;
+      expiry_date?: string;
+    },
     filePath: string
   ): Promise<ClientReport> {
+    const insertData: any = {
+      [CLIENT_REPORT_QUERIES.REPORT_TITLE]: input.report_title,
+      [CLIENT_REPORT_QUERIES.FILE_PATH]: filePath,
+      [CLIENT_REPORT_QUERIES.CLIENT_ID]: input.client_id,
+      [CLIENT_REPORT_QUERIES.USER_ID]: input.user_id,
+      [CLIENT_REPORT_QUERIES.REQUEST_REPORT_ID]: input.request_report_id,
+    };
+
+    if (input.expiry_date) {
+      insertData["expiry_date"] = input.expiry_date;
+    }
+
     const { data, error } = await this.db
       .from(CLIENT_REPORT_QUERIES.CLIENT_REPORT_TABLE)
-      .insert({
-        [CLIENT_REPORT_QUERIES.REPORT_TITLE]: input.report_title,
-        [CLIENT_REPORT_QUERIES.FILE_PATH]: filePath,
-        [CLIENT_REPORT_QUERIES.CLIENT_ID]: input.client_id,
-        [CLIENT_REPORT_QUERIES.USER_ID]: input.user_id,
-      })
+      .insert(insertData)
       .select(CLIENT_REPORT_QUERIES.FIND_BY_ID)
       .single();
 

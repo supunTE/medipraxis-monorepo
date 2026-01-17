@@ -27,38 +27,71 @@ export class ClientReportService {
 
   async createReport(
     input: CreateClientReportInput,
-    file: File
-  ): Promise<ClientReport> {
-    // Validate file type
+    files: File[]
+  ): Promise<ClientReport[]> {
     const allowedTypes = [
       "application/pdf",
       "image/jpeg",
       "image/png",
       "image/jpg",
     ];
-    if (!allowedTypes.includes(file.type)) {
-      throw new Error(
-        "Invalid file type. Only PDF and image files (JPEG, PNG, JPG) are allowed"
+    const maxSize = 10 * 1024 * 1024; // 10MB
+
+    // Validate all files
+    for (const file of files) {
+      if (!allowedTypes.includes(file.type)) {
+        throw new Error(
+          `Invalid file type for ${file.name}. Only PDF and image files (JPEG, PNG, JPG) are allowed`
+        );
+      }
+      if (file.size > maxSize) {
+        throw new Error(`File ${file.name} exceeds 10MB limit`);
+      }
+    }
+
+    // Check if number of files matches number of report titles
+    if (files.length !== input.reports.length) {
+      throw new Error("Number of files must match number of report titles");
+    }
+
+    // Upload files and create reports
+    const reports: ClientReport[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (!file) {
+        throw new Error(`File missing at index ${i}`);
+      }
+
+      const reportData = input.reports[i];
+      if (!reportData) {
+        throw new Error(`Report data missing for file at index ${i}`);
+      }
+      const reportTitle = reportData.report_title;
+
+      // Upload file to storage
+      const filePath = await this.clientReportRepository.uploadFile(
+        file,
+        input.user_id,
+        input.client_id
       );
+
+      // Create database record with individual report title
+      const reportInput = {
+        report_title: reportTitle,
+        client_id: input.client_id,
+        user_id: input.user_id,
+        request_report_id: input.request_report_id,
+        expiry_date: input.expiry_date,
+      };
+
+      const createdReport = await this.clientReportRepository.create(
+        reportInput,
+        filePath
+      );
+      reports.push(createdReport);
     }
 
-    // Validate file size (10MB limit)
-    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
-    if (file.size > maxSize) {
-      throw new Error("File size exceeds 10MB limit");
-    }
-
-    // Upload file to storage
-    const filePath = await this.clientReportRepository.uploadFile(
-      file,
-      input.user_id,
-      input.client_id
-    );
-
-    // Create database record
-    const report = await this.clientReportRepository.create(input, filePath);
-
-    return report;
+    return reports;
   }
 
   async getAllReports(
