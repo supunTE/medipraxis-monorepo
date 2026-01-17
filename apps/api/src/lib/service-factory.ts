@@ -2,6 +2,7 @@ import type { Context } from "hono";
 import {
   ClientReportRepository,
   ClientRepository,
+  ShareableCalendarLinkRepository,
   SlotWindowRepository,
   TaskRepository,
   UserRepository,
@@ -10,6 +11,7 @@ import {
   AIService,
   ClientReportService,
   ClientService,
+  ShareableCalendarLinkService,
   SlotWindowService,
   TaskService,
   UserService,
@@ -57,4 +59,18 @@ export function getClientReportService(c: Context<{ Bindings: Env }>) {
   const db = createDatabaseClient(c.env);
   const clientReportRepository = new ClientReportRepository(db);
   return new ClientReportService(clientReportRepository);
+}
+
+export function getShareableCalendarLinkService(
+  c: Context<{ Bindings: Env }>
+) {
+  const db = createDatabaseClient(c.env);
+  const shareableCalendarLinkRepository = new ShareableCalendarLinkRepository(
+    db
+  );
+  const slotWindowRepository = new SlotWindowRepository(db);
+  return new ShareableCalendarLinkService(
+    shareableCalendarLinkRepository,
+    slotWindowRepository
+  );
 }
