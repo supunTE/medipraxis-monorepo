@@ -19,6 +19,10 @@ export const getShareableCalendarLinkParamSchema = z.object({
   id: z.string(),
 });
 
+export const getClientAppointmentsByLinkQuerySchema = z.object({
+  client_id: z.string(),
+});
+
 /* ---------------- TYPES (DERIVED) ---------------- */
 
 export type ShareableCalendarLink = z.infer<typeof shareableCalendarLinkSchema>;
@@ -36,6 +40,12 @@ export type GetShareableCalendarLinkParam = z.infer<
   typeof getShareableCalendarLinkParamSchema
 >;
 
-export type ShareableCalendarLinkWithSlotWindows = ShareableCalendarLinkWithUser & {
-  slotWindows: SlotWindowForClient[];
-};
+export type GetClientAppointmentsByLinkQuery = z.infer<
+  typeof getClientAppointmentsByLinkQuerySchema
+>;
+
+export type ShareableCalendarLinkWithSlotWindows =
+  ShareableCalendarLinkWithUser & {
+    slotWindows: SlotWindowForClient[];
+    clientReservedSlotWindowIds: string[];
+  };

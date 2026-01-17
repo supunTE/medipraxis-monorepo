@@ -1,27 +1,32 @@
 import type {
-  ShareableCalendarLinkWithUser,
   ShareableCalendarLinkWithSlotWindows,
   SlotWindowForClient,
 } from "@repo/models";
+import { TaskStatus, TaskType } from "@repo/models";
 import type {
   ShareableCalendarLinkRepository,
   SlotWindowRepository,
+  TaskRepository,
 } from "../repositories";
 
 export class ShareableCalendarLinkService {
   private shareableCalendarLinkRepository: ShareableCalendarLinkRepository;
   private slotWindowRepository: SlotWindowRepository;
+  private taskRepository: TaskRepository;
 
   constructor(
     shareableCalendarLinkRepository: ShareableCalendarLinkRepository,
-    slotWindowRepository: SlotWindowRepository
+    slotWindowRepository: SlotWindowRepository,
+    taskRepository: TaskRepository
   ) {
     this.shareableCalendarLinkRepository = shareableCalendarLinkRepository;
     this.slotWindowRepository = slotWindowRepository;
+    this.taskRepository = taskRepository;
   }
 
   async getShareableCalendarLinkWithSlotWindows(
-    linkId: string
+    linkId: string,
+    clientId: string
   ): Promise<ShareableCalendarLinkWithSlotWindows> {
     const link =
       await this.shareableCalendarLinkRepository.findByIdWithUser(linkId);
@@ -61,9 +66,50 @@ export class ShareableCalendarLinkService {
       })
     );
 
+    // Get slot windows where client has appointments
+    let clientReservedSlotWindowIds: string[] = [];
+    const slotWindowIds = slotWindows.map((sw) => sw.slot_window_id);
+
+    if (slotWindowIds.length > 0) {
+      // Get appointment type ID
+      const appointmentTypeId = await this.taskRepository.getTaskTypeByName(
+        TaskType.APPOINTMENT
+      );
+
+      if (appointmentTypeId) {
+        // Get cancelled status ID to exclude
+        const cancelledStatusId = await this.taskRepository.getTaskStatusByName(
+          TaskStatus.CANCELLED
+        );
+
+        if (cancelledStatusId) {
+          // Fetch client's appointments for these slot windows
+          const appointments = await this.taskRepository.findByClientId(
+            clientId,
+            {
+              userId: link.user_id,
+              taskTypeId: appointmentTypeId,
+              excludeStatusId: cancelledStatusId,
+              slotWindowIds: slotWindowIds,
+            }
+          );
+
+          // Extract unique slot window IDs from appointments
+          clientReservedSlotWindowIds = [
+            ...new Set(
+              appointments
+                .map((apt) => apt.slot_window_id)
+                .filter((id): id is string => id !== null && id !== undefined)
+            ),
+          ];
+        }
+      }
+    }
+
     return {
       ...link,
       slotWindows: slotWindowsForClient,
+      clientReservedSlotWindowIds,
     };
   }
 }

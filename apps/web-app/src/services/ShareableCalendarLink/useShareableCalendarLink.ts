@@ -1,13 +1,16 @@
-import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import { useQuery } from "@tanstack/react-query";
 
-export const useShareableCalendarLink = (linkId: string) => {
+export const useShareableCalendarLink = (linkId: string, clientId: string) => {
   return useQuery({
-    queryKey: ["shareable-calendar-link", linkId],
+    queryKey: ["shareable-calendar-link", linkId, clientId],
     queryFn: async () => {
       const res = await apiClient.api["shareable-calendar-links"][":id"].$get({
         param: {
           id: linkId,
+        },
+        query: {
+          client_id: clientId,
         },
       });
 
@@ -17,6 +20,6 @@ export const useShareableCalendarLink = (linkId: string) => {
 
       return res.json();
     },
-    enabled: !!linkId,
+    enabled: !!linkId && !!clientId,
   });
 };

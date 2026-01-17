@@ -14,14 +14,18 @@ function ScheduleDetail() {
   const { id } = Route.useParams();
   const [selectedDay, setSelectedDay] = useState(0); // Start with today (index 0)
 
+  // TODO: Get client_id from authentication context or local storage
+  // For now, using a placeholder. This should be replaced with actual client authentication
+  const clientId = "4231411e-efa4-4a1c-8e05-bf16f93c542d";
+
   // Fetch shareable calendar link data with slot windows
-  const { data, isLoading, error } = useShareableCalendarLink(id);
+  const { data, isLoading, error } = useShareableCalendarLink(id, clientId);
 
   // Reserve appointment mutation
   const reserveAppointment = useReserveAppointment({
+    linkId: id,
     onSuccess: () => {
       toast.success("Your appointment has been booked successfully!");
-      // Optionally refetch the calendar data to update available slots
     },
     onError: (errorMessage) => {
       toast.error(errorMessage);
@@ -63,10 +67,6 @@ function ScheduleDetail() {
 
   // Handle appointment reservation
   const handleReserve = (slotWindowId: string) => {
-    // TODO: Get client_id from authentication context or local storage
-    // For now, using a placeholder. This should be replaced with actual client authentication
-    const clientId = "4231411e-efa4-4a1c-8e05-bf16f93c542d";
-
     if (!clientId) {
       toast.error(
         "Please log in or create an account to book your appointment"
@@ -142,6 +142,10 @@ function ScheduleDetail() {
         ) : (
           filteredSlotWindows.map((slot) => {
             const availableSlots = slot.total_slots - slot.slots_filled;
+            const isReserved =
+              data?.data.clientReservedSlotWindowIds?.includes(
+                slot.slot_window_id
+              ) ?? false;
             return (
               <SlotWindow
                 key={slot.slot_window_id}
@@ -151,6 +155,7 @@ function ScheduleDetail() {
                 address={slot.note || "Address not provided"}
                 slots={availableSlots}
                 available={availableSlots > 0}
+                isReserved={isReserved}
                 isReserving={reserveAppointment.isPending}
                 onReserve={handleReserve}
               />

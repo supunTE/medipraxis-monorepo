@@ -61,16 +61,16 @@ export function getClientReportService(c: Context<{ Bindings: Env }>) {
   return new ClientReportService(clientReportRepository);
 }
 
-export function getShareableCalendarLinkService(
-  c: Context<{ Bindings: Env }>
-) {
+export function getShareableCalendarLinkService(c: Context<{ Bindings: Env }>) {
   const db = createDatabaseClient(c.env);
   const shareableCalendarLinkRepository = new ShareableCalendarLinkRepository(
     db
   );
   const slotWindowRepository = new SlotWindowRepository(db);
+  const taskRepository = new TaskRepository(db);
   return new ShareableCalendarLinkService(
     shareableCalendarLinkRepository,
-    slotWindowRepository
+    slotWindowRepository,
+    taskRepository
   );
 }

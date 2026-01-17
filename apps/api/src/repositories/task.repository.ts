@@ -188,6 +188,9 @@ export class TaskRepository {
       taskTypeId?: string;
       taskStatusId?: string;
       slotWindowId?: string;
+      slotWindowIds?: string[];
+      userId?: string;
+      excludeStatusId?: string;
     }
   ): Promise<TaskDetails[]> {
     let query = this.db
@@ -195,6 +198,10 @@ export class TaskRepository {
       .select(TASK_QUERIES.FIND_ALL)
       .eq("client_id", clientId)
       .is("deleted_date", null);
+
+    if (options?.userId) {
+      query = query.eq("user_id", options.userId);
+    }
 
     if (options?.taskTypeId) {
       query = query.eq("task_type_id", options.taskTypeId);
@@ -204,8 +211,16 @@ export class TaskRepository {
       query = query.eq("task_status_id", options.taskStatusId);
     }
 
+    if (options?.excludeStatusId) {
+      query = query.neq("task_status_id", options.excludeStatusId);
+    }
+
     if (options?.slotWindowId) {
       query = query.eq("slot_window_id", options.slotWindowId);
+    }
+
+    if (options?.slotWindowIds && options.slotWindowIds.length > 0) {
+      query = query.in("slot_window_id", options.slotWindowIds);
     }
 
     const { data, error } = await query.order("start_date", {
