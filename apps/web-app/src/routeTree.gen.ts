@@ -13,6 +13,8 @@ import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as RegisterIndexRouteImport } from './routes/register/index'
 import { Route as UploadReportRequestReportIdRouteImport } from './routes/upload-report.$requestReportId'
+import { Route as SchedulesIdRouteImport } from './routes/schedules/$id'
+import { Route as ContactIdUploadReportRequestReportIdRouteImport } from './routes/$contactId.upload-report.$requestReportId'
 
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
@@ -35,16 +37,29 @@ const UploadReportRequestReportIdRoute =
     path: '/upload-report/$requestReportId',
     getParentRoute: () => rootRouteImport,
   } as any)
+const SchedulesIdRoute = SchedulesIdRouteImport.update({
+  id: '/schedules/$id',
+  path: '/schedules/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactIdUploadReportRequestReportIdRoute =
+  ContactIdUploadReportRequestReportIdRouteImport.update({
+    id: '/upload-report/$requestReportId',
+    path: '/upload-report/$requestReportId',
+    getParentRoute: () => ContactIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/schedules/$id': typeof SchedulesIdRoute
   '/upload-report/$requestReportId': typeof UploadReportRequestReportIdRoute
   '/register': typeof RegisterIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/schedules/$id': typeof SchedulesIdRoute
   '/upload-report/$requestReportId': typeof UploadReportRequestReportIdRoute
   '/register': typeof RegisterIndexRoute
 }
@@ -52,6 +67,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/schedules/$id': typeof SchedulesIdRoute
   '/upload-report/$requestReportId': typeof UploadReportRequestReportIdRoute
   '/register/': typeof RegisterIndexRoute
 }
@@ -60,14 +76,24 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/dashboard'
+    | '/schedules/$id'
     | '/upload-report/$requestReportId'
     | '/register'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/upload-report/$requestReportId' | '/register'
+  to:
+    | '/'
+    | '/$contactId'
+    | '/about'
+    | '/dashboard'
+    | '/schedules/$id'
+    | '/upload-report/$requestReportId'
+    | '/register'
+    | '/$contactId/upload-report/$requestReportId'
   id:
     | '__root__'
     | '/'
     | '/dashboard'
+    | '/schedules/$id'
     | '/upload-report/$requestReportId'
     | '/register/'
   fileRoutesById: FileRoutesById
@@ -75,6 +101,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
+  SchedulesIdRoute: typeof SchedulesIdRoute
   UploadReportRequestReportIdRoute: typeof UploadReportRequestReportIdRoute
   RegisterIndexRoute: typeof RegisterIndexRoute
 }
@@ -109,12 +136,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UploadReportRequestReportIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/schedules/$id': {
+      id: '/schedules/$id'
+      path: '/schedules/$id'
+      fullPath: '/schedules/$id'
+      preLoaderRoute: typeof SchedulesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$contactId/upload-report/$requestReportId': {
+      id: '/$contactId/upload-report/$requestReportId'
+      path: '/upload-report/$requestReportId'
+      fullPath: '/$contactId/upload-report/$requestReportId'
+      preLoaderRoute: typeof ContactIdUploadReportRequestReportIdRouteImport
+      parentRoute: typeof ContactIdRoute
+    }
   }
 }
+
+interface ContactIdRouteChildren {
+  ContactIdUploadReportRequestReportIdRoute: typeof ContactIdUploadReportRequestReportIdRoute
+}
+
+const ContactIdRouteChildren: ContactIdRouteChildren = {
+  ContactIdUploadReportRequestReportIdRoute:
+    ContactIdUploadReportRequestReportIdRoute,
+}
+
+const ContactIdRouteWithChildren = ContactIdRoute._addFileChildren(
+  ContactIdRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
+  SchedulesIdRoute: SchedulesIdRoute,
   UploadReportRequestReportIdRoute: UploadReportRequestReportIdRoute,
   RegisterIndexRoute: RegisterIndexRoute,
 }
