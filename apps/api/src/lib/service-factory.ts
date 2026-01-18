@@ -18,6 +18,7 @@ import {
   RequestReportService,
   ShareableCalendarLinkService,
   SlotWindowService,
+  SmsService,
   TaskService,
   UserService,
 } from "../services";
@@ -88,11 +89,13 @@ export function getRequestReportService(c: Context<{ Bindings: Env }>) {
   const userRepository = new UserRepository(db);
   const clientRepository = new ClientRepository(db);
   const shareableUserLinkRepository = new ShareableUserLinkRepository(db);
+  const smsService = getSmsService(c);
   return new RequestReportService(
     requestReportRepository,
     userRepository,
     clientRepository,
-    shareableUserLinkRepository
+    shareableUserLinkRepository,
+    smsService
   );
 }
 
