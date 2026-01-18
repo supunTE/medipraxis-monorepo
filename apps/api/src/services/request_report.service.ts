@@ -95,8 +95,22 @@ export class RequestReportService {
       );
     }
 
+    // Filter out inactive reports from requested_reports
+    let filteredRequestedReports = data.requested_reports;
+    if (
+      Array.isArray(data.requested_reports) &&
+      data.requested_reports.length > 0
+    ) {
+      filteredRequestedReports = data.requested_reports.filter(
+        (report: any) => report.active !== false
+      );
+    }
+
     // Create the request report
-    const requestReport = await this.requestReportRepository.create(data);
+    const requestReport = await this.requestReportRepository.create({
+      ...data,
+      requested_reports: filteredRequestedReports,
+    });
 
     return requestReport;
   }
