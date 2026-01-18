@@ -99,31 +99,47 @@ export function UploadReport({ requestReportId }: UploadReportProps) {
       setUploading(true);
       setError("");
 
-      // Extract files and create reports array
-      const files: File[] = [];
-      const reports = Object.entries(values).map(([fieldId, file]) => {
-        if (file instanceof File) {
-          files.push(file);
-          const field = requestReport?.requested_reports.find(f => f.id === fieldId);
-          return {
-            report_title: field?.display_label || "Report",
-          };
-        }
-        return null;
-      }).filter(Boolean) as { report_title: string }[];
+      const formDataToSend = new FormData();
 
-      const response = await apiClient.api["client-reports"].$post({
-        form: {
-          client_id: requestReport?.client_id || "",
-          user_id: requestReport?.user_id || "",
-          request_report_id: requestReportId,
-          reports,
-          files,
-        },
+      // Add basic fields
+      formDataToSend.append("client_id", requestReport?.client_id || "");
+      formDataToSend.append("user_id", requestReport?.user_id || "");
+      formDataToSend.append("request_report_id", requestReportId);
+
+      // Calculate expiry date based on expiration_days from values
+      const expirationDays = values.expiration_days || 7;
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + Number(expirationDays));
+      formDataToSend.append("expiry_date", expiryDate.toISOString());
+
+      // Add files and titles with indexed names (file0, title0, file1, title1, etc.)
+      let fileIndex = 0;
+      Object.entries(values).forEach(([fieldId, file]) => {
+        if (file instanceof File) {
+          const field = requestReport?.requested_reports.find(
+            (f) => f.id === fieldId
+          );
+          const title = field?.display_label || "Report";
+
+          formDataToSend.append(`file${fileIndex}`, file);
+          formDataToSend.append(`title${fileIndex}`, title);
+          fileIndex++;
+        }
       });
 
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/client-reports`,
+        {
+          method: "POST",
+          body: formDataToSend,
+        }
+      );
+
       if (!response.ok) {
-        throw new Error("Failed to upload reports");
+        const errorData = await response.json();
+        throw new Error(
+          (errorData as { error?: string }).error || "Failed to upload reports"
+        );
       }
 
       // Navigate back to dashboard after successful upload
