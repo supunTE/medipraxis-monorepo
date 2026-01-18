@@ -230,7 +230,7 @@ export function ContactDashboard({ contactId }: ContactDashboardProps) {
                       (e.currentTarget.style.backgroundColor = "#90C67C")
                     }
                   >
-                    Upload Report
+                    Upload Reports
                   </button>
                 </div>
               ))}

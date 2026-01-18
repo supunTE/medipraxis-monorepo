@@ -1,4 +1,4 @@
-import { UploadSimple } from "@phosphor-icons/react";
+import { Trash, UploadSimple } from "@phosphor-icons/react";
 import React, { useRef, useState } from "react";
 import type { FormQuestion } from "../../types/form.types";
 
@@ -119,9 +119,17 @@ export const FileUpload: React.FC<FileUploadProps> = ({
           </div>
         ) : (
           <div className="file-preview">
-            {preview && (
-              <img src={preview} alt="Preview" className="image-preview" />
-            )}
+            <div className="file-preview-thumbnail">
+              {preview ? (
+                <img src={preview} alt="Preview" className="image-preview" />
+              ) : (
+                <div className="file-icon-placeholder">
+                  <span className="file-extension">
+                    {value.name.split(".").pop()?.toUpperCase()}
+                  </span>
+                </div>
+              )}
+            </div>
             <div className="file-info">
               <span className="file-name">{value.name}</span>
               <span className="file-size">
@@ -133,7 +141,8 @@ export const FileUpload: React.FC<FileUploadProps> = ({
               onClick={handleRemove}
               className="remove-button"
             >
-              Remove
+              <Trash size={18} weight="bold" />
+              <span>Remove</span>
             </button>
           </div>
         )}

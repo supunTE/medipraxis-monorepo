@@ -199,7 +199,7 @@ export function UploadReport({ requestReportId }: UploadReportProps) {
       style={{
         minHeight: "100vh",
         backgroundColor: "#f5f5f5",
-        padding: "40px 20px",
+        padding: "40px 20px 40px 20px",
       }}
     >
       <div
@@ -209,7 +209,7 @@ export function UploadReport({ requestReportId }: UploadReportProps) {
         }}
       >
         {/* Header Section */}
-        <div style={{ marginBottom: "32px" }}>
+        <div style={{ marginBottom: "32px", padding: "0 1rem" }}>
           <h1
             style={{
               fontSize: "32px",
@@ -266,6 +266,7 @@ export function UploadReport({ requestReportId }: UploadReportProps) {
               border: "1px solid #fecaca",
               borderRadius: "6px",
               marginBottom: "24px",
+              margin: "0 1rem 24px 1rem",
             }}
           >
             <p style={{ color: "#dc2626", fontSize: "14px", margin: 0 }}>
