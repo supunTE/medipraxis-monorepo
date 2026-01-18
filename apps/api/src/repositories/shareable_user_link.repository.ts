@@ -4,6 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 export const SHAREABLE_USER_LINK_QUERIES = {
   SHAREABLE_USER_LINK_TABLE: "shareable_user_link",
   SHAREABLE_USER_LINK_ID: "shareable_user_link_id",
+  SHAREABLE_USER_LINK_ALL: "*",
   USER_ID: "user_id",
   CREATED_DATE: "created_date",
   DELETED: "deleted",
@@ -19,7 +20,7 @@ export class ShareableUserLinkRepository {
   async findByUserId(userId: string): Promise<ShareableUserLink | null> {
     const { data, error } = await this.db
       .from(SHAREABLE_USER_LINK_QUERIES.SHAREABLE_USER_LINK_TABLE)
-      .select("*")
+      .select(SHAREABLE_USER_LINK_QUERIES.SHAREABLE_USER_LINK_ALL)
       .eq(SHAREABLE_USER_LINK_QUERIES.USER_ID, userId)
       .eq(SHAREABLE_USER_LINK_QUERIES.DELETED, false)
       .single();
