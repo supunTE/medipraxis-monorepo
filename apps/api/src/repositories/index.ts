@@ -3,6 +3,7 @@ export * from "./client_report.repository";
 export * from "./otp.repository";
 export * from "./request_report.repository";
 export * from "./shareable-calendar-link.repository";
+export * from "./shareable_user_link.repository";
 export * from "./slot_window.repository";
 export * from "./task.repository";
 export * from "./user.repository";

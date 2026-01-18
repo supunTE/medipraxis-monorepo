@@ -1,3 +1,4 @@
+import type { CreateRequestReportInput } from "@repo/models";
 import { getRequestReportService } from "../lib";
 import type { APIContext } from "../types";
 
@@ -24,6 +25,26 @@ export class RequestReportController {
         error instanceof Error
           ? error.message
           : "Failed to fetch request report";
+      return c.json({ error: message }, 500);
+    }
+  }
+
+  static async createRequestReport(
+    c: APIContext<{ json: CreateRequestReportInput }>
+  ) {
+    try {
+      const requestReportService = getRequestReportService(c);
+      const body = c.req.valid("json") as CreateRequestReportInput;
+
+      const requestReport =
+        await requestReportService.createRequestReport(body);
+
+      return c.json({ success: true, requestReport }, 201);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to create request report";
       return c.json({ error: message }, 500);
     }
   }

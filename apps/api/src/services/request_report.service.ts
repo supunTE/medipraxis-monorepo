@@ -1,13 +1,15 @@
 import type { RequestReport } from "@repo/models";
 import type { RequestReportRepository } from "../repositories";
 import type { ClientRepository } from "../repositories/client.repository";
+import type { ShareableUserLinkRepository } from "../repositories/shareable_user_link.repository";
 import type { UserRepository } from "../repositories/user.repository";
 
 export class RequestReportService {
   constructor(
     private requestReportRepository: RequestReportRepository,
     private userRepository: UserRepository,
-    private clientRepository: ClientRepository
+    private clientRepository: ClientRepository,
+    private shareableUserLinkRepository: ShareableUserLinkRepository
   ) {}
 
   async getRequestReportById(
@@ -67,5 +69,35 @@ export class RequestReportService {
       user_name: userName,
       client_name: clientName,
     };
+  }
+
+  async createRequestReport(data: {
+    user_id: string;
+    client_id: string;
+    form_id?: string;
+    requested_reports?: any;
+    note?: string;
+    notification_type?: {
+      whatsapp?: boolean;
+      text?: boolean;
+      email?: boolean;
+    };
+  }): Promise<RequestReport> {
+    // Check if user has a shareable link
+    let shareableLink = await this.shareableUserLinkRepository.findByUserId(
+      data.user_id
+    );
+
+    // If not, create one
+    if (!shareableLink) {
+      shareableLink = await this.shareableUserLinkRepository.create(
+        data.user_id
+      );
+    }
+
+    // Create the request report
+    const requestReport = await this.requestReportRepository.create(data);
+
+    return requestReport;
   }
 }

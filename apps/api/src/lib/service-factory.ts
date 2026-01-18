@@ -5,6 +5,7 @@ import {
   OtpRepository,
   RequestReportRepository,
   ShareableCalendarLinkRepository,
+  ShareableUserLinkRepository,
   SlotWindowRepository,
   TaskRepository,
   UserRepository,
@@ -86,10 +87,12 @@ export function getRequestReportService(c: Context<{ Bindings: Env }>) {
   const requestReportRepository = new RequestReportRepository(db);
   const userRepository = new UserRepository(db);
   const clientRepository = new ClientRepository(db);
+  const shareableUserLinkRepository = new ShareableUserLinkRepository(db);
   return new RequestReportService(
     requestReportRepository,
     userRepository,
-    clientRepository
+    clientRepository,
+    shareableUserLinkRepository
   );
 }
 
