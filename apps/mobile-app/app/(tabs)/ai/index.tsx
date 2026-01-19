@@ -143,7 +143,7 @@ export default function AIAssistantModal({
                 <View className="w-48 h-48 bg-mp-white rounded-full items-center justify-center shadow-soft-2">
                   <Image
                     source={botAvatar}
-                    className="w-36 h-36"
+                    style={{ width: 144, height: 144 }}
                     resizeMode="contain"
                   />
                 </View>

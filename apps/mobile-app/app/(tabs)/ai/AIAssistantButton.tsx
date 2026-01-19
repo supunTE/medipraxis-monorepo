@@ -58,7 +58,7 @@ export function AIAssistantButton({
         >
           <Image
             source={botAvatarClosed}
-            className="w-16 h-16"
+            style={{ width: 54, height: 54 }}
             resizeMode="contain"
           />
         </Animated.View>
