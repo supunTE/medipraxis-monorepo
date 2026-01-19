@@ -83,9 +83,7 @@ export default function TabLayout() {
         />
       </Tabs>
 
-      <AIAssistantButton
-        onPress={() => setIsAIAssistantVisible(true)}
-      />
+      <AIAssistantButton onPress={() => setIsAIAssistantVisible(true)} />
 
       <AIAssistantModal
         visible={isAIAssistantVisible}
