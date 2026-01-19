@@ -64,8 +64,6 @@ export function AIAssistantButton({
         cycleCountRef.current += 1;
         hasCountedCycleRef.current = true;
 
-        console.log("Cycle count:", cycleCountRef.current);
-
         // Close eyes after 3 complete cycles
         if (cycleCountRef.current >= 3) {
           setEyesOpened(false);
