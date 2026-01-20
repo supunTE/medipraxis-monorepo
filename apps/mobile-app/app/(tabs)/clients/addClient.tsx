@@ -7,10 +7,8 @@ import {
   TextInputType,
 } from "@/components/basic";
 import { Icons } from "@/config";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { Color, TextSize, TextVariant } from "@repo/config";
 import React, { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
 import {
   KeyboardAvoidingView,
   Modal,
@@ -21,87 +19,6 @@ import {
   View,
 } from "react-native";
 import { z } from "zod";
-
-// Validation schemas
-const nameSchema = z
-  .string()
-  .min(1, "Required")
-  .max(30, "Maximum 30 characters");
-
-const phoneSchema = z
-  .string()
-  .regex(/^\+?[\d\s-()]+$/, "Invalid phone number")
-  .min(10, "Phone number too short")
-  .max(20, "Phone number too long")
-  .refine((val) => {
-    const digits = val.replace(/\D/g, "");
-    return digits.length >= 10 && digits.length <= 15;
-  }, "Phone must have 10-15 digits");
-
-const optionalPhoneSchema = z
-  .string()
-  .optional()
-  .refine(
-    (val) => {
-      if (!val || val.trim() === "") return true;
-      return /^\+?[\d\s-()]+$/.test(val);
-    },
-    { message: "Invalid phone number" }
-  )
-  .refine(
-    (val) => {
-      if (!val || val.trim() === "") return true;
-      const digits = val.replace(/\D/g, "");
-      return digits.length >= 10 && digits.length <= 15;
-    },
-    { message: "Phone must have 10-15 digits" }
-  );
-
-const dateSchema = z
-  .string()
-  .min(1, "Required")
-  .regex(/^\d{2}\/\d{2}\/\d{4}$/, "Use DD/MM/YYYY")
-  .refine((val) => {
-    const parts = val.split("/").map(Number);
-    const day = parts[0];
-    const month = parts[1];
-    const year = parts[2];
-
-    if (!day || !month || !year) return false;
-    if (month < 1 || month > 12) return false;
-    if (day < 1 || day > 31) return false;
-
-    const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-    const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
-    if (isLeapYear) daysInMonth[1] = 29;
-
-    const maxDays = daysInMonth[month - 1];
-    if (!maxDays || day > maxDays) return false;
-
-    const currentYear = new Date().getFullYear();
-    if (year < 1900 || year > currentYear) return false;
-
-    return true;
-  }, "Invalid date");
-
-// Form schema
-const clientFormSchema = z.object({
-  title: nameSchema,
-  firstName: nameSchema,
-  lastName: z.string().max(30, "Maximum 30 characters").optional(),
-  gender: nameSchema,
-  dateOfBirth: dateSchema,
-  contactNumber: phoneSchema,
-  emergencyContactName: z.string().max(30, "Maximum 30 characters").optional(),
-  emergencyContactNumber: optionalPhoneSchema,
-  emergencyContactRelationship: z
-    .string()
-    .max(30, "Maximum 30 characters")
-    .optional(),
-  note: z.string().optional(),
-});
-
-type ClientFormData = z.infer<typeof clientFormSchema>;
 
 const titleOptions = [
   { label: "Mr", value: "Mr" },
@@ -119,10 +36,80 @@ const genderOptions = [
   { label: "Prefer not to say", value: "Prefer not to say" },
 ];
 
+// Zod validation schema
+const clientSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  firstName: z.string().min(1, "First name is required"),
+  gender: z.string().min(1, "Gender is required"),
+  dateOfBirth: z
+    .string()
+    .min(1, "Date of birth is required")
+    .refine(
+      (date) => {
+        // Check format DD/MM/YYYY
+        const datePattern = /^\d{2}\/\d{2}\/\d{4}$/;
+        if (!datePattern.test(date)) return false;
+
+        const parts = date.split("/").map(Number);
+        const day = parts[0];
+        const month = parts[1];
+        const year = parts[2];
+
+        if (!day || !month || !year) return false;
+
+        const dateObj = new Date(year, month - 1, day);
+
+        // Check if date is valid (handles leap years automatically)
+        if (
+          dateObj.getDate() !== day ||
+          dateObj.getMonth() !== month - 1 ||
+          dateObj.getFullYear() !== year
+        ) {
+          return false;
+        }
+
+        // Check if date is not in the future
+        if (dateObj > new Date()) {
+          return false;
+        }
+
+        return true;
+      },
+      {
+        message:
+          "Invalid date. Must be valid DD/MM/YYYY format and not in the future",
+      }
+    ),
+  contactNumber: z
+    .string()
+    .min(1, "Contact number is required")
+    .refine(
+      (phone) => {
+        // E.164 format: + followed by 1-15 digits (optional spaces/hyphens)
+        // Removes spaces and hyphens before validation
+        const cleaned = phone.replace(/[\s-]/g, "");
+        const phonePattern = /^\+[1-9]\d{1,14}$/;
+        return phonePattern.test(cleaned);
+      },
+      {
+        message: "Invalid phone number format. (e.g., +94701234567)",
+      }
+    ),
+});
+
 interface AddClientProps {
   visible: boolean;
   onClose: () => void;
-  onSave?: (clientData: any) => void;
+  onSave?: (clientData: unknown) => void;
+}
+
+interface FormErrors {
+  title?: string;
+  firstName?: string;
+  gender?: string;
+  dateOfBirth?: string;
+  contactNumber?: string;
+  emergencyContactNumber?: string;
 }
 
 export const AddClient: React.FC<AddClientProps> = ({
@@ -130,39 +117,43 @@ export const AddClient: React.FC<AddClientProps> = ({
   onClose,
   onSave,
 }) => {
+  // Form state
+  const [title, setTitle] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [gender, setGender] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
+  const [emergencyContactName, setEmergencyContactName] = useState("");
+  const [emergencyContactNumber, setEmergencyContactNumber] = useState("");
+  const [emergencyContactRelationship, setEmergencyContactRelationship] =
+    useState("");
+  const [note, setNote] = useState("");
   const [conditions, setConditions] = useState<string[]>([]);
   const [conditionInput, setConditionInput] = useState("");
 
+  // Error state
+  const [errors, setErrors] = useState<FormErrors>({});
+
   const MAX_CONDITIONS = 5;
 
-  const {
-    control,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitted },
-  } = useForm<ClientFormData>({
-    resolver: zodResolver(clientFormSchema),
-    defaultValues: {
-      title: "",
-      firstName: "",
-      lastName: "",
-      gender: "",
-      dateOfBirth: "",
-      contactNumber: "",
-      emergencyContactName: "",
-      emergencyContactNumber: "",
-      emergencyContactRelationship: "",
-      note: "",
-    },
-  });
-
-  const resetForm = () => {
-    reset();
+  const resetForm = (): void => {
+    setTitle("");
+    setFirstName("");
+    setLastName("");
+    setGender("");
+    setDateOfBirth("");
+    setContactNumber("");
+    setEmergencyContactName("");
+    setEmergencyContactNumber("");
+    setEmergencyContactRelationship("");
+    setNote("");
     setConditions([]);
     setConditionInput("");
+    setErrors({});
   };
 
-  const handleAddCondition = () => {
+  const handleAddCondition = (): void => {
     if (
       conditionInput.trim() &&
       conditions.length < MAX_CONDITIONS &&
@@ -173,29 +164,80 @@ export const AddClient: React.FC<AddClientProps> = ({
     }
   };
 
-  const handleRemoveCondition = (condition: string) => {
+  const handleRemoveCondition = (condition: string): void => {
     setConditions(conditions.filter((c) => c !== condition));
   };
 
-  const handleClose = () => {
+  const handleClose = (): void => {
     resetForm();
     onClose();
   };
 
-  const onSubmit = (data: ClientFormData) => {
+  const validateForm = (): boolean => {
+    try {
+      clientSchema.parse({
+        title: title.trim(),
+        firstName: firstName.trim(),
+        gender: gender.trim(),
+        dateOfBirth: dateOfBirth.trim(),
+        contactNumber: contactNumber.trim(),
+      });
+      setErrors({});
+      return true;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const newErrors: FormErrors = {};
+        error.errors.forEach((err) => {
+          const field = err.path[0] as keyof FormErrors;
+          newErrors[field] = err.message;
+        });
+        setErrors(newErrors);
+      }
+      return false;
+    }
+  };
+
+  const validateEmergencyContactNumber = (): boolean => {
+    // Only validate if emergency contact number is provided
+    if (emergencyContactNumber.trim()) {
+      const cleaned = emergencyContactNumber.replace(/[\s-]/g, "");
+      const phonePattern = /^\+[1-9]\d{1,14}$/;
+      if (!phonePattern.test(cleaned)) {
+        setErrors({
+          ...errors,
+          emergencyContactNumber:
+            "Invalid phone number format. (e.g., +94701234567)",
+        });
+        return false;
+      }
+    }
+    return true;
+  };
+
+  const handleSave = (): void => {
+    // Validate form
+    if (!validateForm()) {
+      return;
+    }
+
+    // Validate emergency contact number if provided
+    if (!validateEmergencyContactNumber()) {
+      return;
+    }
+
+    // Prepare client data
     const clientData = {
-      title: data.title,
-      firstName: data.firstName,
-      lastName: data.lastName?.trim() || null,
-      gender: data.gender,
-      dateOfBirth: data.dateOfBirth,
-      contactNumber: data.contactNumber,
-      emergencyContactName: data.emergencyContactName?.trim() || null,
-      emergencyContactNumber: data.emergencyContactNumber?.trim() || null,
-      emergencyContactRelationship:
-        data.emergencyContactRelationship?.trim() || null,
+      title,
+      firstName,
+      lastName: lastName.trim() || null,
+      gender,
+      dateOfBirth,
+      contactNumber,
+      emergencyContactName: emergencyContactName.trim() || null,
+      emergencyContactNumber: emergencyContactNumber.trim() || null,
+      emergencyContactRelationship: emergencyContactRelationship.trim() || null,
       conditions: conditions.length > 0 ? conditions : null,
-      note: data.note?.trim() || null,
+      note: note.trim() || null,
     };
 
     onSave?.(clientData);
@@ -247,114 +289,98 @@ export const AddClient: React.FC<AddClientProps> = ({
 
               <View className="flex-row gap-3 mb-4">
                 <View className="flex-1">
-                  <Controller
-                    control={control}
-                    name="title"
-                    render={({ field: { onChange, value } }) => (
-                      <DropdownComponent
-                        label="Title *"
-                        value={value}
-                        onValueChange={onChange}
-                        options={titleOptions}
-                        placeholder="Mr"
-                        validationSchema={nameSchema}
-                        validateOnChange={isSubmitted}
-                      />
-                    )}
+                  <DropdownComponent
+                    label="Title *"
+                    value={title}
+                    onValueChange={(value) => {
+                      setTitle(value);
+                      if (errors.title) {
+                        setErrors({ ...errors, title: undefined });
+                      }
+                    }}
+                    options={titleOptions}
+                    placeholder="Select"
+                    errorText={errors.title}
                   />
                 </View>
                 <View className="flex-[2]">
-                  <Controller
-                    control={control}
-                    name="firstName"
-                    render={({ field: { onChange, value } }) => (
-                      <TextInputComponent
-                        label="First Name *"
-                        inputField={{
-                          value,
-                          onChangeText: onChange,
-                          placeholder: "John",
-                        }}
-                        validationSchema={nameSchema}
-                        validateOnChange={isSubmitted}
-                      />
-                    )}
+                  <TextInputComponent
+                    label="First Name *"
+                    inputField={{
+                      value: firstName,
+                      onChangeText: (text) => {
+                        setFirstName(text);
+                        if (errors.firstName) {
+                          setErrors({ ...errors, firstName: undefined });
+                        }
+                      },
+                      placeholder: "John",
+                    }}
+                    errorText={errors.firstName}
                   />
                 </View>
               </View>
 
               <View className="mb-4">
-                <Controller
-                  control={control}
-                  name="lastName"
-                  render={({ field: { onChange, value } }) => (
-                    <TextInputComponent
-                      label="Last Name"
-                      inputField={{
-                        value: value || "",
-                        onChangeText: onChange,
-                        placeholder: "Siriwardane",
-                      }}
-                    />
-                  )}
+                <TextInputComponent
+                  label="Last Name"
+                  inputField={{
+                    value: lastName,
+                    onChangeText: setLastName,
+                    placeholder: "Siriwardane",
+                  }}
                 />
               </View>
 
               <View className="flex-row gap-3 mb-4">
                 <View className="flex-1">
-                  <Controller
-                    control={control}
-                    name="gender"
-                    render={({ field: { onChange, value } }) => (
-                      <DropdownComponent
-                        label="Gender *"
-                        value={value}
-                        onValueChange={onChange}
-                        options={genderOptions}
-                        placeholder="Male"
-                        validationSchema={nameSchema}
-                        validateOnChange={isSubmitted}
-                      />
-                    )}
+                  <DropdownComponent
+                    label="Gender *"
+                    value={gender}
+                    onValueChange={(value) => {
+                      setGender(value);
+                      if (errors.gender) {
+                        setErrors({ ...errors, gender: undefined });
+                      }
+                    }}
+                    options={genderOptions}
+                    placeholder="Select"
+                    errorText={errors.gender}
                   />
                 </View>
                 <View className="flex-1">
-                  <Controller
-                    control={control}
-                    name="dateOfBirth"
-                    render={({ field: { onChange, value } }) => (
-                      <TextInputComponent
-                        label="Date of birth *"
-                        inputField={{
-                          value,
-                          onChangeText: onChange,
-                          placeholder: "29/12/1998",
-                        }}
-                        validationSchema={dateSchema}
-                        validateOnChange={isSubmitted}
-                      />
-                    )}
+                  <TextInputComponent
+                    label="Date of birth *"
+                    inputField={{
+                      value: dateOfBirth,
+                      onChangeText: (text) => {
+                        setDateOfBirth(text);
+                        if (errors.dateOfBirth) {
+                          setErrors({ ...errors, dateOfBirth: undefined });
+                        }
+                      },
+                      placeholder: "29/12/1998",
+                    }}
+                    errorText={errors.dateOfBirth}
                   />
                 </View>
               </View>
 
               <View className="mb-6">
-                <Controller
-                  control={control}
-                  name="contactNumber"
-                  render={({ field: { onChange, value } }) => (
-                    <TextInputComponent
-                      label="Contact Number *"
-                      inputType={TextInputType.Phone}
-                      inputField={{
-                        value,
-                        onChangeText: onChange,
-                        placeholder: "+94 70 123 4567",
-                      }}
-                      validationSchema={phoneSchema}
-                      validateOnChange={isSubmitted}
-                    />
-                  )}
+                <TextInputComponent
+                  label="Contact Number *"
+                  inputType={TextInputType.Phone}
+                  inputField={{
+                    value: contactNumber,
+                    onChangeText: (text) => {
+                      setContactNumber(text);
+                      if (errors.contactNumber) {
+                        setErrors({ ...errors, contactNumber: undefined });
+                      }
+                    },
+                    placeholder: "+94 70 123 4567",
+                  }}
+                  errorText={errors.contactNumber}
                 />
               </View>
 
@@ -368,54 +394,45 @@ export const AddClient: React.FC<AddClientProps> = ({
               </View>
 
               <View className="mb-4">
-                <Controller
-                  control={control}
-                  name="emergencyContactName"
-                  render={({ field: { onChange, value } }) => (
-                    <TextInputComponent
-                      label="Emergency Contact Name"
-                      inputField={{
-                        value: value || "",
-                        onChangeText: onChange,
-                        placeholder: "Elena Siriwardane",
-                      }}
-                    />
-                  )}
+                <TextInputComponent
+                  label="Emergency Contact Name"
+                  inputField={{
+                    value: emergencyContactName,
+                    onChangeText: setEmergencyContactName,
+                    placeholder: "Elena Siriwardane",
+                  }}
                 />
               </View>
 
               <View className="mb-4">
-                <Controller
-                  control={control}
-                  name="emergencyContactNumber"
-                  render={({ field: { onChange, value } }) => (
-                    <TextInputComponent
-                      label="Emergency Contact Number"
-                      inputType={TextInputType.Phone}
-                      inputField={{
-                        value: value || "",
-                        onChangeText: onChange,
-                        placeholder: "+94 70 123 4567",
-                      }}
-                    />
-                  )}
+                <TextInputComponent
+                  label="Emergency Contact Number"
+                  inputType={TextInputType.Phone}
+                  inputField={{
+                    value: emergencyContactNumber,
+                    onChangeText: (text) => {
+                      setEmergencyContactNumber(text);
+                      if (errors.emergencyContactNumber) {
+                        setErrors({
+                          ...errors,
+                          emergencyContactNumber: undefined,
+                        });
+                      }
+                    },
+                    placeholder: "+94 70 123 4567",
+                  }}
+                  errorText={errors.emergencyContactNumber}
                 />
               </View>
 
               <View className="mb-4">
-                <Controller
-                  control={control}
-                  name="emergencyContactRelationship"
-                  render={({ field: { onChange, value } }) => (
-                    <TextInputComponent
-                      label="Emergency Contact Relationship"
-                      inputField={{
-                        value: value || "",
-                        onChangeText: onChange,
-                        placeholder: "Wife",
-                      }}
-                    />
-                  )}
+                <TextInputComponent
+                  label="Emergency Contact Relationship"
+                  inputField={{
+                    value: emergencyContactRelationship,
+                    onChangeText: setEmergencyContactRelationship,
+                    placeholder: "Wife",
+                  }}
                 />
               </View>
 
@@ -494,22 +511,16 @@ export const AddClient: React.FC<AddClientProps> = ({
               </View>
 
               <View className="mb-6">
-                <Controller
-                  control={control}
-                  name="note"
-                  render={({ field: { onChange, value } }) => (
-                    <TextInputComponent
-                      label="Note"
-                      inputField={{
-                        value: value || "",
-                        onChangeText: onChange,
-                        placeholder: "Type additional notes here",
-                        multiline: true,
-                        numberOfLines: 8,
-                        textAlignVertical: "top",
-                      }}
-                    />
-                  )}
+                <TextInputComponent
+                  label="Note"
+                  inputField={{
+                    value: note,
+                    onChangeText: setNote,
+                    placeholder: "Type additional notes here",
+                    multiline: true,
+                    numberOfLines: 8,
+                    textAlignVertical: "top",
+                  }}
                 />
               </View>
             </ScrollView>
@@ -529,7 +540,7 @@ export const AddClient: React.FC<AddClientProps> = ({
                 size={ButtonSize.Large}
                 buttonColor={Color.Black}
                 textColor={Color.White}
-                onPress={handleSubmit(onSubmit)}
+                onPress={handleSave}
               >
                 Save
               </ButtonComponent>

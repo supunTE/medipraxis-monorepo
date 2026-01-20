@@ -1,15 +1,14 @@
 import { Input, InputField, InputSlot } from "@/components/ui/input";
 import { Icons } from "@/config";
 import { Color, Font, TextSize, TextVariant, textStyles } from "@repo/config";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
-  KeyboardType,
+  type KeyboardType,
   Pressable,
-  TextStyle as RNTextStyle,
+  type TextStyle as RNTextStyle,
   Text,
   View,
 } from "react-native";
-import { z } from "zod";
 
 export enum TextInputType {
   Text = "text",
@@ -29,10 +28,9 @@ interface TextInputProps {
   inputField?: Omit<React.ComponentPropsWithoutRef<typeof InputField>, "style">;
   label?: string;
   inputType?: TextInputType;
-  validationSchema?: z.ZodString;
   helperText?: string;
+  errorText?: string;
   hideHelperText?: boolean;
-  validateOnChange?: boolean;
 }
 
 // Props for OTP Input Field
@@ -44,8 +42,7 @@ interface OTPInputFieldProps {
   inputField?: Omit<React.ComponentPropsWithoutRef<typeof InputField>, "style">;
   label?: string;
   size?: number;
-  validationSchema?: z.ZodString;
-  hideHelperText?: boolean;
+  errorText?: string;
 }
 
 // Type for TextInputComponent with OTPField
@@ -56,13 +53,13 @@ interface TextInputComponentType extends React.FC<TextInputProps> {
 // Map inputType to React Native keyboardType
 const getKeyboardType = (type?: TextInputType): KeyboardType => {
   switch (type) {
-    case "number":
+    case TextInputType.Number:
       return "number-pad";
-    case "decimal":
+    case TextInputType.Decimal:
       return "decimal-pad";
-    case "email":
+    case TextInputType.Email:
       return "email-address";
-    case "phone":
+    case TextInputType.Phone:
       return "phone-pad";
     default:
       return "default";
@@ -80,14 +77,11 @@ export const TextInput: React.FC<TextInputProps> = ({
   inputField = {},
   label,
   inputType = TextInputType.Text,
-  validationSchema,
   helperText,
+  errorText,
   hideHelperText = false,
-  validateOnChange = true,
 }) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [validationError, setValidationError] = useState<string | null>(null);
-  const [isValid, setIsValid] = useState(false);
 
   const {
     isDisabled = false,
@@ -104,57 +98,22 @@ export const TextInput: React.FC<TextInputProps> = ({
   const shouldShowToggle = inputType === TextInputType.Password;
   const isSecureEntry = shouldShowToggle && !isPasswordVisible;
 
-  // Validate input - automatically gets error message from Zod schema
-  useEffect(() => {
-    if (!validationSchema || hideHelperText) {
-      setValidationError(null);
-      setIsValid(false);
-      return;
-    }
-
-    if (!validateOnChange && value === "") {
-      setValidationError(null);
-      setIsValid(false);
-      return;
-    }
-
-    const result = validationSchema.safeParse(value);
-
-    if (result.success) {
-      setValidationError(null);
-      setIsValid(true);
-    } else {
-      setIsValid(false);
-      if (value !== "") {
-        // Automatically get the error message from Zod schema
-        const zodError = result.error.issues[0]?.message || "Invalid input";
-        setValidationError(zodError);
-      } else {
-        setValidationError(null);
-      }
-    }
-  }, [value, validationSchema, hideHelperText, validateOnChange]);
-
-  // Determine border color based on validation
+  // Determine border color based on error state
   const getBorderColor = () => {
-    if (isInvalid || validationError) return Color.Danger;
-    if (isValid && value !== "") return Color.Success;
+    if (errorText || isInvalid) return Color.Danger;
     return Color.LightGrey;
   };
 
   // Determine message to display
   const getMessage = () => {
     if (hideHelperText) return null;
-    if (validationError) return validationError;
-    if (isValid) return helperText || null;
-    if (helperText && !validationError && !isValid) return helperText;
-    return null;
+    if (errorText) return errorText;
+    return helperText || null;
   };
 
   // Determine message color
   const getMessageColor = () => {
-    if (validationError) return Color.Danger;
-    if (isValid) return Color.Success;
+    if (errorText) return Color.Danger;
     return Color.Grey;
   };
 
@@ -185,7 +144,7 @@ export const TextInput: React.FC<TextInputProps> = ({
         variant="outline"
         size="md"
         isDisabled={isDisabled}
-        isInvalid={isInvalid || !!validationError}
+        isInvalid={isInvalid || !!errorText}
         {...restInputWrapper}
         style={{
           borderColor: getBorderColor(),
@@ -257,12 +216,8 @@ const OTPField: React.FC<OTPInputFieldProps> = ({
   inputField = {},
   label,
   size = 50,
-  validationSchema,
-  hideHelperText = false,
+  errorText,
 }) => {
-  const [validationError, setValidationError] = useState<string | null>(null);
-  const [isValid, setIsValid] = useState(false);
-
   const {
     isDisabled = false,
     isInvalid = false,
@@ -270,33 +225,9 @@ const OTPField: React.FC<OTPInputFieldProps> = ({
   } = inputWrapper;
   const { value = "", onChangeText, ...restInputField } = inputField;
 
-  // Validate input - automatically gets error message from Zod schema
-  useEffect(() => {
-    if (!validationSchema || hideHelperText) {
-      setValidationError(null);
-      setIsValid(false);
-      return;
-    }
-
-    const result = validationSchema.safeParse(value);
-
-    if (result.success) {
-      setValidationError(null);
-      setIsValid(true);
-    } else {
-      setIsValid(false);
-      if (value !== "") {
-        setValidationError("Invalid");
-      } else {
-        setValidationError(null);
-      }
-    }
-  }, [value, validationSchema, hideHelperText]);
-
-  // Determine border color based on validation
+  // Determine border color based on error state
   const getBorderColor = () => {
-    if (isInvalid || validationError) return Color.Danger;
-    if (isValid && value !== "") return Color.Success;
+    if (errorText || isInvalid) return Color.Danger;
     return Color.LightGrey;
   };
 
@@ -324,7 +255,7 @@ const OTPField: React.FC<OTPInputFieldProps> = ({
         variant="outline"
         size="md"
         isDisabled={isDisabled}
-        isInvalid={isInvalid || !!validationError}
+        isInvalid={isInvalid || !!errorText}
         {...restInputWrapper}
         style={{
           borderColor: getBorderColor(),

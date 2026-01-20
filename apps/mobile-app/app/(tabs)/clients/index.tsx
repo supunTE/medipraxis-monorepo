@@ -7,6 +7,9 @@ import React, { useRef, useState } from "react";
 import {
   ScrollView,
   TouchableOpacity,
+  type LayoutChangeEvent,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
   type TextStyle as RNTextStyle,
 } from "react-native";
 import { AddClient } from "./addClient";
@@ -221,9 +224,56 @@ export default function ClientsScreen() {
   };
 
   // Handle save client
-  const handleSaveClient = (clientData: any) => {
+  const handleSaveClient = (clientData: unknown) => {
     console.log("Saving client:", clientData);
-    // TODO: Add client to the list
+
+    // Type guard to ensure clientData has required properties
+    if (
+      clientData &&
+      typeof clientData === "object" &&
+      "firstName" in clientData &&
+      "lastName" in clientData
+    ) {
+      const data = clientData as {
+        firstName: string;
+        lastName?: string | null;
+      };
+
+      // Generate new client
+      const newClient: Client = {
+        id: String(clients.length + 1),
+        name: `${data.firstName} ${data.lastName || ""}`.trim(),
+        initial: data.firstName.charAt(0).toUpperCase(),
+        color: getRandomColor(),
+        icon: getRandomIcon(),
+      };
+
+      // Add new client to the list
+      setClients([...clients, newClient]);
+    }
+  };
+
+  // Helper function to get random color
+  const getRandomColor = (): string => {
+    const colors = [
+      "#F4D03F",
+      "#85C1E9",
+      "#BB8FCE",
+      "#F8B739",
+      "#82E0AA",
+      "#F1948A",
+      "#AED6F1",
+      "#D7BDE2",
+      "#F9E79F",
+    ];
+    const randomIndex = Math.floor(Math.random() * colors.length);
+    return colors[randomIndex]!;
+  };
+
+  // Helper function to get random icon
+  const getRandomIcon = (): IconName => {
+    const icons: IconName[] = ["Heart", "Star", "Check", "Plus"];
+    return icons[Math.floor(Math.random() * icons.length)] || "Heart";
   };
 
   // Handle alphabet letter press to scroll to section
@@ -236,7 +286,7 @@ export default function ClientsScreen() {
   };
 
   // Handle scroll to detect visible section
-  const handleScroll = (event: any) => {
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const scrollY = event.nativeEvent.contentOffset.y;
     const sortedLetters = Object.keys(groupedClients).sort();
 
@@ -250,6 +300,12 @@ export default function ClientsScreen() {
         }
       }
     }
+  };
+
+  // Handle layout change for sections
+  const handleSectionLayout = (letter: string, event: LayoutChangeEvent) => {
+    const { y } = event.nativeEvent.layout;
+    sectionRefs.current[letter] = y;
   };
 
   return (
@@ -332,10 +388,7 @@ export default function ClientsScreen() {
                 <View
                   key={letter}
                   className="mb-6"
-                  onLayout={(event) => {
-                    const { y } = event.nativeEvent.layout;
-                    sectionRefs.current[letter] = y;
-                  }}
+                  onLayout={(event) => handleSectionLayout(letter, event)}
                 >
                   <TextComponent
                     variant={TextVariant.Title}
