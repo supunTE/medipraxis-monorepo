@@ -1,10 +1,10 @@
 import { DynamicForm } from "@/components/forms";
 import { colors } from "@/constants";
-import { API_BASE_URL, apiClient } from "@/lib";
+import { useRequestReport, useUploadReports } from "@/services";
 import type { FormResponse, FormValues } from "@/types";
 import { FormFieldType } from "@/types";
 import { useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 interface ReportField {
   id: string;
@@ -16,142 +16,93 @@ interface ReportField {
   display_label: string;
 }
 
-interface RequestReportResponse {
-  request_report_id: string;
-  created_date: string;
-  user_id: string | null;
-  client_id: string | null;
-  form_id: string | null;
-  requested_reports: ReportField[];
-  expired: boolean | null;
-  deleted: boolean | null;
-  user_name?: string;
-  client_name?: string;
-}
-
 interface UploadReportProps {
   requestReportId: string;
 }
 
 export function UploadReport({ requestReportId }: UploadReportProps) {
   const [formData, setFormData] = useState<FormResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [, setUploading] = useState(false);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
-  const [requestReport, setRequestReport] =
-    useState<RequestReportResponse | null>(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchReportDetails();
-  }, [requestReportId]);
+  // Fetch request report details
+  const {
+    data: requestReport,
+    isLoading: loading,
+    error: fetchError,
+  } = useRequestReport(requestReportId);
 
-  const fetchReportDetails = async () => {
-    try {
-      setLoading(true);
-      const response = await apiClient.api["request-reports"][":id"].$get({
-        param: { id: requestReportId },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch report details");
-      }
-
-      const data: RequestReportResponse = await response.json();
-      setRequestReport(data);
-
-      // Filter active fields and sort by sequence
-      const activeFields = data.requested_reports
-        .filter((field) => field.active)
-        .sort((a, b) => a.sequence - b.sequence);
-
-      // Transform API response to FormResponse format
-      const transformedFormData: FormResponse = {
-        title: "Upload Reports",
-        description: "Please upload the requested documents",
-        questions: activeFields.map((field) => ({
-          id: field.id,
-          type: FormFieldType.FILE_UPLOAD,
-          question: field.display_label,
-          helpText: field.help_text,
-          compulsory: true,
-          sequence: field.sequence,
-          notes: field.description,
-          fileConfig: {
-            allowedTypes: ["pdf", "jpg", "png"],
-            maxSizeMB: 5,
-          },
-        })),
-      };
-
-      setFormData(transformedFormData);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to load report details"
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSubmit = async (values: FormValues) => {
-    try {
-      setUploading(true);
-      setError("");
-
-      const formDataToSend = new FormData();
-
-      // Add basic fields
-      formDataToSend.append("client_id", requestReport?.client_id || "");
-      formDataToSend.append("user_id", requestReport?.user_id || "");
-      formDataToSend.append("request_report_id", requestReportId);
-
-      // Calculate expiry date based on expiration_days from values
-      const expirationDays = values.expiration_days || 7;
-      const expiryDate = new Date();
-      expiryDate.setDate(expiryDate.getDate() + Number(expirationDays));
-      formDataToSend.append("expiry_date", expiryDate.toISOString());
-
-      // Add files and titles with indexed names (file0, title0, file1, title1, etc.)
-      let fileIndex = 0;
-      Object.entries(values).forEach(([fieldId, file]) => {
-        if (file instanceof File) {
-          const field = requestReport?.requested_reports.find(
-            (f) => f.id === fieldId
-          );
-          const title = field?.display_label || "Report";
-
-          formDataToSend.append(`file${fileIndex}`, file);
-          formDataToSend.append(`title${fileIndex}`, title);
-          fileIndex++;
-        }
-      });
-
-      const response = await fetch(`${API_BASE_URL}/api/client-reports`, {
-        method: "POST",
-        body: formDataToSend,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          (errorData as { error?: string }).error || "Failed to upload reports"
-        );
-      }
-
-      // Show success popup
+  // Upload reports mutation
+  const {
+    mutate: uploadReports,
+    isPending: uploading,
+    error: uploadError,
+  } = useUploadReports({
+    onSuccess: () => {
       setShowSuccessPopup(true);
-
-      // Navigate to dashboard after 2 seconds
       setTimeout(() => {
         navigate({ to: "/dashboard" });
       }, 2000);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to upload reports");
-    } finally {
-      setUploading(false);
-    }
+    },
+  });
+
+  const error =
+    (fetchError as Error)?.message || (uploadError as Error)?.message || "";
+
+  // Transform request report data into form data
+  if (requestReport && !formData) {
+    const activeFields = requestReport.requested_reports
+      .filter((field: ReportField) => field.active)
+      .sort((a: ReportField, b: ReportField) => a.sequence - b.sequence);
+
+    const transformedFormData: FormResponse = {
+      title: "Upload Reports",
+      description: "Please upload the requested documents",
+      questions: activeFields.map((field: ReportField) => ({
+        id: field.id,
+        type: FormFieldType.FILE_UPLOAD,
+        question: field.display_label,
+        helpText: field.help_text,
+        compulsory: true,
+        sequence: field.sequence,
+        notes: field.description,
+        fileConfig: {
+          allowedTypes: ["pdf", "jpg", "png"],
+          maxSizeMB: 5,
+        },
+      })),
+    };
+
+    setFormData(transformedFormData);
+  }
+
+  const handleSubmit = async (values: FormValues) => {
+    if (!requestReport || uploading) return;
+
+    // Calculate expiry date based on expiration_days from values
+    const expirationDays = values.expiration_days || 7;
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + Number(expirationDays));
+
+    // Prepare files array
+    const files: Array<{ file: File; title: string }> = [];
+    Object.entries(values).forEach(([fieldId, file]) => {
+      if (file instanceof File) {
+        const field = requestReport.requested_reports.find(
+          (f: ReportField) => f.id === fieldId
+        );
+        const title = field?.display_label || "Report";
+        files.push({ file, title });
+      }
+    });
+
+    uploadReports({
+      client_id: requestReport.client_id || "",
+      user_id: requestReport.user_id || "",
+      request_report_id: requestReportId,
+      expiry_date: expiryDate.toISOString(),
+      files,
+    });
   };
 
   if (loading) {
