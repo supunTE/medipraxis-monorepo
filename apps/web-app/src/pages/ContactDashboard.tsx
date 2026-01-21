@@ -1,6 +1,6 @@
+import { apiClient } from "@/lib";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { apiClient } from "../lib/api-client";
 
 interface PendingReport {
   request_report_id: string;

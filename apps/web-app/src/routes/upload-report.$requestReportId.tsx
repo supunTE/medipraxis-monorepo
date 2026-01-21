@@ -1,5 +1,5 @@
+import { UploadReport } from "@/pages";
 import { createFileRoute } from "@tanstack/react-router";
-import { UploadReport } from "../pages/UploadReport";
 
 export const Route = createFileRoute("/upload-report/$requestReportId")({
   component: () => {

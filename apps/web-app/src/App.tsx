@@ -1,6 +1,6 @@
+import SplashScreen from "@/components/SplashScreen";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import SplashScreen from "./components/SplashScreen";
 
 // Import the generated route tree
 import { Toaster } from "@/components/ui/sonner";

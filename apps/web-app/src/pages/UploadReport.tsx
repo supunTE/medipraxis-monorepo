@@ -1,10 +1,10 @@
+import { DynamicForm } from "@/components/forms";
+import { colors } from "@/constants";
+import { API_BASE_URL, apiClient } from "@/lib";
+import type { FormResponse, FormValues } from "@/types";
+import { FormFieldType } from "@/types";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { DynamicForm } from "../components/forms/DynamicForm";
-import { colors } from "../constants/colors";
-import { API_BASE_URL, apiClient } from "../lib/api-client";
-import type { FormResponse, FormValues } from "../types/form.types";
-import { FormFieldType } from "../types/form.types";
 
 interface ReportField {
   id: string;

@@ -1,7 +1,7 @@
+import logo from "@/assets/images/logo.png";
+import { apiClient } from "@/lib";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import logo from "../assets/images/logo.png";
-import { apiClient } from "../lib/api-client";
 
 const PHONE_REGEX = /^[\d\s\+\-\(\)]+$/;
 

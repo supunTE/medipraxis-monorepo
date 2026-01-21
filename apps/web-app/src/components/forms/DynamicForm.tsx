@@ -1,7 +1,7 @@
+import { FileUpload } from "@/components/forms";
+import type { FormResponse, FormValues } from "@/types";
+import { FormFieldType } from "@/types";
 import React, { useState } from "react";
-import type { FormResponse, FormValues } from "../../types/form.types";
-import { FormFieldType } from "../../types/form.types";
-import { FileUpload } from "./FileUpload";
 
 interface DynamicFormProps {
   formData: FormResponse;

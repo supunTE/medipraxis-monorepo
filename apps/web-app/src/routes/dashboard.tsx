@@ -1,5 +1,5 @@
+import { ContactDashboard } from "@/pages";
 import { createFileRoute } from "@tanstack/react-router";
-import { ContactDashboard } from "../pages/ContactDashboard";
 
 export const Route = createFileRoute("/dashboard")({
   component: Dashboard,

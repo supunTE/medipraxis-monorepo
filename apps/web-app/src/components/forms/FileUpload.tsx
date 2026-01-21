@@ -1,6 +1,6 @@
+import type { FormQuestion } from "@/types";
 import { TrashIcon, UploadSimpleIcon } from "@phosphor-icons/react";
 import React, { useRef, useState } from "react";
-import type { FormQuestion } from "../../types/form.types";
 
 interface FileUploadProps {
   question: FormQuestion;
