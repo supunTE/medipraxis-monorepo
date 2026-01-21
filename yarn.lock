@@ -7599,6 +7599,11 @@ levn@^0.4.1:
     prelude-ls "^1.2.1"
     type-check "~0.4.0"
 
+libphonenumber-js@^1.12.34:
+  version "1.12.34"
+  resolved "https://registry.yarnpkg.com/libphonenumber-js/-/libphonenumber-js-1.12.34.tgz#20ed9da39e930e98eff4b6e24a8d8480303658af"
+  integrity sha512-v/Ip8k8eYdp7bINpzqDh46V/PaQ8sK+qi97nMQgjZzFlb166YFqlR/HVI+MzsI9JqcyyVWCOipmmretiaSyQyw==
+
 lighthouse-logger@^1.0.0:
   version "1.4.2"
   resolved "https://registry.yarnpkg.com/lighthouse-logger/-/lighthouse-logger-1.4.2.tgz#aef90f9e97cd81db367c7634292ee22079280aaa"
