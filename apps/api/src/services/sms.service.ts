@@ -25,14 +25,15 @@ export interface SendSmsResult {
 
 export class SmsService {
   private apiKey: string;
-  private baseUrl = "https://app.text.lk/api/v3/sms/send";
+  private baseUrl: string;
   private senderId: string;
 
-  constructor(apiKey: string, senderId: string = "MediPraxis") {
+  constructor(apiKey: string, apiUrl: string, senderId: string = "MediPraxis") {
     if (!apiKey) {
       throw new Error("SMS API key is required");
     }
     this.apiKey = apiKey;
+    this.baseUrl = apiUrl;
     this.senderId = senderId;
   }
 

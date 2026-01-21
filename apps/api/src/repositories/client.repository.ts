@@ -62,6 +62,20 @@ export class ClientRepository {
     return contact as ContactInfo;
   }
 
+  async findContactInfoById(contactId: string): Promise<ContactInfo | null> {
+    const { data, error } = await this.db
+      .from("contact")
+      .select("*")
+      .eq("contact_id", contactId)
+      .single();
+
+    if (error || !data) {
+      return null;
+    }
+
+    return data as ContactInfo;
+  }
+
   /* ------------Client Methods------------ */
 
   async findAll(userId?: string): Promise<Client[]> {

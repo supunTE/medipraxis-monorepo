@@ -77,10 +77,22 @@ export function getClientReportService(c: Context<{ Bindings: Env }>) {
 
 export function getOtpService(c: Context<{ Bindings: Env }>) {
   const apiKey = c.env.TEXT_LK_API_KEY || "dev";
+  const apiUrl = c.env.TEXT_LK_API_URL;
   const db = createDatabaseClient(c.env);
   const otpRepository = new OtpRepository(db);
 
-  return new OtpService(apiKey, otpRepository);
+  return new OtpService(apiKey, otpRepository, apiUrl);
+}
+
+export function getSmsService(c: Context<{ Bindings: Env }>) {
+  const apiKey = c.env.TEXT_LK_API_KEY;
+  const apiUrl = c.env.TEXT_LK_API_URL;
+
+  if (!apiKey) {
+    throw new Error("TEXT_LK_API_KEY not configured");
+  }
+
+  return new SmsService(apiKey, apiUrl);
 }
 
 export function getRequestReportService(c: Context<{ Bindings: Env }>) {
@@ -90,12 +102,14 @@ export function getRequestReportService(c: Context<{ Bindings: Env }>) {
   const clientRepository = new ClientRepository(db);
   const shareableUserLinkRepository = new ShareableUserLinkRepository(db);
   const smsService = getSmsService(c);
+  const webAppUrl = c.env.MEDIPRAXIS_WEB_URL;
   return new RequestReportService(
     requestReportRepository,
     userRepository,
     clientRepository,
     shareableUserLinkRepository,
-    smsService
+    smsService,
+    webAppUrl
   );
 }
 
