@@ -4,7 +4,7 @@ import { Input, InputField, InputSlot } from "@/components/ui/input";
 import { Icons, type IconName } from "@/config";
 import { Color, Font, TextSize, TextVariant, textStyles } from "@repo/config";
 import type { Client } from "@repo/models";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
@@ -101,7 +101,7 @@ export default function ClientsScreen({
   const sectionRefs = useRef<Record<string, number>>({});
 
   // Fetch clients from API
-  const fetchClients = async () => {
+  const fetchClients = useCallback(async (): Promise<void> => {
     try {
       setLoading(true);
       setError(null);
@@ -121,14 +121,12 @@ export default function ClientsScreen({
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
 
   // Fetch clients on mount
   useEffect(() => {
-    if (userId) {
-      fetchClients();
-    }
-  }, [userId]);
+    void fetchClients();
+  }, [fetchClients]);
 
   // Filter clients based on search
   const filteredClients = clients.filter((client) =>
@@ -144,7 +142,7 @@ export default function ClientsScreen({
   };
 
   // Handle save client
-  const handleSaveClient = async (clientData: unknown) => {
+  const handleSaveClient = async (clientData: unknown): Promise<void> => {
     console.log("Saving client:", clientData);
 
     // Type guard to ensure clientData has required properties
@@ -260,7 +258,7 @@ export default function ClientsScreen({
           size={ButtonSize.Medium}
           buttonColor={Color.Green}
           textColor={Color.White}
-          onPress={fetchClients}
+          onPress={() => void fetchClients()}
           style={{ marginTop: 24 }}
         >
           Retry
@@ -352,7 +350,7 @@ export default function ClientsScreen({
             size={TextSize.Medium}
             style={{ marginTop: 8, color: Color.Grey, textAlign: "center" }}
           >
-            Tap "Add Client" to create your first client
+            Tap &ldquo;Add Client&rdquo; to create your first client
           </TextComponent>
         </View>
 
@@ -360,7 +358,7 @@ export default function ClientsScreen({
         <AddClient
           visible={isAddClientVisible}
           onClose={() => setIsAddClientVisible(false)}
-          onSave={handleSaveClient}
+          onSave={(data) => void handleSaveClient(data)}
         />
       </View>
     );
@@ -522,7 +520,7 @@ export default function ClientsScreen({
       <AddClient
         visible={isAddClientVisible}
         onClose={() => setIsAddClientVisible(false)}
-        onSave={handleSaveClient}
+        onSave={(data) => void handleSaveClient(data)}
       />
     </View>
   );

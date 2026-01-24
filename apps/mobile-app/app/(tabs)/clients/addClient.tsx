@@ -121,7 +121,7 @@ type ClientFormData = z.infer<typeof clientSchema>;
 interface AddClientProps {
   visible: boolean;
   onClose: () => void;
-  onSave?: (clientData: unknown) => void;
+  onSave?: (clientData: unknown) => void | Promise<void>;
 }
 
 export const AddClient: React.FC<AddClientProps> = ({
@@ -197,7 +197,7 @@ export const AddClient: React.FC<AddClientProps> = ({
       note: data.note || null,
     };
 
-    onSave?.(clientData);
+    void onSave?.(clientData);
     resetForm();
     onClose();
   };
@@ -524,7 +524,7 @@ export const AddClient: React.FC<AddClientProps> = ({
                 size={ButtonSize.Large}
                 buttonColor={Color.Black}
                 textColor={Color.White}
-                onPress={handleSubmit(onSubmit)}
+                onPress={() => void handleSubmit(onSubmit)()}
               >
                 Save
               </ButtonComponent>

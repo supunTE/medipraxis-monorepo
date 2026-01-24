@@ -1,6 +1,26 @@
 import type { Client } from "@repo/models";
+
 // Base URL - configure this based on your environment
 const API_BASE_URL = "http://localhost:8787"; // Hardcoded for development
+
+// API Response types
+interface FetchClientsResponse {
+  clients: Client[];
+  count: number;
+}
+
+interface CreateClientResponse {
+  client: Client;
+}
+
+interface GetClientResponse {
+  client: Client;
+}
+
+interface CheckPhoneResponse {
+  exists: boolean;
+  clients: Client[];
+}
 
 // Fetch all clients for a user
 export async function fetchAllClients(userId: string): Promise<Client[]> {
@@ -28,7 +48,7 @@ export async function fetchAllClients(userId: string): Promise<Client[]> {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as FetchClientsResponse;
     console.log("Response data:", data);
     console.log("Clients count:", data.count);
     console.log("Clients array length:", data.clients?.length);
@@ -89,12 +109,12 @@ export async function createNewClient(
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = (await response.json()) as { error?: string };
       console.error("Create client error response:", errorData);
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as CreateClientResponse;
     return data.client;
   } catch (error) {
     console.error("Error creating client:", error);
@@ -116,7 +136,7 @@ export async function getClientById(clientId: string): Promise<Client | null> {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as GetClientResponse;
     return data.client;
   } catch (error) {
     console.error("Error fetching client:", error);
@@ -146,7 +166,7 @@ export async function checkPhoneExists(
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
-    const data = await response.json();
+    const data = (await response.json()) as CheckPhoneResponse;
     return data;
   } catch (error) {
     console.error("Error checking phone:", error);
