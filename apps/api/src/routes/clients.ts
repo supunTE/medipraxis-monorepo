@@ -1,6 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
 import {
-  createClientSchema,
   createClientWithContactSchema,
   deleteClientParamSchema,
   getAllClientsQuerySchema,
