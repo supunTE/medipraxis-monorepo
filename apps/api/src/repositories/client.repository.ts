@@ -47,7 +47,7 @@ export class ClientRepository {
   ): Promise<ContactInfo> {
     // Remove leading plus sign from country code
     const data = {
-      country_code: contactInfo.country_code.replace(/^\+/, ""),
+      country_code: contactInfo.country_code?.replace(/^\+/, "") ?? null,
       contact_number: contactInfo.contact_number,
     };
     const { data: contact, error } = await this.db
@@ -84,7 +84,7 @@ export class ClientRepository {
     return data as Client[];
   }
 
-  async findById(clientId?: string): Promise<Client | null> {
+  async findById(clientId: string): Promise<Client | null> {
     const { data, error } = await this.db
       .from("client")
       .select(CLIENT_QUERIES.FIND_BY_ID)
@@ -153,7 +153,7 @@ export class ClientRepository {
         clientData.emergency_contact_relationship || null,
       known_conditions: clientData.known_conditions || null,
       note: clientData.note || null,
-      contact_id: clientData.contact_id,
+      contact_id: clientData.contact_id!,
       user_id: clientData.user_id,
       modified_date: new Date().toISOString(),
     };

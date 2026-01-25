@@ -1,6 +1,6 @@
 import { zValidator } from "@hono/zod-validator";
 import {
-  createClientWithContactSchema,
+  createClientSchema,
   deleteClientParamSchema,
   getAllClientsQuerySchema,
   getClientByPhoneQuerySchema,
@@ -14,7 +14,7 @@ import { ClientController } from "../controllers";
 const clients = new Hono()
   .post(
     "/",
-    zValidator("json", createClientWithContactSchema),
+    zValidator("json", createClientSchema),
     ClientController.createClient
   )
   .get(

@@ -1,6 +1,6 @@
 import type {
   Client,
-  CreateClientWithContactInput,
+  CreateClientInput,
   UpdateClientInput,
 } from "@repo/models";
 import { ClientRepository } from "../repositories";
@@ -37,24 +37,33 @@ export class ClientService {
     return clients;
   }
 
-  async createClient(input: CreateClientWithContactInput): Promise<Client> {
+  async createClient(input: CreateClientInput): Promise<Client> {
     // Find or create contact_info
-    let contact = await this.clientRepository.findContactInfo(
-      input.country_code,
-      input.contact_number
-    );
+    let contactId = input.contact_id;
 
-    if (!contact) {
-      contact = await this.clientRepository.createContactInfo({
-        country_code: input.country_code,
-        contact_number: input.contact_number,
-      });
+    if (input.country_code && input.contact_number) {
+      let contact = await this.clientRepository.findContactInfo(
+        input.country_code,
+        input.contact_number
+      );
+
+      if (!contact) {
+        contact = await this.clientRepository.createContactInfo({
+          country_code: input.country_code,
+          contact_number: input.contact_number,
+        });
+      }
+      contactId = contact.contact_id;
     }
 
     // Create client
+    if (!contactId) {
+      throw new Error("Cannot create client: Missing contact information.");
+    }
+
     return this.clientRepository.create({
       ...input,
-      contact_id: contact.contact_id,
+      contact_id: contactId,
     });
   }
 
