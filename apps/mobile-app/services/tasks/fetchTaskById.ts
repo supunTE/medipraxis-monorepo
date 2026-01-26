@@ -25,4 +25,4 @@ export async function fetchTaskById(taskId: string): Promise<Task | null> {
     console.error("Error fetching task:", error);
     return null;
   }
-};
+}
