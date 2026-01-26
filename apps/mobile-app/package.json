@@ -14,6 +14,7 @@
   "dependencies": {
     "@expo-google-fonts/dm-sans": "^0.4.2",
     "@expo-google-fonts/lato": "^0.4.1",
+    "@expo-google-fonts/noto-color-emoji": "^0.4.3",
     "@expo/html-elements": "^0.10.1",
     "@expo/metro-runtime": "^6.1.2",
     "@expo/vector-icons": "^15.0.3",

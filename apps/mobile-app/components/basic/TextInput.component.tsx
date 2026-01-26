@@ -3,13 +3,13 @@ import { Icons } from "@/config";
 import { Color, Font, TextSize, TextVariant, textStyles } from "@repo/config";
 import React, { useEffect, useState } from "react";
 import {
-  KeyboardType,
+  type KeyboardType,
   Pressable,
-  TextStyle as RNTextStyle,
+  type TextStyle as RNTextStyle,
   Text,
   View,
 } from "react-native";
-import { z } from "zod";
+import { type z } from "zod";
 
 export enum TextInputType {
   Text = "text",
