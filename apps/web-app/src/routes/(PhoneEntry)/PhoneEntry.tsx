@@ -1,9 +1,9 @@
+import logo from "@/assets/images/logo.png";
+import { useCheckPhone, useSendOtp, useVerifyOtp } from "@/services";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import logo from "../assets/images/logo.png";
 
 const PHONE_REGEX = /^[\d\s\+\-\(\)]+$/;
-const API_BASE_URL = "http://localhost:8787/api";
 
 const countryOptions = [
   { code: "+1", abbr: "US", name: "United States" },
@@ -18,12 +18,60 @@ export function PhoneEntry() {
   const [countryCode, setCountryCode] = useState("+94");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [error, setError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState(["", "", "", "", ""]);
   const [timer, setTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  const checkPhoneMutation = useCheckPhone({
+    onSuccess: (exists) => {
+      if (!exists) {
+        setError(
+          "Phone number is not registered. Please contact your healthcare provider."
+        );
+        return;
+      }
+      // If phone exists, send OTP
+      sendOtpMutation.mutate({
+        country_code: countryCode,
+        contact_number: phoneNumber,
+      });
+    },
+    onError: (message) => {
+      setError(message);
+    },
+  });
+
+  const sendOtpMutation = useSendOtp({
+    onSuccess: (contactId) => {
+      sessionStorage.setItem("client_phone_number", phoneNumber);
+      sessionStorage.setItem("client_country_code", countryCode);
+      sessionStorage.setItem("contact_id", contactId);
+
+      setOtpSent(true);
+      setTimer(60);
+      setCanResend(false);
+      setTimeout(() => inputRefs.current[0]?.focus(), 100);
+    },
+    onError: (message) => {
+      setError(message);
+    },
+  });
+
+  const verifyOtpMutation = useVerifyOtp({
+    onSuccess: () => {
+      navigate({ to: "/dashboard" });
+    },
+    onError: (message) => {
+      setError(message);
+    },
+  });
+
+  const isSubmitting =
+    checkPhoneMutation.isPending ||
+    sendOtpMutation.isPending ||
+    verifyOtpMutation.isPending;
 
   useEffect(() => {
     if (otpSent && timer > 0) {
@@ -60,40 +108,22 @@ export function PhoneEntry() {
     }
   };
 
-  const handleResendOtp = async () => {
+  const handleResendOtp = () => {
     if (!canResend) return;
 
-    setIsSubmitting(true);
     setError("");
+    sendOtpMutation.mutate({
+      country_code: countryCode,
+      contact_number: phoneNumber,
+    });
 
-    try {
-      const otpResponse = await fetch(`${API_BASE_URL}/otp/send`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          country_code: countryCode,
-          contact_number: phoneNumber,
-        }),
-      });
-
-      if (!otpResponse.ok) {
-        throw new Error("Failed to resend OTP");
-      }
-
-      setTimer(60);
-      setCanResend(false);
-      setOtp(["", "", "", "", ""]);
-      setTimeout(() => inputRefs.current[0]?.focus(), 100);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to resend OTP");
-    } finally {
-      setIsSubmitting(false);
-    }
+    setTimer(60);
+    setCanResend(false);
+    setOtp(["", "", "", "", ""]);
+    setTimeout(() => inputRefs.current[0]?.focus(), 100);
   };
 
-  const handlePhoneSubmit = async (e: React.FormEvent) => {
+  const handlePhoneSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
@@ -108,65 +138,14 @@ export function PhoneEntry() {
       return;
     }
 
-    setIsSubmitting(true);
-
-    try {
-      // Check if client exists
-      const checkResponse = await fetch(
-        `${API_BASE_URL}/clients/check-phone?country_code=${encodeURIComponent(countryCode)}&contact_number=${encodeURIComponent(phoneNumber)}`
-      );
-
-      if (!checkResponse.ok) {
-        throw new Error("Failed to check phone number");
-      }
-
-      const checkData = await checkResponse.json();
-
-      if (!checkData.exists) {
-        setError(
-          "Phone number is not registered. Please contact your healthcare provider."
-        );
-        return;
-      }
-
-      // Send OTP
-      const otpResponse = await fetch(`${API_BASE_URL}/otp/send`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          country_code: countryCode,
-          contact_number: phoneNumber,
-        }),
-      });
-
-      if (!otpResponse.ok) {
-        throw new Error("Failed to send OTP");
-      }
-
-      const otpData = await otpResponse.json();
-
-      sessionStorage.setItem("client_phone_number", phoneNumber);
-      sessionStorage.setItem("client_country_code", countryCode);
-      sessionStorage.setItem("contact_id", otpData.contact_id);
-
-      setOtpSent(true);
-      setTimer(60);
-      setCanResend(false);
-      setTimeout(() => inputRefs.current[0]?.focus(), 100);
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Something went wrong. Please try again."
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Check if client exists - this will trigger the chain
+    checkPhoneMutation.mutate({
+      country_code: countryCode,
+      contact_number: phoneNumber,
+    });
   };
 
-  const handleOtpSubmit = async (e: React.FormEvent) => {
+  const handleOtpSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
@@ -176,42 +155,11 @@ export function PhoneEntry() {
       return;
     }
 
-    setIsSubmitting(true);
-
-    try {
-      const response = await fetch(`${API_BASE_URL}/otp/verify`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          country_code: countryCode,
-          contact_number: phoneNumber,
-          otp: otpValue,
-        }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Invalid OTP");
-      }
-
-      const verifyData = await response.json();
-
-      const contactId =
-        verifyData.contact_id || sessionStorage.getItem("contact_id");
-      if (contactId) {
-        navigate({ to: "/dashboard" });
-      } else {
-        throw new Error("Contact ID not found");
-      }
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Invalid OTP. Please try again."
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
+    verifyOtpMutation.mutate({
+      country_code: countryCode,
+      contact_number: phoneNumber,
+      otp: otpValue,
+    });
   };
 
   const selectedCountry =

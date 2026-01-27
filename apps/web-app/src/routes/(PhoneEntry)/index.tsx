@@ -1,7 +1,7 @@
+import { PhoneEntry } from "@/routes/(PhoneEntry)/PhoneEntry";
 import { createFileRoute } from "@tanstack/react-router";
-import { PhoneEntry } from "../pages/PhoneEntry";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/(PhoneEntry)/")({
   component: Index,
 });
 
