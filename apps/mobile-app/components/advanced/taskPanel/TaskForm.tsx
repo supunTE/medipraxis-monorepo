@@ -30,7 +30,7 @@ export default function TaskForm({ visible, onClose }: Props) {
   ];
   const days = ["M", "T", "W", "T", "F", "S", "S"];
 
-  const { formState, setField, handleSave, isPending } = useTaskHandler();
+  const { formState, setField, handleSave, isPending } = useTaskHandler(onClose);
   const [showEndDateTime, setShowEndDateTime] = useState(false);
 
   const {
