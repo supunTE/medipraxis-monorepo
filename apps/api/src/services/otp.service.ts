@@ -17,12 +17,13 @@ interface TextLKResponse {
 
 export class OtpService {
   private apiKey: string;
-  private baseUrl = "https://app.text.lk/api/v3/sms/send";
+  private baseUrl: string;
   private otpRepository: OtpRepository;
 
-  constructor(apiKey: string, otpRepository: OtpRepository) {
+  constructor(apiKey: string, otpRepository: OtpRepository, apiUrl: string) {
     this.apiKey = apiKey;
     this.otpRepository = otpRepository;
+    this.baseUrl = apiUrl;
   }
 
   private async hashOtp(otp: string): Promise<string> {
@@ -40,7 +41,7 @@ export class OtpService {
 
     const payload = {
       recipient,
-      sender_id: "TextLKDemo",
+      sender_id: "MediPraxis",
       type: "otp",
       message: "Your MediPraxis verification code is: {{OTP5}}",
     };

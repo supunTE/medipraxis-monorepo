@@ -16,19 +16,11 @@ export const genderEnum = z.enum([Gender.MALE, Gender.FEMALE, Gender.OTHER]);
 
 /* ---------------- RESPONSE SCHEMAS ---------------- */
 
-export const contactInfoSchema = z.object({
-  contact_id: z.string(),
-  country_code: z.string(),
-  contact_number: z.string(),
-  created_date: z.string(),
-});
-
 export const clientSchema = z.object({
   client_id: z.string(),
   title: z.string(),
   first_name: z.string(),
   last_name: z.string(),
-  full_name: z.string(),
   gender: genderEnum,
   date_of_birth: z.string(),
   emergency_contact_name: z.string().nullable(),
@@ -42,18 +34,14 @@ export const clientSchema = z.object({
   deleted_date: z.string().nullable(),
   contact_id: z.string(),
   user_id: z.string(),
+  country_code: z.string().nullable(),
+  contact_number: z
+    .string()
+    .regex(PHONE_REGEX, "Invalid phone number format")
+    .nullable(),
 });
 
 /* ---------------- REQUEST SCHEMAS ---------------- */
-
-export const createContactInfoSchema = z
-  .object({
-    country_code: z.string(),
-    contact_number: z
-      .string()
-      .regex(PHONE_REGEX, "Invalid phone number format"),
-  })
-  .strict();
 
 export const getClientParamSchema = z.object({
   id: z.string(),
@@ -88,10 +76,26 @@ const createClientBaseSchema = z
     emergency_contact_relationship: z.string().optional().nullable(),
     known_conditions: z.array(z.string()).optional().nullable(),
     note: z.string().optional().nullable(),
-    contact_id: z.string(),
+    contact_id: z.string().nullable().optional(),
     user_id: z.string(),
+    country_code: z.string().nullable().optional(),
+    contact_number: z
+      .string()
+      .regex(PHONE_REGEX, "Invalid phone number format")
+      .nullable()
+      .optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((data, ctx) => {
+    if (!data.contact_id && (!data.country_code || !data.contact_number)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          "Either contact_id or (country_code and contact_number) must be provided",
+        path: ["contact_id"],
+      });
+    }
+  });
 
 const addClientValidations = <T extends z.ZodTypeAny>(schema: T) => {
   return (
@@ -121,7 +125,7 @@ const addClientValidations = <T extends z.ZodTypeAny>(schema: T) => {
             path: ["emergency_contact_number"],
             message:
               "Emergency contact number is required when emergency contact name is provided",
-            code: z.ZodIssueCode.custom,
+            code: "custom",
           });
         }
 
@@ -130,7 +134,7 @@ const addClientValidations = <T extends z.ZodTypeAny>(schema: T) => {
             path: ["emergency_contact_name"],
             message:
               "Emergency contact name is required when emergency contact number is provided",
-            code: z.ZodIssueCode.custom,
+            code: "custom",
           });
         }
       })
@@ -138,15 +142,6 @@ const addClientValidations = <T extends z.ZodTypeAny>(schema: T) => {
 };
 
 export const createClientSchema = addClientValidations(createClientBaseSchema);
-
-export const createClientWithContactSchema = addClientValidations(
-  createClientBaseSchema.extend({
-    country_code: z.string(),
-    contact_number: z
-      .string()
-      .regex(PHONE_REGEX, "Invalid phone number format"),
-  })
-);
 
 export const getClientByPhoneQuerySchema = z.object({
   country_code: z.string(),
@@ -170,23 +165,30 @@ export const updateClientSchema = z
     emergency_contact_relationship: z.string().nullable().optional(),
     known_conditions: z.array(z.string()).nullable().optional(),
     note: z.string().nullable().optional(),
-    contact_id: z.string(),
-    user_id: z.string(),
+    contact_id: z.string().optional(),
+    user_id: z.string().optional(),
   })
   .strict();
 
 /* ---------------- TYPES (DERIVED) ---------------- */
 
 export type Client = z.infer<typeof clientSchema>;
+
 export type GetClientParam = z.infer<typeof getClientParamSchema>;
 export type UpdateClientParam = z.infer<typeof updateClientParamSchema>;
 export type GetAllClientsQuery = z.infer<typeof getAllClientsQuerySchema>;
-export type CreateClientInput = z.infer<typeof createClientSchema>;
 export type GetClientByPhoneQuery = z.infer<typeof getClientByPhoneQuerySchema>;
-export type UpdateClientInput = z.infer<typeof updateClientSchema>;
-export type ContactInfo = z.infer<typeof contactInfoSchema>;
-export type CreateContactInfoInput = z.infer<typeof createContactInfoSchema>;
-export type CreateClientWithContactInput = z.infer<
-  typeof createClientWithContactSchema
+
+export type CreateClientInput = z.infer<typeof createClientSchema>;
+export type CreateContactInfoInput = Pick<
+  CreateClientInput,
+  "country_code" | "contact_number"
 >;
+export type UpdateClientInput = z.infer<typeof updateClientSchema>;
+
+export type ContactInfo = Pick<
+  CreateClientInput,
+  "country_code" | "contact_number" | "contact_id"
+> & { created_date: string };
+
 export type GenderType = z.infer<typeof genderEnum>;

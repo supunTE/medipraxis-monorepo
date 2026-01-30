@@ -1,7 +1,6 @@
+import { apiClient } from "@/lib";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-
-const API_BASE_URL = "http://localhost:8787/api";
 
 interface PendingReport {
   request_report_id: string;
@@ -31,9 +30,11 @@ export function ContactDashboard({ contactId }: ContactDashboardProps) {
   const fetchPendingReports = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `${API_BASE_URL}/client-reports/pending/${contactId}`
-      );
+      const response = await apiClient.api["client-reports"].pending[
+        ":contact_id"
+      ].$get({
+        param: { contact_id: contactId },
+      });
 
       if (!response.ok) {
         throw new Error("Failed to fetch pending reports");
@@ -230,7 +231,7 @@ export function ContactDashboard({ contactId }: ContactDashboardProps) {
                       (e.currentTarget.style.backgroundColor = "#90C67C")
                     }
                   >
-                    Upload Report
+                    Upload Reports
                   </button>
                 </div>
               ))}

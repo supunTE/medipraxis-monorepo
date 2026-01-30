@@ -1,6 +1,6 @@
-import { UploadSimple } from "@phosphor-icons/react";
+import type { FormQuestion } from "@/types";
+import { TrashIcon, UploadSimpleIcon } from "@phosphor-icons/react";
 import React, { useRef, useState } from "react";
-import type { FormQuestion } from "../../types/form.types";
 
 interface FileUploadProps {
   question: FormQuestion;
@@ -72,15 +72,19 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   };
 
   return (
-    <div className="file-upload-container">
-      <label className="file-upload-label">
+    <div className="flex flex-col gap-2">
+      <label className="text-base font-medium text-mp-dark-green font-lato">
         {question.question}
-        {question.compulsory && <span className="required">*</span>}
+        {question.compulsory && <span className="text-mp-danger ml-1">*</span>}
       </label>
 
-      {question.notes && <p className="notes">{question.notes}</p>}
+      {question.notes && (
+        <p className="text-sm text-mp-grey italic font-dm-sans">
+          {question.notes}
+        </p>
+      )}
 
-      <div className="file-upload-area">
+      <div className="border-2 border-dashed border-mp-light-grey rounded-lg p-6 bg-mp-cream transition-colors hover:border-mp-green flex justify-center items-center">
         <input
           ref={fileInputRef}
           type="file"
@@ -88,58 +92,63 @@ export const FileUpload: React.FC<FileUploadProps> = ({
             .map((type) => `.${type}`)
             .join(",")}
           onChange={handleFileChange}
-          style={{ display: "none" }}
+          className="hidden"
         />
 
         {!value ? (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: "0.5rem",
-              width: "100%",
-            }}
-          >
+          <div className="flex flex-col items-center gap-2 w-full">
             <button
               type="button"
               onClick={handleClick}
-              className="upload-button"
+              className="bg-mp-green text-mp-dark-green px-6 py-3 rounded-md text-base font-medium hover:bg-mp-light-green transition-colors outline-none flex items-center justify-center font-lato"
             >
-              <UploadSimple
-                size={20}
-                weight="bold"
-                style={{ marginRight: "8px" }}
-              />
+              <UploadSimpleIcon size={20} weight="bold" className="mr-2" />
               Choose File
             </button>
             {question.helpText && (
-              <p className="help-text">{question.helpText}</p>
+              <p className="text-xs text-mp-grey text-center font-dm-sans">
+                {question.helpText}
+              </p>
             )}
           </div>
         ) : (
-          <div className="file-preview">
-            {preview && (
-              <img src={preview} alt="Preview" className="image-preview" />
-            )}
-            <div className="file-info">
-              <span className="file-name">{value.name}</span>
-              <span className="file-size">
+          <div className="flex flex-row gap-4 items-center w-full justify-start">
+            <div className="w-[100px] h-[100px] flex-shrink-0 rounded-lg overflow-hidden border border-mp-light-grey bg-mp-white flex items-center justify-center">
+              {preview ? (
+                <img
+                  src={preview}
+                  alt="Preview"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                  <span className="text-sm font-semibold text-mp-grey font-dm-sans">
+                    {value.name.split(".").pop()?.toUpperCase()}
+                  </span>
+                </div>
+              )}
+            </div>
+            <div className="flex flex-col gap-1 flex-grow">
+              <span className="font-medium text-mp-dark-green break-words font-lato">
+                {value.name}
+              </span>
+              <span className="text-sm text-mp-grey font-dm-sans">
                 {(value.size / 1024).toFixed(2)} KB
               </span>
             </div>
             <button
               type="button"
               onClick={handleRemove}
-              className="remove-button"
+              className="bg-mp-danger text-mp-white px-4 py-2 rounded-md text-sm font-medium hover:bg-mp-danger/90 transition-colors outline-none flex items-center gap-2 whitespace-nowrap flex-shrink-0 font-lato"
             >
-              Remove
+              <TrashIcon size={18} weight="bold" />
+              <span>Remove</span>
             </button>
           </div>
         )}
       </div>
 
-      {error && <p className="error-text">{error}</p>}
+      {error && <p className="text-mp-danger text-sm font-dm-sans">{error}</p>}
     </div>
   );
 };

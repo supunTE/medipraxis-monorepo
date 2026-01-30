@@ -1,11 +1,10 @@
+import { DaySelector, SlotWindow } from "@/routes/schedules";
 import { useCancelAppointment } from "@/services/ShareableCalendarLink/useCancelAppointment";
 import { useReserveAppointment } from "@/services/ShareableCalendarLink/useReserveAppointment";
 import { useShareableCalendarLink } from "@/services/ShareableCalendarLink/useShareableCalendarLink";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { DaySelector } from "./DaySelector";
-import { SlotWindow } from "./SlotWindow";
 
 export const Route = createFileRoute("/schedules/$id")({
   component: ScheduleDetail,

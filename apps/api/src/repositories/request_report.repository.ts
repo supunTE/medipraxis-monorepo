@@ -50,4 +50,31 @@ export class RequestReportRepository {
 
     return data as RequestReport;
   }
+
+  async create(data: {
+    user_id: string;
+    client_id: string;
+    form_id?: string;
+    requested_reports?: any;
+    note?: string;
+  }): Promise<RequestReport> {
+    const { data: insertedData, error } = await this.db
+      .from(REQUEST_REPORT_QUERIES.REQUEST_REPORT_TABLE)
+      .insert({
+        [REQUEST_REPORT_QUERIES.USER_ID]: data.user_id,
+        [REQUEST_REPORT_QUERIES.CLIENT_ID]: data.client_id,
+        [REQUEST_REPORT_QUERIES.FORM_ID]: data.form_id || null,
+        [REQUEST_REPORT_QUERIES.REQUESTED_REPORTS]:
+          data.requested_reports || null,
+        note: data.note || null,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      throw new Error(`Failed to create request report: ${error.message}`);
+    }
+
+    return insertedData as RequestReport;
+  }
 }
