@@ -1,6 +1,8 @@
 import { TextComponent, TextInputComponent } from "@/components/basic";
+import { useAIChat } from "@/services/ai";
 import { NotoColorEmoji_400Regular } from "@expo-google-fonts/noto-color-emoji";
 import { Color, TextSize, TextVariant } from "@repo/config";
+import { AIChatRole, type UIChatMessage } from "@repo/models";
 import clsx from "clsx";
 import { useFonts } from "expo-font";
 import { LinearGradient } from "expo-linear-gradient";
@@ -9,8 +11,9 @@ import {
   PaperPlaneRightIcon,
   XIcon,
 } from "phosphor-react-native";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   ImageBackground,
   KeyboardAvoidingView,
@@ -51,6 +54,15 @@ export default function AIAssistantModal({
   });
 
   const [inputText, setInputText] = useState("");
+  const { messages, isLoading, sendMessage, clearMessages } = useAIChat();
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    if (messages.length > 0) {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }
+  }, [messages]);
 
   const suggestions: SuggestionButton[] = [
     {
@@ -76,16 +88,41 @@ export default function AIAssistantModal({
   ];
 
   const handleSuggestionPress = (suggestion: SuggestionButton) => {
-    // Handle suggestion press
-    console.log("Suggestion pressed:", suggestion.label);
+    void sendMessage(suggestion.label);
   };
 
   const handleSendMessage = () => {
-    if (inputText.trim()) {
-      // Handle send message
-      console.log("Message sent:", inputText);
+    if (inputText.trim() && !isLoading) {
+      const message = inputText;
       setInputText("");
+      void sendMessage(message);
     }
+  };
+
+  const renderMessage = (message: UIChatMessage) => {
+    const isUser = message.role === AIChatRole.User;
+
+    return (
+      <View
+        key={message.id}
+        className={clsx("mb-4", isUser ? "items-end" : "items-start")}
+      >
+        <View
+          className={clsx(
+            "max-w-[80%] px-4 py-3 rounded-2xl",
+            isUser ? "bg-mp-green" : "bg-mp-white shadow-soft-1"
+          )}
+        >
+          <TextComponent
+            variant={TextVariant.Body}
+            size={TextSize.Medium}
+            color={isUser ? Color.White : Color.Black}
+          >
+            {message.content}
+          </TextComponent>
+        </View>
+      </View>
+    );
   };
 
   if (!fontsLoaded) {
@@ -127,71 +164,92 @@ export default function AIAssistantModal({
 
               {/* Scrollable Content */}
               <ScrollView
+                ref={scrollViewRef}
                 className="flex-1 p-6"
                 showsVerticalScrollIndicator={false}
               >
-                {/* Greeting */}
-                <View className="items-center mb-10">
-                  <View className="border border-mp-green rounded-full px-6 py-2">
-                    <TextComponent
-                      variant={TextVariant.Body}
-                      size={TextSize.Small}
-                      color={Color.TextGreen}
-                    >
-                      Good Evening, Katherine
-                    </TextComponent>
-                  </View>
-                </View>
+                {messages.length === 0 ? (
+                  <>
+                    {/* Greeting */}
+                    <View className="items-center mb-10">
+                      <View className="border border-mp-green rounded-full px-6 py-2">
+                        <TextComponent
+                          variant={TextVariant.Body}
+                          size={TextSize.Small}
+                          color={Color.TextGreen}
+                        >
+                          Good Evening, Katherine
+                        </TextComponent>
+                      </View>
+                    </View>
 
-                {/* Avatar */}
-                <View className="items-center mb-8">
-                  <View className="w-48 h-48 bg-mp-white rounded-full items-center justify-center shadow-soft-2">
-                    <Image
-                      source={botAvatar}
-                      style={{ width: 144, height: 144 }}
-                      resizeMode="contain"
-                    />
-                  </View>
-                </View>
+                    {/* Avatar */}
+                    <View className="items-center mb-8">
+                      <View className="w-48 h-48 bg-mp-white rounded-full items-center justify-center shadow-soft-2">
+                        <Image
+                          source={botAvatar}
+                          style={{ width: 144, height: 144 }}
+                          resizeMode="contain"
+                        />
+                      </View>
+                    </View>
 
-                {/* Main heading */}
-                <View className="mb-8">
-                  <TextComponent
-                    variant={TextVariant.Title}
-                    size={TextSize.ExtraLarge}
-                    color={Color.Black}
-                    style={{ textAlign: "left" }}
-                  >
-                    Need help with{"\n"}something today?
-                  </TextComponent>
-                </View>
-
-                {/* Suggestion buttons */}
-                <View className="gap-3 mb-40">
-                  {suggestions.map((suggestion) => (
-                    <Pressable
-                      key={suggestion.id}
-                      onPress={() => handleSuggestionPress(suggestion)}
-                      className="bg-mp-green rounded-full px-4 py-2 flex-row items-center gap-2 shadow-soft-1 active:opacity-80 self-start"
-                    >
-                      <Text
-                        style={{
-                          fontFamily: "NotoColorEmoji_400Regular",
-                          fontSize: 16,
-                        }}
-                      >
-                        {suggestion.emoji}
-                      </Text>
+                    {/* Main heading */}
+                    <View className="mb-8">
                       <TextComponent
-                        variant={TextVariant.Body}
-                        size={TextSize.Medium}
-                        color={Color.White}
+                        variant={TextVariant.Title}
+                        size={TextSize.ExtraLarge}
+                        color={Color.Black}
+                        style={{ textAlign: "left" }}
                       >
-                        {suggestion.label}
+                        Need help with{"\n"}something today?
                       </TextComponent>
-                    </Pressable>
-                  ))}
-                </View>
+                    </View>
+
+                    {/* Suggestion buttons */}
+                    <View className="gap-3 mb-40">
+                      {suggestions.map((suggestion) => (
+                        <Pressable
+                          key={suggestion.id}
+                          onPress={() => handleSuggestionPress(suggestion)}
+                          className="bg-mp-green rounded-full px-4 py-2 flex-row items-center gap-2 shadow-soft-1 active:opacity-80 self-start"
+                        >
+                          <Text
+                            style={{
+                              fontFamily: "NotoColorEmoji_400Regular",
+                              fontSize: 16,
+                            }}
+                          >
+                            {suggestion.emoji}
+                          </Text>
+                          <TextComponent
+                            variant={TextVariant.Body}
+                            size={TextSize.Medium}
+                            color={Color.White}
+                          >
+                            {suggestion.label}
+                          </TextComponent>
+                        </Pressable>
+                      ))}
+                    </View>
+                  </>
+                ) : (
+                  <View className="mb-40 pt-16">
+                    {/* Chat messages */}
+                    {messages.map((message) => renderMessage(message))}
+                    {/* Loading indicator */}
+                    {isLoading && (
+                      <View className="items-start mb-4">
+                        <View className="bg-mp-white px-4 py-3 rounded-2xl shadow-soft-1">
+                          <ActivityIndicator
+                            size="small"
+                            color={Color.TextGreen}
+                          />
+                        </View>
+                      </View>
+                    )}
+                  </View>
+                )}
               </ScrollView>
 
               {/* Gradient fade to prevent content clutter */}
