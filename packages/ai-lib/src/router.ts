@@ -1,20 +1,6 @@
+import type { AIActionType, RouterResponse } from "@repo/models";
 import { generateText } from "ai";
 import { createModels, type ModelsMapping } from "./models";
-
-export type TaskType =
-  | "greeting"
-  | "appointment"
-  | "client_management"
-  | "general"
-  | "unknown";
-
-export interface RouterResponse {
-  task: TaskType;
-  response?: string;
-  isValid: boolean;
-  guardRailViolation?: string;
-  shouldCallWorkflow?: boolean;
-}
 
 const GUARD_RAIL_INSTRUCTIONS = [
   "You are an AI assistant for medical practitioners using the MediPraxis platform.",
@@ -76,14 +62,14 @@ Practitioner message: "${userPrompt}"
 async function identifyTask(
   userPrompt: string,
   models: ModelsMapping
-): Promise<TaskType> {
+): Promise<AIActionType> {
   const { text } = await generateText({
     model: models.gemini.fast,
     prompt: `${TASK_IDENTIFICATION_PROMPT}\n\nPractitioner message: "${userPrompt}"`,
   });
 
   const taskType = text.trim().toLowerCase().replace(/-/g, "_");
-  const validTasks: TaskType[] = [
+  const validTasks: AIActionType[] = [
     "greeting",
     "appointment",
     "client_management",
@@ -91,17 +77,17 @@ async function identifyTask(
     "unknown",
   ];
 
-  return validTasks.includes(taskType as TaskType)
-    ? (taskType as TaskType)
+  return validTasks.includes(taskType as AIActionType)
+    ? (taskType as AIActionType)
     : "unknown";
 }
 
 async function generateResponse(
   userPrompt: string,
-  task: TaskType,
+  task: AIActionType,
   models: ModelsMapping
 ): Promise<string> {
-  const contextPrompts: Record<TaskType, string> = {
+  const contextPrompts: Record<AIActionType, string> = {
     greeting: `${GUARD_RAIL_INSTRUCTIONS.join("\n")}\n\nRespond professionally and warmly to this medical practitioner's greeting. Keep it brief and respectful.\n\nPractitioner: ${userPrompt}`,
     appointment: ``, // Will be handled by workflow
     client_management: ``, // Will be handled by workflow
@@ -131,7 +117,7 @@ export async function processAIQuery(
     });
     return {
       task: "unknown",
-      response:
+      message:
         "I'm sorry, but I cannot assist with that request. Please ensure your message is appropriate and respectful.",
       isValid: false,
       guardRailViolation: guardRailCheck.violation,
@@ -144,7 +130,7 @@ export async function processAIQuery(
   const task = await identifyTask(userPrompt, models);
 
   // Step 3: Handle based on task type
-  const workflowTasks: TaskType[] = ["appointment", "client_management"];
+  const workflowTasks: AIActionType[] = ["appointment", "client_management"];
 
   if (workflowTasks.includes(task)) {
     return {
@@ -157,7 +143,7 @@ export async function processAIQuery(
     const response = await generateResponse(userPrompt, task, models);
     return {
       task,
-      response,
+      message: response,
       isValid: true,
       shouldCallWorkflow: false,
     };

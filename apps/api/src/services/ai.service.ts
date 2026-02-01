@@ -1,4 +1,5 @@
-import { processAIQuery, type RouterResponse } from "@repo/ai-lib";
+import { processAIQuery } from "@repo/ai-lib";
+import type { RouterResponse } from "@repo/models";
 
 export class AIService {
   private apiKey: string;
