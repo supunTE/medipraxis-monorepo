@@ -5,9 +5,9 @@ import { useCreateAppointmentSlot } from "./useCreateAppointmentSlot";
 import { useCreateTask } from "./useCreateTask";
 
 export const EVENT_TYPES = {
-  TASK: "Reminder/Task",
-  APPOINTMENT_SLOT_WINDOW: "Appointment Slot Window",
-  APPOINTMENT: "Appointment",
+  TASK: "task",
+  APPOINTMENT_SLOT_WINDOW: "slot_window",
+  APPOINTMENT: "appointment",
 } as const;
 
 export type EventType = (typeof EVENT_TYPES)[keyof typeof EVENT_TYPES];

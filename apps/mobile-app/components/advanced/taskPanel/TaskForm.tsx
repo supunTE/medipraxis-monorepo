@@ -4,7 +4,7 @@ import {
   CheckboxIndicator,
   CheckboxLabel,
 } from "@/components/ui/checkbox";
-import { useTaskHandler } from "@/services/tasks/useTaskHandler";
+import { EVENT_TYPES, useTaskHandler } from "@/services/tasks/useTaskHandler";
 import { CheckIcon, GlobeIcon } from "phosphor-react-native";
 import React, { useState } from "react";
 import {
@@ -24,10 +24,16 @@ type Props = {
 
 export default function TaskForm({ visible, onClose }: Props) {
   const eventTypes = [
-    "Appointment Slot Window",
-    "Appointment",
-    "Reminder/Task",
+    EVENT_TYPES.APPOINTMENT_SLOT_WINDOW,
+    EVENT_TYPES.APPOINTMENT,
+    EVENT_TYPES.TASK,
   ];
+
+  const EVENT_TYPE_LABELS = {
+    [EVENT_TYPES.APPOINTMENT_SLOT_WINDOW]: "Appointment Slot Window",
+    [EVENT_TYPES.APPOINTMENT]: "Appointment",
+    [EVENT_TYPES.TASK]: "Reminder/Task",
+  };
   const days = ["M", "T", "W", "T", "F", "S", "S"];
 
   const { formState, setField, handleSave, isPending } =
@@ -81,13 +87,13 @@ export default function TaskForm({ visible, onClose }: Props) {
                 <View style={styles.radioOuter}>
                   {eventType === type && <View style={styles.radioInner} />}
                 </View>
-                <Text style={styles.radioLabel}>{type}</Text>
+                <Text style={styles.radioLabel}>{EVENT_TYPE_LABELS[type]}</Text>
               </TouchableOpacity>
             ))}
           </View>
 
           {/* 1. APPOINTMENT SLOT WINDOW SPECIFIC FIELDS */}
-          {eventType === "Appointment Slot Window" && (
+          {eventType === EVENT_TYPES.APPOINTMENT_SLOT_WINDOW && (
             <>
               <Text style={styles.label}>Location</Text>
               <View style={styles.inputWithIcon}>
@@ -150,7 +156,7 @@ export default function TaskForm({ visible, onClose }: Props) {
           )}
 
           {/* 2. APPOINTMENT SPECIFIC FIELDS */}
-          {eventType === "Appointment" && (
+          {eventType === EVENT_TYPES.APPOINTMENT && (
             <>
               <Text style={styles.label}>Enter the title</Text>
               <TextInput
@@ -224,7 +230,7 @@ export default function TaskForm({ visible, onClose }: Props) {
           )}
 
           {/* 3. REMINDER/TASK SPECIFIC FIELDS */}
-          {eventType === "Reminder/Task" && (
+          {eventType === EVENT_TYPES.TASK && (
             <>
               <Text style={styles.label}>Enter the title</Text>
               <TextInput
