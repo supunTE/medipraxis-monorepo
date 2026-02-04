@@ -117,18 +117,18 @@ export const useTaskHandler = (onClose: () => void) => {
 
     if (formState.eventType === EVENT_TYPES.TASK) {
       createTask({
-        task_title: formState.taskTitle || "",
-        client: formState.client || "",
+        task_title: formState.taskTitle,
+        client: formState.client,
         start_date: formState.startDate,
         end_date: formState.endDate,
-        note: formState.note || "",
-        alarm: formState.alarm || false,
+        note: formState.note,
+        alarm: formState.alarm,
         user_id: formState.userId,
       });
     }
 
     if (formState.eventType === EVENT_TYPES.APPOINTMENT_SLOT_WINDOW) {
-      const isRecurring = (formState.repeatDays?.length ?? 0) > 0;
+      const isRecurring = formState.repeatDays.length > 0;
 
       if (isRecurring) {
         // Map 0-6 to DayOfWeek
@@ -141,7 +141,7 @@ export const useTaskHandler = (onClose: () => void) => {
           "SATURDAY",
           "SUNDAY",
         ];
-        const day_of_week = (formState.repeatDays || []).map(
+        const day_of_week = formState.repeatDays.map(
           (d) => DAYS[d] as unknown as DayOfWeek
         );
 
@@ -149,7 +149,7 @@ export const useTaskHandler = (onClose: () => void) => {
           is_recurring: true,
           user_id: formState.userId,
           location: formState.location,
-          total_slots: formState.totalSlots || 1,
+          total_slots: formState.totalSlots,
           start_time: formState.startDate,
           end_time: formState.endDate,
           repeat_until: formState.endDate,
@@ -161,7 +161,7 @@ export const useTaskHandler = (onClose: () => void) => {
           is_recurring: false,
           user_id: formState.userId,
           location: formState.location,
-          total_slots: formState.totalSlots || 1,
+          total_slots: formState.totalSlots,
           date: formState.startDate,
           start_time: formState.startDate,
           end_time: formState.endDate,
