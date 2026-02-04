@@ -2,10 +2,12 @@ import { View } from "@/components/Themed";
 import { useState } from "react";
 import { Button, StyleSheet } from "react-native";
 
+import { FormSetupCenter } from "@/components/advanced/formSetupCenter";
 import TaskForm from "@/components/advanced/taskPanel/TaskForm";
 
 export default function TabOneScreen() {
   const [showForm, setShowForm] = useState(false);
+  const [showFormSetup, setShowFormSetup] = useState(false);
 
   return (
     <View style={styles.container}>
@@ -29,8 +31,20 @@ export default function TabOneScreen() {
       {/* Button to open the appointment window */}
       <Button title="Open Appointment Form" onPress={() => setShowForm(true)} />
 
+      {/* Button to open Form Setup Center */}
+      <Button
+        title="Form Setup Center"
+        onPress={() => setShowFormSetup(true)}
+      />
+
       {/* Appointment modal only shows when state is true */}
       <TaskForm visible={showForm} onClose={() => setShowForm(false)} />
+
+      {/* Form Setup Center modal */}
+      <FormSetupCenter
+        visible={showFormSetup}
+        onClose={() => setShowFormSetup(false)}
+      />
     </View>
   );
 }
