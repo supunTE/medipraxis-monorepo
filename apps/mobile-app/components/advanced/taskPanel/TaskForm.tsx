@@ -41,15 +41,15 @@ export default function TaskForm({ visible, onClose }: Props) {
   const [showEndDateTime, setShowEndDateTime] = useState(false);
 
   const {
-    task_title,
+    taskTitle,
     eventType,
     client,
-    start_date,
-    end_date,
+    startDate,
+    endDate,
     note,
     alarm,
     location,
-    total_slots,
+    totalSlots,
     repeatDays = [],
     slotWindow,
 
@@ -109,8 +109,8 @@ export default function TaskForm({ visible, onClose }: Props) {
               <Text style={styles.label}>Number of Slots</Text>
               <TextInput
                 style={styles.input}
-                value={String(total_slots)}
-                onChangeText={(v) => setField("total_slots", Number(v))}
+                value={String(totalSlots)}
+                onChangeText={(v) => setField("totalSlots", Number(v))}
                 keyboardType="numeric"
                 placeholder="10"
               />
@@ -119,14 +119,14 @@ export default function TaskForm({ visible, onClose }: Props) {
               <Text style={styles.label}>Start date & time</Text>
               <TextInput
                 style={styles.input}
-                value={start_date}
+                value={startDate}
                 placeholder="Nov 15, 2025  08:00 am"
               />
 
               <Text style={styles.label}>End date & time</Text>
               <TextInput
                 style={styles.input}
-                value={end_date}
+                value={endDate}
                 placeholder="Nov 15, 2025  11:30 am"
               />
 
@@ -161,8 +161,8 @@ export default function TaskForm({ visible, onClose }: Props) {
               <Text style={styles.label}>Enter the title</Text>
               <TextInput
                 style={styles.input}
-                value={task_title}
-                onChangeText={(v) => setField("task_title", v)}
+                value={taskTitle}
+                onChangeText={(v) => setField("taskTitle", v)}
                 placeholder="Enter the title"
               />
 
@@ -207,14 +207,14 @@ export default function TaskForm({ visible, onClose }: Props) {
               <Text style={styles.label}>Start Date & time</Text>
               <TextInput
                 style={styles.input}
-                value={start_date}
+                value={startDate}
                 placeholder="Nov 15, 2025  08:00 am"
               />
 
               <Text style={styles.label}>End Date & time</Text>
               <TextInput
                 style={styles.input}
-                value={end_date}
+                value={endDate}
                 placeholder="Nov 15, 2025  11:30 am"
               />
             </>
@@ -226,7 +226,7 @@ export default function TaskForm({ visible, onClose }: Props) {
               <Text style={styles.label}>Enter the title</Text>
               <TextInput
                 style={styles.input}
-                value={task_title}
+                value={taskTitle}
                 placeholder="Enter the title"
               />
 
@@ -240,7 +240,7 @@ export default function TaskForm({ visible, onClose }: Props) {
               <Text style={styles.label}>Start Date & time</Text>
               <TextInput
                 style={styles.input}
-                value={start_date}
+                value={startDate}
                 placeholder="Nov 15, 2025  08:00 am"
               />
 
@@ -256,7 +256,7 @@ export default function TaskForm({ visible, onClose }: Props) {
                   <Text style={styles.label}>End Date & time</Text>
                   <TextInput
                     style={styles.input}
-                    value={end_date}
+                    value={endDate}
                     placeholder="Nov 15, 2025  08:00 am"
                   />
                 </>

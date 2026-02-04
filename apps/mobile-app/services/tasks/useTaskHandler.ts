@@ -14,21 +14,21 @@ export type EventType = (typeof EVENT_TYPES)[keyof typeof EVENT_TYPES];
 
 type FormState = {
   eventType: EventType;
-  user_id: string;
+  userId: string;
 
   // Task specific
-  task_title: string;
+  taskTitle: string;
   client: string;
   alarm: boolean;
 
   // Appointment Slot specific
-  is_recurring: boolean;
+  isRecurring: boolean;
   location: string;
-  total_slots: number;
+  totalSlots: number;
 
   // Common / Shared
-  start_date: string;
-  end_date: string;
+  startDate: string;
+  endDate: string;
   note: string;
 
   // UI state
@@ -40,38 +40,38 @@ type FormState = {
 
 const DEFAULT_FORM_STATE: FormState = {
   eventType: EVENT_TYPES.TASK,
-  task_title: "",
+  taskTitle: "",
   client: "Jennifer",
-  start_date: "2025-11-15T08:00",
-  end_date: "2025-11-15T11:30",
+  startDate: "2025-11-15T08:00",
+  endDate: "2025-11-15T11:30",
   note: "",
   alarm: true,
-  user_id: "",
+  userId: "",
   repeatDays: [],
-  total_slots: 1,
+  totalSlots: 1,
   location: "",
   slotWindow: "",
 
   attachToSlot: false,
-  is_recurring: false,
+  isRecurring: false,
 };
 
 const DEFAULT_APPOINTMENT_SLOT_STATE: FormState = {
   eventType: EVENT_TYPES.APPOINTMENT_SLOT_WINDOW,
-  start_date: "2025-11-15T08:00",
-  end_date: "2025-11-15T11:30",
+  startDate: "2025-11-15T08:00",
+  endDate: "2025-11-15T11:30",
   note: "",
   location: "Care - Medical Centre",
-  user_id: "",
-  total_slots: 1,
+  userId: "",
+  totalSlots: 1,
   repeatDays: [],
-  task_title: "",
+  taskTitle: "",
   client: "",
   alarm: false,
   slotWindow: "",
 
   attachToSlot: false,
-  is_recurring: false,
+  isRecurring: false,
 };
 
 export const useTaskHandler = (onClose: () => void) => {
@@ -117,20 +117,20 @@ export const useTaskHandler = (onClose: () => void) => {
 
     if (formState.eventType === EVENT_TYPES.TASK) {
       createTask({
-        task_title: formState.task_title || "",
+        task_title: formState.taskTitle || "",
         client: formState.client || "",
-        start_date: formState.start_date,
-        end_date: formState.end_date,
+        start_date: formState.startDate,
+        end_date: formState.endDate,
         note: formState.note || "",
         alarm: formState.alarm || false,
-        user_id: formState.user_id,
+        user_id: formState.userId,
       });
     }
 
     if (formState.eventType === EVENT_TYPES.APPOINTMENT_SLOT_WINDOW) {
-      const is_recurring = (formState.repeatDays?.length ?? 0) > 0;
+      const isRecurring = (formState.repeatDays?.length ?? 0) > 0;
 
-      if (is_recurring) {
+      if (isRecurring) {
         // Map 0-6 to DayOfWeek
         const DAYS = [
           "MONDAY",
@@ -147,24 +147,24 @@ export const useTaskHandler = (onClose: () => void) => {
 
         createAppointmentSlot({
           is_recurring: true,
-          user_id: formState.user_id,
+          user_id: formState.userId,
           location: formState.location,
-          total_slots: formState.total_slots || 1,
-          start_time: formState.start_date,
-          end_time: formState.end_date,
-          repeat_until: formState.end_date,
+          total_slots: formState.totalSlots || 1,
+          start_time: formState.startDate,
+          end_time: formState.endDate,
+          repeat_until: formState.endDate,
           day_of_week,
           note: formState.note,
         });
       } else {
         createAppointmentSlot({
           is_recurring: false,
-          user_id: formState.user_id,
+          user_id: formState.userId,
           location: formState.location,
-          total_slots: formState.total_slots || 1,
-          date: formState.start_date,
-          start_time: formState.start_date,
-          end_time: formState.end_date,
+          total_slots: formState.totalSlots || 1,
+          date: formState.startDate,
+          start_time: formState.startDate,
+          end_time: formState.endDate,
           note: formState.note,
         });
       }
