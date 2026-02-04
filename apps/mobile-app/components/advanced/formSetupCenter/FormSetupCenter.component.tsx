@@ -1,13 +1,16 @@
+import { TextComponent } from "@/components/basic";
 import {
   DMSans_400Regular,
   DMSans_500Medium,
   DMSans_600SemiBold,
 } from "@expo-google-fonts/dm-sans";
 import { Lato_400Regular, Lato_700Bold } from "@expo-google-fonts/lato";
-import { useFonts } from "expo-font";
 import { Color, TextSize, TextVariant } from "@repo/config";
+import { useFonts } from "expo-font";
+import { PencilSimple } from "phosphor-react-native";
 import React from "react";
 import {
+  Image,
   Modal,
   ScrollView,
   StyleSheet,
@@ -15,7 +18,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { TextComponent } from "@/components/basic";
 import { FORM_TILES } from "./formSetupCenter.constants";
 import type { FormSetupCenterProps } from "./formSetupCenter.types";
 
@@ -71,20 +73,29 @@ export function FormSetupCenter({ visible, onClose }: FormSetupCenterProps) {
           {/* Tiles Section */}
           <View style={styles.tilesContainer}>
             {FORM_TILES.map((tile) => (
-              <TouchableOpacity
-                key={tile.id}
-                style={styles.tile}
-                onPress={() => handleTilePress(tile.id)}
-                activeOpacity={0.7}
-              >
+              <View key={tile.id} style={styles.tile}>
+                <Image
+                  source={tile.image}
+                  style={styles.tileImage}
+                  resizeMode="contain"
+                />
                 <View style={styles.tileContent}>
                   <Text style={styles.tileTitle}>{tile.title}</Text>
                   <Text style={styles.tileDescription}>{tile.description}</Text>
+                  <TouchableOpacity
+                    style={styles.editButton}
+                    onPress={() => handleTilePress(tile.id)}
+                    activeOpacity={0.7}
+                  >
+                    <PencilSimple
+                      size={20}
+                      color={Color.White}
+                      weight="regular"
+                    />
+                    <Text style={styles.editButtonText}>Edit</Text>
+                  </TouchableOpacity>
                 </View>
-                <View style={styles.tileArrow}>
-                  <Text style={styles.arrowIcon}>›</Text>
-                </View>
-              </TouchableOpacity>
+              </View>
             ))}
           </View>
 
@@ -124,12 +135,9 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   tile: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
     backgroundColor: Color.LightCream,
     borderRadius: 12,
-    padding: 20,
+    padding: 16,
     borderWidth: 1,
     borderColor: Color.Grey,
     shadowColor: Color.Black,
@@ -141,8 +149,14 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2,
   },
+  tileImage: {
+    width: 80,
+    height: 80,
+    marginRight: 16,
+  },
   tileContent: {
     flex: 1,
+    justifyContent: "flex-start",
   },
   tileTitle: {
     fontFamily: "DMSans_600SemiBold",
@@ -155,14 +169,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: Color.Grey,
     lineHeight: 20,
+    marginBottom: 12,
   },
-  tileArrow: {
-    marginLeft: 12,
+  editButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: Color.Black,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    gap: 8,
   },
-  arrowIcon: {
-    fontFamily: "DMSans_400Regular",
-    fontSize: 28,
-    color: Color.Grey,
+  editButtonText: {
+    fontFamily: "DMSans_600SemiBold",
+    fontSize: 14,
+    color: Color.White,
   },
   actionSection: {
     paddingHorizontal: 16,
