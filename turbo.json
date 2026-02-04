@@ -6,6 +6,7 @@
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": [],
+      "env": ["GOOGLE_AI_API_KEY"],
       "env": ["VITE_API_BASE_URL"]
     },
     "lint": {

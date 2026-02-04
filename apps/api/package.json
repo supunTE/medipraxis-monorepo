@@ -3,7 +3,7 @@
   "type": "module",
   "version": "1.0.0",
   "scripts": {
-    "dev": "wrangler dev",
+    "dev": "wrangler dev --ip 0.0.0.0",
     "build": "tsc --noEmit",
     "lint": "eslint .",
     "deploy": "wrangler deploy --minify",

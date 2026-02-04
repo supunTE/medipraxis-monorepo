@@ -1,0 +1,22 @@
+---
+model: googleai/gemini-2.5-flash-lite
+input:
+  schema:
+    message: string
+output:
+  schema:
+    task: string
+---
+
+Based on the medical practitioner's message, identify which task category it belongs to:
+- greeting: General greetings, hello, hi, how are you
+- appointment: Managing patient appointments, scheduling, clinic calendar
+- client_management: Retrieving client/patient reports, patient details, client summaries, medical records
+- general: Platform features, documentation help, workflow assistance
+- unknown: Cannot determine the intent
+
+(Note: "client" always refers to medical practitioner's clients/patients)
+
+Respond with ONLY the task category name.
+
+Practitioner message: "{{message}}"
