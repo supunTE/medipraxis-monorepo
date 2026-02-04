@@ -52,7 +52,7 @@ export default function TaskForm({ visible, onClose }: Props) {
     total_slots,
     repeatDays = [],
     slotWindow,
-    slotNo,
+
     attachToSlot,
   } = formState;
 
@@ -177,21 +177,12 @@ export default function TaskForm({ visible, onClose }: Props) {
               </TouchableOpacity>
 
               <View style={styles.row}>
-                <View style={{ flex: 1, marginRight: 8 }}>
+                <View style={{ flex: 1 }}>
                   <Text style={styles.label}>Slot Window</Text>
                   <TextInput
                     style={styles.input}
                     value={slotWindow}
                     placeholder="Sat 9-11PM"
-                  />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.label}>Slot No.</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={String(slotNo)}
-                    onChangeText={(v) => setField("slotNo", Number(v))}
-                    placeholder="No. 05 (10:15PM)"
                   />
                 </View>
               </View>
