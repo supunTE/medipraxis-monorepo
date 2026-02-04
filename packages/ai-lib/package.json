@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "tsc --noEmit",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "genkit:ui": "genkit start -- npx tsx --watch src/index.ts"
   },
   "devDependencies": {
     "@repo/eslint-config": "*",
@@ -16,7 +17,8 @@
     "typescript": "5.9.2"
   },
   "dependencies": {
-    "@ai-sdk/google": "^2.0.49",
-    "ai": "^5.0.115"
+    "@genkit-ai/google-genai": "^1.28.0",
+    "dotenv": "^17.2.3",
+    "genkit": "^1.28.0"
   }
 }
