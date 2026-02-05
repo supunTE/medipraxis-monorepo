@@ -8,10 +8,12 @@
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md}\"",
     "check-types": "turbo run check-types",
-    "prepare": "husky"
+    "prepare": "husky",
+    "postinstall": "patch-package"
   },
   "devDependencies": {
     "husky": "^9.1.7",
+    "patch-package": "^8.0.1",
     "prettier": "^3.6.2",
     "turbo": "^2.6.3",
     "typescript": "5.9.2"
@@ -22,7 +24,8 @@
   "packageManager": "yarn@1.22.22",
   "resolutions": {
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "iconv-lite": "0.7.0"
   },
   "workspaces": {
     "packages": [
