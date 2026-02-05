@@ -54,9 +54,9 @@ const ClientRegistrationForm = ({
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <Card className="w-full max-w-md rounded-2xl shadow-xl pb-0 border-none">
         <CardHeader>
-          <CardTitle>Patient Registration</CardTitle>
+          <CardTitle>Add your family member</CardTitle>
           <CardDescription>
-            Enter patient details to create a new file.
+            Enter your family member's details below to register them.
           </CardDescription>
         </CardHeader>
 
