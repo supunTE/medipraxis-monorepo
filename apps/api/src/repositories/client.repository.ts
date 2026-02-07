@@ -8,8 +8,18 @@ import type {
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export const CLIENT_QUERIES = {
+  CLIENT_TABLE: "client",
+  CONTACT_TABLE: "contact",
+  CLIENT_ID: "client_id",
+  CONTACT_ID: "contact_id",
+  USER_ID: "user_id",
+  COUNTRY_CODE: "country_code",
+  CONTACT_NUMBER: "contact_number",
+  DELETED_DATE: "deleted_date",
+  CREATED_DATE: "created_date",
+  MODIFIED_DATE: "modified_date",
+  DELETED: "deleted",
   FIND_ALL: "*",
-  FIND_BY_ID: "*",
 } as const;
 
 export class ClientRepository {
@@ -29,10 +39,10 @@ export class ClientRepository {
     const cleanCountryCode = countryCode.replace(/^\+/, "");
 
     const { data, error } = await this.db
-      .from("contact")
+      .from(CLIENT_QUERIES.CONTACT_TABLE)
       .select("*")
-      .eq("country_code", cleanCountryCode)
-      .eq("contact_number", contactNumber)
+      .eq(CLIENT_QUERIES.COUNTRY_CODE, cleanCountryCode)
+      .eq(CLIENT_QUERIES.CONTACT_NUMBER, contactNumber)
       .single();
 
     if (error || !data) {
@@ -51,7 +61,7 @@ export class ClientRepository {
       contact_number: contactInfo.contact_number,
     };
     const { data: contact, error } = await this.db
-      .from("contact")
+      .from(CLIENT_QUERIES.CONTACT_TABLE)
       .insert(data)
       .select()
       .single();
@@ -62,17 +72,31 @@ export class ClientRepository {
     return contact as ContactInfo;
   }
 
+  async findContactInfoById(contactId: string): Promise<ContactInfo | null> {
+    const { data, error } = await this.db
+      .from(CLIENT_QUERIES.CONTACT_TABLE)
+      .select("*")
+      .eq(CLIENT_QUERIES.CONTACT_ID, contactId)
+      .single();
+
+    if (error || !data) {
+      return null;
+    }
+
+    return data as ContactInfo;
+  }
+
   /* ------------Client Methods------------ */
 
   async findAll(userId?: string): Promise<Client[]> {
     let query = this.db
-      .from("client")
+      .from(CLIENT_QUERIES.CLIENT_TABLE)
       .select(CLIENT_QUERIES.FIND_ALL)
-      .is("deleted_date", null)
-      .order("created_date", { ascending: false });
+      .is(CLIENT_QUERIES.DELETED_DATE, null)
+      .order(CLIENT_QUERIES.CREATED_DATE, { ascending: false });
 
     if (userId) {
-      query = query.eq("user_id", userId);
+      query = query.eq(CLIENT_QUERIES.USER_ID, userId);
     }
 
     const { data, error } = await query;
@@ -86,10 +110,10 @@ export class ClientRepository {
 
   async findById(clientId: string): Promise<Client | null> {
     const { data, error } = await this.db
-      .from("client")
-      .select(CLIENT_QUERIES.FIND_BY_ID)
-      .eq("client_id", clientId)
-      .is("deleted_date", null)
+      .from(CLIENT_QUERIES.CLIENT_TABLE)
+      .select(CLIENT_QUERIES.FIND_ALL)
+      .eq(CLIENT_QUERIES.CLIENT_ID, clientId)
+      .is(CLIENT_QUERIES.DELETED_DATE, null)
       .single();
 
     if (error || !data) {
@@ -101,10 +125,10 @@ export class ClientRepository {
 
   async findByContactId(contactId: string): Promise<Client[]> {
     const { data, error } = await this.db
-      .from("client")
+      .from(CLIENT_QUERIES.CLIENT_TABLE)
       .select(CLIENT_QUERIES.FIND_ALL)
-      .eq("contact_id", contactId)
-      .is("deleted_date", null);
+      .eq(CLIENT_QUERIES.CONTACT_ID, contactId)
+      .is(CLIENT_QUERIES.DELETED_DATE, null);
 
     if (error) {
       throw new Error(`Failed to fetch clients: ${error.message}`);
@@ -126,10 +150,10 @@ export class ClientRepository {
 
     // Then find all clients with that contact_id
     const { data, error } = await this.db
-      .from("client")
-      .select(CLIENT_QUERIES.FIND_BY_ID)
-      .eq("contact_id", contact.contact_id)
-      .eq("deleted", false);
+      .from(CLIENT_QUERIES.CLIENT_TABLE)
+      .select(CLIENT_QUERIES.FIND_ALL)
+      .eq(CLIENT_QUERIES.CONTACT_ID, contact.contact_id)
+      .eq(CLIENT_QUERIES.DELETED, false);
 
     if (error || !data) {
       return [];
@@ -159,7 +183,7 @@ export class ClientRepository {
     };
 
     const { data: client, error } = await this.db
-      .from("client")
+      .from(CLIENT_QUERIES.CLIENT_TABLE)
       .insert(data)
       .select()
       .single();
@@ -176,13 +200,13 @@ export class ClientRepository {
     clientData: UpdateClientInput
   ): Promise<Client | null> {
     const { data, error } = await this.db
-      .from("client")
+      .from(CLIENT_QUERIES.CLIENT_TABLE)
       .update({
         ...clientData,
         modified_date: new Date().toISOString(),
       })
-      .eq("client_id", clientId)
-      .is("deleted_date", null)
+      .eq(CLIENT_QUERIES.CLIENT_ID, clientId)
+      .is(CLIENT_QUERIES.DELETED_DATE, null)
       .select()
       .single();
 
@@ -195,13 +219,13 @@ export class ClientRepository {
 
   async delete(clientId: string): Promise<boolean> {
     const { data, error } = await this.db
-      .from("client")
+      .from(CLIENT_QUERIES.CLIENT_TABLE)
       .update({
         deleted_date: new Date().toISOString(),
         modified_date: new Date().toISOString(),
       })
-      .eq("client_id", clientId)
-      .is("deleted_date", null)
+      .eq(CLIENT_QUERIES.CLIENT_ID, clientId)
+      .is(CLIENT_QUERIES.DELETED_DATE, null)
       .select();
 
     if (error) {

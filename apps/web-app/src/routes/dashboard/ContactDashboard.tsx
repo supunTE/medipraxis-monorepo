@@ -1,7 +1,6 @@
+import { apiClient } from "@/lib";
 import { useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-
-const API_BASE_URL = "http://localhost:8787/api";
 
 interface PendingReport {
   request_report_id: string;
@@ -28,12 +27,18 @@ export function ContactDashboard({ contactId }: ContactDashboardProps) {
     fetchPendingReports();
   }, [contactId]);
 
+  const handleAddFamilyMember = () => {
+    navigate({ to: "/register" });
+  };
+
   const fetchPendingReports = async () => {
     try {
       setLoading(true);
-      const response = await fetch(
-        `${API_BASE_URL}/client-reports/pending/${contactId}`
-      );
+      const response = await apiClient.api["client-reports"].pending[
+        ":contact_id"
+      ].$get({
+        param: { contact_id: contactId },
+      });
 
       if (!response.ok) {
         throw new Error("Failed to fetch pending reports");
@@ -83,16 +88,18 @@ export function ContactDashboard({ contactId }: ContactDashboardProps) {
         >
           Dashboard
         </h1>
-        <p
-          style={{
-            fontSize: "16px",
-            color: "#666",
-            marginBottom: "32px",
-          }}
-        >
-          Welcome back, your dashboard is ready with your latest appointments,
-          and updates.
-        </p>
+        <div className="flex justify-between items-center mb-8 gap-4">
+          <p className="text-base text-gray-600 m-0">
+            Welcome back, your dashboard is ready with your latest appointments,
+            and updates.
+          </p>
+          <button
+            onClick={handleAddFamilyMember}
+            className="bg-black text-white border-none rounded-md px-5 py-2.5 text-sm font-medium cursor-pointer whitespace-nowrap hover:bg-gray-800 transition-colors"
+          >
+            Add family member
+          </button>
+        </div>
 
         {/* Pending Actions Section */}
         <div
@@ -230,7 +237,7 @@ export function ContactDashboard({ contactId }: ContactDashboardProps) {
                       (e.currentTarget.style.backgroundColor = "#90C67C")
                     }
                   >
-                    Upload Report
+                    Upload Reports
                   </button>
                 </div>
               ))}

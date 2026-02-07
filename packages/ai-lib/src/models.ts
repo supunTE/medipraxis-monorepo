@@ -1,22 +1,14 @@
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
-import type { LanguageModel } from "ai";
+import { googleAI } from "@genkit-ai/google-genai";
+import { genkit } from "genkit";
 
-export type ModelsMapping = {
+export const ai = genkit({
+  plugins: [googleAI()],
+  promptDir: "./prompts",
+});
+
+export const models = {
   gemini: {
-    fast: LanguageModel;
-    smart: LanguageModel;
-  };
+    fast: googleAI.model("gemini-2.5-flash-lite"),
+    smart: googleAI.model("gemini-2.5-flash"),
+  },
 };
-
-export function createModels(apiKey: string): ModelsMapping {
-  const google = createGoogleGenerativeAI({ apiKey });
-
-  const models: ModelsMapping = {
-    gemini: {
-      fast: google("gemini-2.5-flash"),
-      smart: google("gemini-2.5-pro"),
-    },
-  };
-
-  return models;
-}

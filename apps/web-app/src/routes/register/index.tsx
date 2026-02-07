@@ -1,5 +1,5 @@
 import { useClientRegistrationForm } from "@/services/ClientRegistration/useClientRegistrationForm";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import ClientRegistrationForm from "./ClientRegistrationForm";
 
 export const Route = createFileRoute("/register/")({
@@ -7,8 +7,10 @@ export const Route = createFileRoute("/register/")({
 });
 
 function Index() {
+  const navigate = useNavigate();
+
   const onClose = () => {
-    console.log("close modal / navigate / whatever");
+    navigate({ to: "/dashboard" });
   };
 
   const { form, onSubmit, isPending, serverMessage, clearServerMessage } =

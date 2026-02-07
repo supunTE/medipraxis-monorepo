@@ -5,5 +5,6 @@ export * from "./otp.service";
 export * from "./request_report.service";
 export * from "./shareable-calendar-link.service";
 export * from "./slot_window.service";
+export * from "./sms.service";
 export * from "./task.service";
 export * from "./user.service";
