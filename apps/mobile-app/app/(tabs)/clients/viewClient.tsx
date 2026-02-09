@@ -14,6 +14,8 @@ import {
   ScrollView,
   TouchableOpacity,
   View,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
   type TextStyle as RNTextStyle,
 } from "react-native";
 
@@ -48,12 +50,12 @@ export const ViewClient: React.FC<ViewClientProps> = ({
     ClientDetailTab.Appointments
   );
   const [searchQuery, setSearchQuery] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const [showLeftShadow, setShowLeftShadow] = useState(false);
   const [showRightShadow, setShowRightShadow] = useState(true);
 
   // Handle scroll to show/hide shadows
-  const handleScroll = (event: any) => {
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const scrollX = event.nativeEvent.contentOffset.x;
     const contentWidth = event.nativeEvent.contentSize.width;
     const viewWidth = event.nativeEvent.layoutMeasurement.width;
