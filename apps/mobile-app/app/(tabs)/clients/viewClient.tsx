@@ -49,6 +49,42 @@ export const ViewClient: React.FC<ViewClientProps> = ({
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showLeftShadow, setShowLeftShadow] = useState(false);
+  const [showRightShadow, setShowRightShadow] = useState(true);
+
+  // Handle scroll to show/hide shadows
+  const handleScroll = (event: any) => {
+    const scrollX = event.nativeEvent.contentOffset.x;
+    const contentWidth = event.nativeEvent.contentSize.width;
+    const viewWidth = event.nativeEvent.layoutMeasurement.width;
+
+    // Show left shadow if scrolled from start
+    setShowLeftShadow(scrollX > 10);
+
+    // Show right shadow if not at the end
+    setShowRightShadow(scrollX < contentWidth - viewWidth - 10);
+  };
+
+  // Generate gradient strips for smooth fade effect
+  const generateGradientStrips = (reverse = false) => {
+    const steps = 20;
+    const strips = [];
+
+    for (let i = 0; i < steps; i++) {
+      const opacity = reverse ? (i + 1) / steps : 1 - i / steps;
+      strips.push(
+        <View
+          key={i}
+          style={{
+            width: 2,
+            backgroundColor: `rgba(255, 255, 255, ${opacity.toFixed(2)})`,
+          }}
+        />
+      );
+    }
+
+    return strips;
+  };
 
   // Calculate age from date of birth
   const calculateAge = (dateOfBirth?: string): number | null => {
@@ -132,15 +168,15 @@ export const ViewClient: React.FC<ViewClientProps> = ({
                 <View
                   style={{
                     backgroundColor: "#E8F5A8",
-                    width: 80,
-                    height: 80,
-                    borderRadius: 40,
+                    width: 120,
+                    height: 120,
+                    borderRadius: 60,
                     justifyContent: "center",
                     alignItems: "center",
                     overflow: "hidden",
                   }}
                 >
-                  {/* Placeholder avatar - you can replace with actual image */}
+                  {/* Placeholder avatar */}
                   <View
                     style={{
                       width: "100%",
@@ -149,7 +185,7 @@ export const ViewClient: React.FC<ViewClientProps> = ({
                       alignItems: "center",
                     }}
                   >
-                    <Icons.User size={40} color={Color.Grey} />
+                    <Icons.User size={60} color={Color.Grey} />
                   </View>
                 </View>
 
@@ -158,7 +194,7 @@ export const ViewClient: React.FC<ViewClientProps> = ({
                   <TextComponent
                     variant={TextVariant.Title}
                     size={TextSize.Medium}
-                    style={{ marginBottom: 4 }}
+                    style={{ marginBottom: 2 }}
                   >
                     {displayName}
                   </TextComponent>
@@ -181,46 +217,92 @@ export const ViewClient: React.FC<ViewClientProps> = ({
                 </View>
               </View>
 
-              {/* Action Buttons */}
-              <View
-                style={{
-                  flexDirection: "row",
-                  gap: 8,
-                  justifyContent: "space-between",
-                }}
-              >
-                <ButtonComponent
-                  size={ButtonSize.Small}
-                  leftIcon={Icons.Eye}
-                  buttonColor={Color.Black}
-                  textColor={Color.White}
-                  iconColor={Color.White}
-                  onPress={onViewProfile}
+              {/* Action Buttons - Horizontal ScrollView */}
+              <View style={{ position: "relative", marginLeft: -20 }}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{
+                    gap: 12,
+                    paddingLeft: 20,
+                    paddingRight: 20,
+                  }}
+                  onScroll={handleScroll}
+                  scrollEventThrottle={16}
                 >
-                  Profile
-                </ButtonComponent>
+                  <View style={{ width: 100 }}>
+                    <ButtonComponent
+                      size={ButtonSize.Small}
+                      leftIcon={Icons.Eye}
+                      buttonColor={Color.Black}
+                      textColor={Color.White}
+                      iconColor={Color.White}
+                      onPress={onViewProfile}
+                    >
+                      Profile
+                    </ButtonComponent>
+                  </View>
 
-                <ButtonComponent
-                  size={ButtonSize.Small}
-                  leftIcon={Icons.ShareNetwork}
-                  buttonColor={Color.Black}
-                  textColor={Color.White}
-                  iconColor={Color.White}
-                  onPress={onShareCalendar}
-                >
-                  Share Calendar
-                </ButtonComponent>
+                  <View style={{ width: 160 }}>
+                    <ButtonComponent
+                      size={ButtonSize.Small}
+                      leftIcon={Icons.ShareNetwork}
+                      buttonColor={Color.Black}
+                      textColor={Color.White}
+                      iconColor={Color.White}
+                      onPress={onShareCalendar}
+                    >
+                      Share Calendar
+                    </ButtonComponent>
+                  </View>
 
-                <ButtonComponent
-                  size={ButtonSize.Small}
-                  leftIcon={Icons.Phone}
-                  buttonColor={Color.Black}
-                  textColor={Color.White}
-                  iconColor={Color.White}
-                  onPress={onCall}
-                >
-                  Call
-                </ButtonComponent>
+                  <View style={{ width: 100 }}>
+                    <ButtonComponent
+                      size={ButtonSize.Small}
+                      leftIcon={Icons.Phone}
+                      buttonColor={Color.Black}
+                      textColor={Color.White}
+                      iconColor={Color.White}
+                      onPress={onCall}
+                    >
+                      Call
+                    </ButtonComponent>
+                  </View>
+                </ScrollView>
+
+                {/* Left fade effect - only show when scrolled */}
+                {showLeftShadow && (
+                  <View
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: 40,
+                      flexDirection: "row",
+                    }}
+                    pointerEvents="none"
+                  >
+                    {generateGradientStrips(false)}
+                  </View>
+                )}
+
+                {/* Right fade effect - only show when can scroll right */}
+                {showRightShadow && (
+                  <View
+                    style={{
+                      position: "absolute",
+                      right: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: 40,
+                      flexDirection: "row",
+                    }}
+                    pointerEvents="none"
+                  >
+                    {generateGradientStrips(true)}
+                  </View>
+                )}
               </View>
             </View>
 
