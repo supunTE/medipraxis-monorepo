@@ -1,0 +1,31 @@
+{
+  "name": "ai-engine",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "node --import tsx/esm --watch --watch-path=src --watch-path=.env src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "genkit:ui": "genkit start -- tsx watch src/index.ts"
+  },
+  "dependencies": {
+    "@genkit-ai/google-genai": "^1.28.0",
+    "@repo/models": "*",
+    "dotenv": "^17.2.3",
+    "express": "^4.22.1",
+    "genkit": "^1.28.0"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "*",
+    "@repo/typescript-config": "*",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.0.0",
+    "eslint": "^9.18.0",
+    "tsup": "^8.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "5.9.2"
+  }
+}

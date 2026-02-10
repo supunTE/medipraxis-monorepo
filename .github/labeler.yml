@@ -22,11 +22,11 @@ frontend-web-app:
           - any-glob-to-any-file: 'apps/web-app/**/*'
       - base-branch: 'dev'
 
-# AI/ML Library changes
+# AI Engine changes
 ai:
   - all:
       - changed-files:
-          - any-glob-to-any-file: 'packages/ai-lib/**/*'
+          - any-glob-to-any-file: 'apps/ai-engine/**/*'
       - base-branch: 'dev'
 
 # Sync PRs from dev to main
