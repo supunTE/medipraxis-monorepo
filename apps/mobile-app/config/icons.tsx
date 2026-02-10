@@ -16,6 +16,7 @@ import {
   ShareNetworkIcon,
   ShoppingCartIcon,
   StarIcon,
+  UploadIcon,
   UserIcon,
   WarningIcon,
 } from "phosphor-react-native";
@@ -44,6 +45,7 @@ export const Icons = {
   CalendarBlank: CalendarBlankIcon,
   FileText: FileTextIcon,
   Warning: WarningIcon,
+  UploadIcon: UploadIcon,
 } as const;
 
 export type IconName = keyof typeof Icons;

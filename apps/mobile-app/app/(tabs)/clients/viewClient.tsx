@@ -4,14 +4,16 @@ import { Input, InputField, InputSlot } from "@/components/ui/input";
 import { Icons } from "@/config";
 import { Color, Font, TextSize, TextVariant, textStyles } from "@repo/config";
 import type { Client } from "@repo/models";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Modal,
   Platform,
+  Pressable,
   SafeAreaView,
   ScrollView,
+  Text,
   TouchableOpacity,
   View,
   type NativeScrollEvent,
@@ -25,6 +27,19 @@ enum ClientDetailTab {
   Reports = "Reports",
 }
 
+// Menu option interface
+interface IconProps {
+  size?: number;
+  color?: string;
+  weight?: "thin" | "light" | "regular" | "bold" | "fill" | "duotone";
+}
+
+interface MenuOption {
+  label: string;
+  value: string;
+  icon: React.ComponentType<IconProps>;
+}
+
 // Props for the component
 interface ViewClientProps {
   client: Client;
@@ -33,10 +48,14 @@ interface ViewClientProps {
   onViewProfile?: () => void;
   onShareCalendar?: () => void;
   onCall?: () => void;
+  onScheduleAppointment?: () => void;
+  onRequestReport?: () => void;
+  onDirectUploadReport?: () => void;
 }
 
 // Text styles
 const textLargeStyle = textStyles[TextVariant.Body][TextSize.Large];
+const textButtonMediumStyle = textStyles[TextVariant.Button][TextSize.Medium];
 
 export const ViewClient: React.FC<ViewClientProps> = ({
   client,
@@ -45,6 +64,9 @@ export const ViewClient: React.FC<ViewClientProps> = ({
   onViewProfile,
   onShareCalendar,
   onCall,
+  onScheduleAppointment,
+  onRequestReport,
+  onDirectUploadReport,
 }) => {
   const [activeTab, setActiveTab] = useState<ClientDetailTab>(
     ClientDetailTab.Appointments
@@ -53,6 +75,8 @@ export const ViewClient: React.FC<ViewClientProps> = ({
   const [loading] = useState(false);
   const [showLeftShadow, setShowLeftShadow] = useState(false);
   const [showRightShadow, setShowRightShadow] = useState(true);
+  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const optionsButtonRef = useRef<View>(null);
 
   // Handle scroll to show/hide shadows
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -60,10 +84,7 @@ export const ViewClient: React.FC<ViewClientProps> = ({
     const contentWidth = event.nativeEvent.contentSize.width;
     const viewWidth = event.nativeEvent.layoutMeasurement.width;
 
-    // Show left shadow if scrolled from start
     setShowLeftShadow(scrollX > 10);
-
-    // Show right shadow if not at the end
     setShowRightShadow(scrollX < contentWidth - viewWidth - 10);
   };
 
@@ -109,8 +130,7 @@ export const ViewClient: React.FC<ViewClientProps> = ({
     `${client.first_name || ""} ${client.last_name || ""}`.trim() || "Unknown";
   const age = calculateAge(client.date_of_birth);
 
-  // Check if client has allergies (example: checking known_conditions)
-  // Add proper type checking and validation
+  // Check if client has allergies
   const hasAllergies =
     client.known_conditions &&
     Array.isArray(client.known_conditions) &&
@@ -127,6 +147,70 @@ export const ViewClient: React.FC<ViewClientProps> = ({
     client.gender === "MALE" ? "Mr" : client.gender === "FEMALE" ? "Ms" : "";
   const displayName = titlePrefix ? `${titlePrefix} ${fullName}` : fullName;
 
+  // Get options based on active tab
+  const getMenuOptions = (): MenuOption[] => {
+    if (activeTab === ClientDetailTab.Appointments) {
+      return [
+        {
+          label: "Schedule Appointment",
+          value: "schedule_appointment",
+          icon: Icons.CalendarBlank,
+        },
+      ];
+    } else {
+      return [
+        {
+          label: "Request Report",
+          value: "request_report",
+          icon: Icons.Plus,
+        },
+        {
+          label: "Direct Upload Report",
+          value: "direct_upload_report",
+          icon: Icons.UploadIcon,
+        },
+      ];
+    }
+  };
+
+  // Handle option selection
+  const handleOptionSelect = (value: string) => {
+    setShowOptionsMenu(false);
+
+    switch (value) {
+      case "schedule_appointment":
+        onScheduleAppointment?.();
+        break;
+      case "request_report":
+        onRequestReport?.();
+        break;
+      case "direct_upload_report":
+        onDirectUploadReport?.();
+        break;
+    }
+  };
+
+  // Empty state component to avoid duplication
+  const EmptyState = ({
+    icon: Icon,
+    message,
+  }: {
+    icon: React.ComponentType<IconProps>;
+    message: string;
+  }) => (
+    <View className="justify-center items-center py-20">
+      <Icon size={64} color={Color.LightGrey} weight="regular" />
+      <TextComponent
+        variant={TextVariant.Body}
+        size={TextSize.Medium}
+        color={Color.Grey}
+        style={{ marginTop: 16, textAlign: "center" }}
+      >
+        {message}
+      </TextComponent>
+    </View>
+  );
+
   return (
     <Modal
       visible={visible}
@@ -134,23 +218,16 @@ export const ViewClient: React.FC<ViewClientProps> = ({
       animationType="slide"
       onRequestClose={onClose}
     >
-      <SafeAreaView style={{ flex: 1, backgroundColor: Color.White }}>
+      <SafeAreaView className="flex-1 bg-white">
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={{ flex: 1 }}
+          className="flex-1"
         >
-          <View style={{ flex: 1, backgroundColor: "#F5F5F5" }}>
+          <View className="flex-1 bg-[#F5F5F5]">
             {/* Header Section */}
-            <View
-              style={{
-                paddingHorizontal: 20,
-                paddingTop: 12,
-                paddingBottom: 24,
-                backgroundColor: Color.White,
-              }}
-            >
+            <View className="px-5 pt-3 pb-6 bg-white">
               {/* Back Button */}
-              <View style={{ marginBottom: 24, alignSelf: "flex-start" }}>
+              <View className="mb-6 self-start">
                 <ButtonComponent.BackButton
                   onPress={onClose}
                   size={ButtonSize.Small}
@@ -158,41 +235,14 @@ export const ViewClient: React.FC<ViewClientProps> = ({
               </View>
 
               {/* Patient Info Section */}
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 16,
-                  marginBottom: 24,
-                }}
-              >
+              <View className="flex-row items-center gap-4 mb-6">
                 {/* Avatar */}
-                <View
-                  style={{
-                    backgroundColor: "#E8F5A8",
-                    width: 120,
-                    height: 120,
-                    borderRadius: 60,
-                    justifyContent: "center",
-                    alignItems: "center",
-                    overflow: "hidden",
-                  }}
-                >
-                  {/* Placeholder avatar */}
-                  <View
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Icons.User size={60} color={Color.Grey} />
-                  </View>
+                <View className="bg-[#E8F5A8] w-[120px] h-[120px] rounded-full justify-center items-center overflow-hidden">
+                  <Icons.User size={60} color={Color.Grey} />
                 </View>
 
                 {/* Patient Details */}
-                <View style={{ flex: 1 }}>
+                <View className="flex-1">
                   <TextComponent
                     variant={TextVariant.Title}
                     size={TextSize.Medium}
@@ -220,7 +270,7 @@ export const ViewClient: React.FC<ViewClientProps> = ({
               </View>
 
               {/* Action Buttons - Horizontal ScrollView */}
-              <View style={{ position: "relative", marginLeft: -20 }}>
+              <View className="relative -ml-5">
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
@@ -272,34 +322,18 @@ export const ViewClient: React.FC<ViewClientProps> = ({
                   </View>
                 </ScrollView>
 
-                {/* Left fade effect - only show when scrolled */}
+                {/* Fade effects */}
                 {showLeftShadow && (
                   <View
-                    style={{
-                      position: "absolute",
-                      left: 0,
-                      top: 0,
-                      bottom: 0,
-                      width: 40,
-                      flexDirection: "row",
-                    }}
+                    className="absolute left-0 top-0 bottom-0 w-10 flex-row"
                     pointerEvents="none"
                   >
                     {generateGradientStrips(false)}
                   </View>
                 )}
-
-                {/* Right fade effect - only show when can scroll right */}
                 {showRightShadow && (
                   <View
-                    style={{
-                      position: "absolute",
-                      right: 0,
-                      top: 0,
-                      bottom: 0,
-                      width: 40,
-                      flexDirection: "row",
-                    }}
+                    className="absolute right-0 top-0 bottom-0 w-10 flex-row"
                     pointerEvents="none"
                   >
                     {generateGradientStrips(true)}
@@ -309,81 +343,125 @@ export const ViewClient: React.FC<ViewClientProps> = ({
             </View>
 
             {/* Tab Section */}
-            <View
-              style={{
-                paddingHorizontal: 20,
-                paddingTop: 20,
-                backgroundColor: "#F5F5F5",
-              }}
-            >
-              <View style={{ flexDirection: "row", gap: 8, marginBottom: 16 }}>
-                {/* Appointments Tab */}
-                <TouchableOpacity
-                  style={{
-                    paddingHorizontal: 20,
-                    paddingVertical: 10,
-                    borderRadius: 9999,
-                    backgroundColor:
-                      activeTab === ClientDetailTab.Appointments
-                        ? Color.Green
-                        : "transparent",
-                  }}
-                  onPress={() => setActiveTab(ClientDetailTab.Appointments)}
-                  activeOpacity={0.7}
-                >
-                  <TextComponent
-                    variant={TextVariant.Button}
-                    size={TextSize.Medium}
-                    color={Color.Black}
+            <View className="px-5 pt-5 bg-[#F5F5F5]">
+              <View className="flex-row items-center mb-4">
+                {/* Centered Tab Buttons */}
+                <View className="flex-1 flex-row justify-center gap-2">
+                  {/* Appointments Tab */}
+                  <TouchableOpacity
+                    className="px-5 py-2.5 rounded-full"
+                    style={{
+                      backgroundColor:
+                        activeTab === ClientDetailTab.Appointments
+                          ? Color.Green
+                          : "transparent",
+                    }}
+                    onPress={() => setActiveTab(ClientDetailTab.Appointments)}
+                    activeOpacity={0.7}
                   >
-                    Appointments
-                  </TextComponent>
-                </TouchableOpacity>
+                    <TextComponent
+                      variant={TextVariant.Button}
+                      size={TextSize.Medium}
+                      color={Color.Black}
+                    >
+                      Appointments
+                    </TextComponent>
+                  </TouchableOpacity>
 
-                {/* Reports Tab */}
-                <TouchableOpacity
-                  style={{
-                    paddingHorizontal: 20,
-                    paddingVertical: 10,
-                    borderRadius: 9999,
-                    backgroundColor:
-                      activeTab === ClientDetailTab.Reports
-                        ? Color.Green
-                        : "transparent",
-                  }}
-                  onPress={() => setActiveTab(ClientDetailTab.Reports)}
-                  activeOpacity={0.7}
-                >
-                  <TextComponent
-                    variant={TextVariant.Button}
-                    size={TextSize.Medium}
-                    color={Color.Black}
+                  {/* Reports Tab */}
+                  <TouchableOpacity
+                    className="px-5 py-2.5 rounded-full"
+                    style={{
+                      backgroundColor:
+                        activeTab === ClientDetailTab.Reports
+                          ? Color.Green
+                          : "transparent",
+                    }}
+                    onPress={() => setActiveTab(ClientDetailTab.Reports)}
+                    activeOpacity={0.7}
                   >
-                    Reports
-                  </TextComponent>
-                </TouchableOpacity>
+                    <TextComponent
+                      variant={TextVariant.Button}
+                      size={TextSize.Medium}
+                      color={Color.Black}
+                    >
+                      Reports
+                    </TextComponent>
+                  </TouchableOpacity>
+                </View>
 
                 {/* More Options Button */}
-                <TouchableOpacity
-                  style={{
-                    marginLeft: "auto",
-                    paddingHorizontal: 8,
-                    paddingVertical: 8,
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <Icons.DotsThreeVertical
-                    size={20}
-                    color={Color.Black}
-                    weight="bold"
-                  />
-                </TouchableOpacity>
+                <View className="relative">
+                  <TouchableOpacity
+                    ref={optionsButtonRef}
+                    className="px-2 py-2 justify-center items-center"
+                    onPress={() => setShowOptionsMenu(!showOptionsMenu)}
+                    activeOpacity={0.7}
+                  >
+                    <Icons.DotsThreeVertical
+                      size={20}
+                      color={Color.Black}
+                      weight="bold"
+                    />
+                  </TouchableOpacity>
+
+                  {/* Context-sensitive Options Menu */}
+                  {showOptionsMenu && (
+                    <View
+                      className="absolute top-10 right-0 min-w-[240px] bg-white rounded-xl overflow-hidden z-50"
+                      style={{
+                        shadowColor: "#000",
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.1,
+                        shadowRadius: 8,
+                        elevation: 4,
+                      }}
+                    >
+                      {getMenuOptions().map((option, index) => {
+                        const IconComponent = option.icon;
+                        const isLast = index === getMenuOptions().length - 1;
+                        return (
+                          <Pressable
+                            key={option.value}
+                            onPress={() => handleOptionSelect(option.value)}
+                            className="flex-row items-center px-4 py-4 gap-3"
+                            style={{
+                              borderBottomWidth: isLast ? 0 : 1,
+                              borderBottomColor: "#F0F0F0",
+                            }}
+                            android_ripple={{ color: "#F5F5F5" }}
+                          >
+                            <IconComponent
+                              size={20}
+                              color={Color.Black}
+                              weight="regular"
+                            />
+                            <Text
+                              style={{
+                                color: Color.Black,
+                                fontFamily:
+                                  textButtonMediumStyle.fontFamily ===
+                                  Font.DMsans
+                                    ? "DMSans_400Regular"
+                                    : "Lato_400Regular",
+                                fontSize: textButtonMediumStyle.fontSize,
+                                fontWeight: String(
+                                  textButtonMediumStyle.fontWeight
+                                ) as RNTextStyle["fontWeight"],
+                              }}
+                            >
+                              {option.label}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  )}
+                </View>
               </View>
 
               {/* Search Bar */}
-              <View style={{ marginBottom: 16 }}>
+              <View className="mb-4">
                 <Input
                   variant="outline"
                   size="md"
@@ -428,77 +506,26 @@ export const ViewClient: React.FC<ViewClientProps> = ({
 
             {/* Content Section */}
             <ScrollView
-              style={{
-                flex: 1,
-                paddingHorizontal: 20,
-                backgroundColor: "#F5F5F5",
-              }}
+              className="flex-1 px-5 bg-[#F5F5F5]"
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 20, flexGrow: 1 }}
             >
               {loading ? (
-                <View
-                  style={{
-                    flex: 1,
-                    justifyContent: "center",
-                    alignItems: "center",
-                    paddingVertical: 80,
-                  }}
-                >
+                <View className="flex-1 justify-center items-center py-20">
                   <ActivityIndicator size="large" color={Color.Green} />
                 </View>
               ) : (
-                <View style={{ flex: 1 }}>
+                <View className="flex-1">
                   {activeTab === ClientDetailTab.Appointments ? (
-                    <View>
-                      {/* Appointments content would go here */}
-                      <View
-                        style={{
-                          justifyContent: "center",
-                          alignItems: "center",
-                          paddingVertical: 80,
-                        }}
-                      >
-                        <Icons.CalendarBlank
-                          size={64}
-                          color={Color.LightGrey}
-                          weight="regular"
-                        />
-                        <TextComponent
-                          variant={TextVariant.Body}
-                          size={TextSize.Medium}
-                          color={Color.Grey}
-                          style={{ marginTop: 16, textAlign: "center" }}
-                        >
-                          No appointments found
-                        </TextComponent>
-                      </View>
-                    </View>
+                    <EmptyState
+                      icon={Icons.CalendarBlank}
+                      message="No appointments found"
+                    />
                   ) : (
-                    <View>
-                      {/* Reports content would go here */}
-                      <View
-                        style={{
-                          justifyContent: "center",
-                          alignItems: "center",
-                          paddingVertical: 80,
-                        }}
-                      >
-                        <Icons.FileText
-                          size={64}
-                          color={Color.LightGrey}
-                          weight="regular"
-                        />
-                        <TextComponent
-                          variant={TextVariant.Body}
-                          size={TextSize.Medium}
-                          color={Color.Grey}
-                          style={{ marginTop: 16, textAlign: "center" }}
-                        >
-                          No reports found
-                        </TextComponent>
-                      </View>
-                    </View>
+                    <EmptyState
+                      icon={Icons.FileText}
+                      message="No reports found"
+                    />
                   )}
                 </View>
               )}
@@ -506,6 +533,15 @@ export const ViewClient: React.FC<ViewClientProps> = ({
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
+
+      {/* Overlay to close dropdown when clicking outside */}
+      {showOptionsMenu && (
+        <TouchableOpacity
+          className="absolute top-0 left-0 right-0 bottom-0 bg-transparent"
+          onPress={() => setShowOptionsMenu(false)}
+          activeOpacity={1}
+        />
+      )}
     </Modal>
   );
 };
