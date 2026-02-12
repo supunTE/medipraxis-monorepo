@@ -1,4 +1,5 @@
 import type { AIActionType, ChatMessage, RouterResponse } from "@repo/models";
+import { z } from "genkit";
 import { ai } from "../../models";
 import { processAppointments } from "../appointments/graph";
 import {
@@ -81,15 +82,26 @@ async function _processAIQuery(
 }
 
 export const processAIQuery = ai.defineFlow(
-  { name: "aiRouterFlow" },
+  {
+    name: "aiRouterFlow",
+    inputSchema: z.object({
+      query: z.string(),
+      history: z
+        .array(z.object({ role: z.enum(["user", "assistant"]), content: z.string() }))
+        .optional(),
+      userId: z.string(),
+    }),
+    outputSchema: z.object({
+      task: z.string(),
+      message: z.string(),
+      isValid: z.boolean(),
+      guardRailViolation: z.string().optional(),
+    }),
+  },
   ({
     query,
     history = [],
     userId,
-  }: {
-    query: string;
-    history?: ChatMessage[];
-    userId: string;
   }) => _processAIQuery(query, history, userId)
 );
 

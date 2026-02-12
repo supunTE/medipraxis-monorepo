@@ -1,4 +1,5 @@
 import type { ChatMessage } from "@repo/models";
+import { z } from "genkit";
 import { requestContext } from "../../context";
 import { ai } from "../../models";
 import { runAgent } from "./nodes";
@@ -12,14 +13,21 @@ async function _processAppointments(
 }
 
 export const processAppointments = ai.defineFlow(
-  { name: "processAppointmentsFlow" },
-  ({
-    query,
-    history = [],
-    userId,
-  }: {
-    query: string;
-    history?: ChatMessage[];
-    userId: string;
-  }) => _processAppointments(query, history, userId)
+  {
+    name: "processAppointmentsFlow",
+    inputSchema: z.object({
+      query: z.string(),
+      history: z
+        .array(
+          z.object({ role: z.enum(["user", "assistant"]), content: z.string() })
+        )
+        .optional(),
+      userId: z.string(),
+    }),
+    outputSchema: z.object({
+      message: z.string(),
+    }),
+  },
+  ({ query, history = [], userId }) =>
+    _processAppointments(query, history, userId)
 );
