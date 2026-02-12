@@ -19,7 +19,8 @@ export function registerTools(tools: AIActionTools): void {
 
 async function _processAIQuery(
   query: string,
-  history: ChatMessage[]
+  history: ChatMessage[],
+  userId?: string
 ): Promise<RouterResponse> {
   // Node 1: guard rail check
   const guardResult = await ai.run("guardRailCheck", () =>
@@ -54,7 +55,7 @@ async function _processAIQuery(
       };
     }
     const { message } = await ai.run("runActionChain", () =>
-      runActionChain(query, task, history, tool)
+      runActionChain(query, task, history, tool, userId)
     );
     return { task, message, isValid: true };
   }
@@ -73,8 +74,15 @@ async function _processAIQuery(
 
 export const processAIQuery = ai.defineFlow(
   { name: "processAIQuery" },
-  ({ query, history = [] }: { query: string; history?: ChatMessage[] }) =>
-    _processAIQuery(query, history)
+  ({
+    query,
+    history = [],
+    userId,
+  }: {
+    query: string;
+    history?: ChatMessage[];
+    userId: string;
+  }) => _processAIQuery(query, history, userId)
 );
 
 export { VALID_TASKS };

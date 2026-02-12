@@ -63,8 +63,10 @@ export async function runActionChain(
   query: string,
   task: AIActionType,
   history: ChatMessage[],
-  tool: ActionTool
+  tool: ActionTool,
+  userId: string
 ): Promise<{ message: string }> {
+  console.log("[ACTION CHAIN] userId:", userId);
   const prompt = ai.prompt("ai-router/action-chain");
   const result = await prompt({
     query,
