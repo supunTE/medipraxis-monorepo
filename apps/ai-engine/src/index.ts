@@ -1,14 +1,10 @@
 import "dotenv/config";
 import express from "express";
-import { buildTools, processAIQuery, registerTools } from "./lib";
+import { processAIQuery } from "./lib";
 import { apiKeyAuth } from "./middleware/auth";
 
 const app = express();
 app.use(express.json());
-
-// Register action tools once at startup
-const tools = buildTools();
-registerTools(tools);
 
 // Health check
 app.get("/", (_req, res) => {

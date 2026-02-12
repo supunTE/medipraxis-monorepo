@@ -1,5 +1,4 @@
 import type { AIActionType, ChatMessage } from "@repo/models";
-import type { ActionTool } from "./actions";
 import { ai } from "../../models";
 
 export const VALID_TASKS = [
@@ -56,52 +55,5 @@ export async function generateResponse(
 
   const prompt = ai.prompt(promptName);
   const result = await prompt({ message });
-  return result.output as { message: string };
-}
-
-export async function runActionChain(
-  query: string,
-  task: AIActionType,
-  history: ChatMessage[],
-  tool: ActionTool,
-  userId: string
-): Promise<{ message: string }> {
-  console.log("[ACTION CHAIN] userId:", userId);
-  const prompt = ai.prompt("router/action-chain");
-  const result = await prompt({
-    query,
-    task,
-    history: JSON.stringify(history),
-    toolDescription: tool.description,
-    toolParameters: JSON.stringify(tool.parameters),
-  });
-
-  const output = result.output as {
-    message?: string;
-    shouldExecute: boolean;
-    extractedParams?: string;
-  };
-
-  if (output.shouldExecute && output.extractedParams) {
-    const params = JSON.parse(output.extractedParams) as Record<
-      string,
-      unknown
-    >;
-    const executionResult = await tool.execute(params);
-    return generateActionResponse(task, executionResult);
-  }
-
-  return { message: output.message ?? "Could you provide more details?" };
-}
-
-export async function generateActionResponse(
-  task: AIActionType,
-  executionResult: unknown
-): Promise<{ message: string }> {
-  const prompt = ai.prompt("router/action-response");
-  const result = await prompt({
-    task,
-    result: JSON.stringify(executionResult),
-  });
   return result.output as { message: string };
 }

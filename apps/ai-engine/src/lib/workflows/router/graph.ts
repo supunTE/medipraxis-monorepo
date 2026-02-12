@@ -1,23 +1,10 @@
 import type { AIActionType, ChatMessage, RouterResponse } from "@repo/models";
-import type { AIActionTools } from "./actions";
 import { ai } from "../../models";
-import {
-  generateResponse,
-  guardRailCheck,
-  identifyTask,
-  runActionChain,
-  VALID_TASKS,
-} from "./nodes";
+import { generateResponse, guardRailCheck, identifyTask, VALID_TASKS } from "./nodes";
 import { runAppointmentWorkflow } from "../appointments/graph";
 
 const WORKFLOW_TASKS: AIActionType[] = ["appointment"];
-const ACTION_TASKS: AIActionType[] = ["client_management"];
-
-let _registeredTools: AIActionTools = {};
-
-export function registerTools(tools: AIActionTools): void {
-  _registeredTools = tools;
-}
+const NOT_IMPLEMENTED_TASKS: AIActionType[] = ["client_management"];
 
 async function _processAIQuery(
   query: string,
@@ -70,20 +57,13 @@ async function _processAIQuery(
     }
   }
 
-  // Route action tasks to their node chains
-  if (ACTION_TASKS.includes(task)) {
-    const tool = _registeredTools[task];
-    if (!tool) {
-      return {
-        task,
-        message: "This feature is not yet available.",
-        isValid: true,
-      };
-    }
-    const { message } = await ai.run("runActionChain", () =>
-      runActionChain(query, task, history, tool, userId)
-    );
-    return { task, message, isValid: true };
+  // Not yet implemented tasks
+  if (NOT_IMPLEMENTED_TASKS.includes(task)) {
+    return {
+      task,
+      message: "This feature is not yet implemented. Stay tuned!",
+      isValid: true,
+    };
   }
 
   // Node 3: response generation (greeting, general, unknown)
