@@ -105,10 +105,7 @@ export function AIAssistantButton({
   };
 
   return (
-    <View
-      className="absolute z-50"
-      style={{ bottom: 24, right: "12%", alignItems: "center" }}
-    >
+    <View className="items-center justify-center z-50">
       <Pressable
         onPress={onPress}
         onPressIn={handlePressIn}
