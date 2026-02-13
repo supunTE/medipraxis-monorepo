@@ -10,6 +10,8 @@ COPY package.json yarn.lock turbo.json ./
 
 # Copy all package.json files needed for workspace resolution
 COPY apps/ai-engine/package.json apps/ai-engine/
+COPY apps/api/package.json apps/api/
+COPY packages/api-client/package.json packages/api-client/
 COPY packages/models/package.json packages/models/
 COPY packages/typescript-config/ packages/typescript-config/
 COPY packages/eslint-config/package.json packages/eslint-config/
@@ -19,6 +21,7 @@ RUN yarn install --frozen-lockfile
 
 # Copy source code
 COPY apps/ai-engine/ apps/ai-engine/
+COPY packages/api-client/ packages/api-client/
 COPY packages/models/ packages/models/
 COPY packages/eslint-config/ packages/eslint-config/
 
@@ -32,6 +35,8 @@ WORKDIR /app
 # Copy workspace root files for yarn to resolve dependencies
 COPY package.json yarn.lock ./
 COPY apps/ai-engine/package.json apps/ai-engine/
+COPY apps/api/package.json apps/api/
+COPY packages/api-client/package.json packages/api-client/
 COPY packages/models/package.json packages/models/
 COPY packages/eslint-config/package.json packages/eslint-config/
 

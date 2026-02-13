@@ -9,6 +9,7 @@
       "env": [
         "AI_ENGINE_URL",
         "AI_ENGINE_API_KEY",
+        "API_BASE_URL",
         "GOOGLE_GENAI_API_KEY",
         "VITE_API_BASE_URL",
         "VITE_API_URL"

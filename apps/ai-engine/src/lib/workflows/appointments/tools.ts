@@ -1,4 +1,5 @@
 import { z } from "genkit";
+import { apiClient } from "../../api-client";
 import { getUserId } from "../../context";
 import { ai } from "../../models";
 
@@ -16,11 +17,13 @@ export const getAllAppointments = ai.defineTool(
       appointments: z.array(
         z.object({
           id: z.string(),
-          patientName: z.string(),
+          clientName: z.string(),
           date: z.string(),
-          time: z.string(),
-          status: z.enum(["scheduled", "completed", "cancelled"]),
-          notes: z.string().optional(),
+          startTime: z.string(),
+          endTime: z.string(),
+          status: z.string(),
+          note: z.string().optional(),
+          appointmentNumber: z.number().optional(),
         })
       ),
     }),
@@ -32,34 +35,34 @@ export const getAllAppointments = ai.defineTool(
       userId,
     });
 
-    // Mock data
-    return {
-      appointments: [
-        {
-          id: "apt-001",
-          patientName: "John Smith",
-          date: input.date,
-          time: "09:00",
-          status: "scheduled" as const,
-          notes: `Follow-up consultation #${userId}`,
-        },
-        {
-          id: "apt-002",
-          patientName: "Sarah Johnson",
-          date: input.date,
-          time: "10:30",
-          status: "scheduled" as const,
-          notes: "Initial assessment",
-        },
-        {
-          id: "apt-003",
-          patientName: "Mike Williams",
-          date: input.date,
-          time: "14:00",
-          status: "completed" as const,
-        },
-      ],
-    };
+    const res = await apiClient.api.tasks.$get({
+      query: { user_id: userId, task_type: "APPOINTMENT" },
+    });
+
+    if (!res.ok) {
+      console.error("[TOOL] Failed to fetch appointments:", res.status);
+      return { appointments: [] };
+    }
+
+    const data = await res.json();
+    const targetDate = input.date;
+
+    const appointments = data.tasks
+      .filter((task) => task.start_date.startsWith(targetDate))
+      .map((task) => ({
+        id: task.task_id,
+        clientName: [task.client_first_name, task.client_last_name]
+          .filter(Boolean)
+          .join(" ") || "Unknown",
+        date: task.start_date.split("T")[0]!,
+        startTime: task.start_date.split("T")[1]?.slice(0, 5) ?? "",
+        endTime: task.end_date.split("T")[1]?.slice(0, 5) ?? "",
+        status: task.task_status_name,
+        note: task.note ?? undefined,
+        appointmentNumber: task.appointment_number ?? undefined,
+      }));
+
+    return { appointments };
   }
 );
 
