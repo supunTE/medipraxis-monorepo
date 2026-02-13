@@ -54,7 +54,7 @@ export default function ScheduleScreen() {
   const sampleAgendaData: AgendaData = {
     timeBlocks: [
       {
-        content: { id: "apt-001", title: "Appointment", client: "John Doe" },
+        content: { id: "08c6d070-7d58-48d5-8cc1-7486952b5cd2", title: "Appointment", client: "John Doe" },
         startTime: "1:00 am",
         endTime: "2:00 am",
       },
@@ -175,7 +175,6 @@ export default function ScheduleScreen() {
           setSelectedTask({
             type: AgendaSelectionType.Appointment,
             appointmentId: appointment.id,
-            // appointmentId: "08c6d070-7d58-48d5-8cc1-7486952b5cd2",
             groupId,
           })
         }
