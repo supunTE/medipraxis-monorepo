@@ -21,6 +21,7 @@ RUN yarn install --frozen-lockfile
 
 # Copy source code
 COPY apps/ai-engine/ apps/ai-engine/
+COPY apps/api/src/ apps/api/src/
 COPY packages/api-client/ packages/api-client/
 COPY packages/models/ packages/models/
 COPY packages/eslint-config/ packages/eslint-config/
