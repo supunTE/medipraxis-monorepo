@@ -4,7 +4,7 @@ import {
   CheckboxIndicator,
   CheckboxLabel,
 } from "@/components/ui/checkbox";
-import { useTaskHandler } from "@/services/tasks/useTaskHandler";
+import { EVENT_TYPES, useTaskHandler } from "@/services/tasks/useTaskHandler";
 import { CheckIcon, GlobeIcon } from "phosphor-react-native";
 import React, { useState } from "react";
 import {
@@ -24,28 +24,35 @@ type Props = {
 
 export default function TaskForm({ visible, onClose }: Props) {
   const eventTypes = [
-    "Appointment Slot Window",
-    "Appointment",
-    "Reminder/Task",
+    EVENT_TYPES.APPOINTMENT_SLOT_WINDOW,
+    EVENT_TYPES.APPOINTMENT,
+    EVENT_TYPES.TASK,
   ];
+
+  const EVENT_TYPE_LABELS = {
+    [EVENT_TYPES.APPOINTMENT_SLOT_WINDOW]: "Appointment Slot Window",
+    [EVENT_TYPES.APPOINTMENT]: "Appointment",
+    [EVENT_TYPES.TASK]: "Reminder/Task",
+  };
   const days = ["M", "T", "W", "T", "F", "S", "S"];
 
-  const { formState, setField, handleSave, isPending } = useTaskHandler();
+  const { formState, setField, handleSave, isPending } =
+    useTaskHandler(onClose);
   const [showEndDateTime, setShowEndDateTime] = useState(false);
 
   const {
-    task_title,
+    taskTitle,
     eventType,
     client,
-    start_date,
-    end_date,
+    startDate,
+    endDate,
     note,
     alarm,
     location,
-    total_slots,
+    totalSlots,
     repeatDays = [],
     slotWindow,
-    slotNo,
+
     attachToSlot,
   } = formState;
 
@@ -80,13 +87,13 @@ export default function TaskForm({ visible, onClose }: Props) {
                 <View style={styles.radioOuter}>
                   {eventType === type && <View style={styles.radioInner} />}
                 </View>
-                <Text style={styles.radioLabel}>{type}</Text>
+                <Text style={styles.radioLabel}>{EVENT_TYPE_LABELS[type]}</Text>
               </TouchableOpacity>
             ))}
           </View>
 
           {/* 1. APPOINTMENT SLOT WINDOW SPECIFIC FIELDS */}
-          {eventType === "Appointment Slot Window" && (
+          {eventType === EVENT_TYPES.APPOINTMENT_SLOT_WINDOW && (
             <>
               <Text style={styles.label}>Location</Text>
               <View style={styles.inputWithIcon}>
@@ -102,8 +109,8 @@ export default function TaskForm({ visible, onClose }: Props) {
               <Text style={styles.label}>Number of Slots</Text>
               <TextInput
                 style={styles.input}
-                value={String(total_slots)}
-                onChangeText={(v) => setField("total_slots", Number(v))}
+                value={String(totalSlots)}
+                onChangeText={(v) => setField("totalSlots", Number(v))}
                 keyboardType="numeric"
                 placeholder="10"
               />
@@ -112,14 +119,14 @@ export default function TaskForm({ visible, onClose }: Props) {
               <Text style={styles.label}>Start date & time</Text>
               <TextInput
                 style={styles.input}
-                value={start_date}
+                value={startDate}
                 placeholder="Nov 15, 2025  08:00 am"
               />
 
               <Text style={styles.label}>End date & time</Text>
               <TextInput
                 style={styles.input}
-                value={end_date}
+                value={endDate}
                 placeholder="Nov 15, 2025  11:30 am"
               />
 
@@ -149,13 +156,13 @@ export default function TaskForm({ visible, onClose }: Props) {
           )}
 
           {/* 2. APPOINTMENT SPECIFIC FIELDS */}
-          {eventType === "Appointment" && (
+          {eventType === EVENT_TYPES.APPOINTMENT && (
             <>
               <Text style={styles.label}>Enter the title</Text>
               <TextInput
                 style={styles.input}
-                value={task_title}
-                onChangeText={(v) => setField("task_title", v)}
+                value={taskTitle}
+                onChangeText={(v) => setField("taskTitle", v)}
                 placeholder="Enter the title"
               />
 
@@ -170,21 +177,12 @@ export default function TaskForm({ visible, onClose }: Props) {
               </TouchableOpacity>
 
               <View style={styles.row}>
-                <View style={{ flex: 1, marginRight: 8 }}>
+                <View style={{ flex: 1 }}>
                   <Text style={styles.label}>Slot Window</Text>
                   <TextInput
                     style={styles.input}
                     value={slotWindow}
                     placeholder="Sat 9-11PM"
-                  />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.label}>Slot No.</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={String(slotNo)}
-                    onChangeText={(v) => setField("slotNo", Number(v))}
-                    placeholder="No. 05 (10:15PM)"
                   />
                 </View>
               </View>
@@ -209,26 +207,26 @@ export default function TaskForm({ visible, onClose }: Props) {
               <Text style={styles.label}>Start Date & time</Text>
               <TextInput
                 style={styles.input}
-                value={start_date}
+                value={startDate}
                 placeholder="Nov 15, 2025  08:00 am"
               />
 
               <Text style={styles.label}>End Date & time</Text>
               <TextInput
                 style={styles.input}
-                value={end_date}
+                value={endDate}
                 placeholder="Nov 15, 2025  11:30 am"
               />
             </>
           )}
 
           {/* 3. REMINDER/TASK SPECIFIC FIELDS */}
-          {eventType === "Reminder/Task" && (
+          {eventType === EVENT_TYPES.TASK && (
             <>
               <Text style={styles.label}>Enter the title</Text>
               <TextInput
                 style={styles.input}
-                value={task_title}
+                value={taskTitle}
                 placeholder="Enter the title"
               />
 
@@ -242,7 +240,7 @@ export default function TaskForm({ visible, onClose }: Props) {
               <Text style={styles.label}>Start Date & time</Text>
               <TextInput
                 style={styles.input}
-                value={start_date}
+                value={startDate}
                 placeholder="Nov 15, 2025  08:00 am"
               />
 
@@ -258,7 +256,7 @@ export default function TaskForm({ visible, onClose }: Props) {
                   <Text style={styles.label}>End Date & time</Text>
                   <TextInput
                     style={styles.input}
-                    value={end_date}
+                    value={endDate}
                     placeholder="Nov 15, 2025  08:00 am"
                   />
                 </>

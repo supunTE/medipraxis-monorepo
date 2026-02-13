@@ -2,12 +2,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 
+import { useRegisterPatient } from "@/services/ClientRegistration/useRegisterPatient";
 import {
   clientRegistrationFormSchema,
   type ClientRegistrationFormValues,
   type ServerMessage,
 } from "@/types/clientRegistration.types";
-import { useRegisterPatient } from "@/services/ClientRegistration/useRegisterPatient";
 
 export const useClientRegistrationForm = (onClose: () => void) => {
   const [serverMessage, setServerMessage] = useState<ServerMessage | null>(
@@ -35,7 +35,7 @@ export const useClientRegistrationForm = (onClose: () => void) => {
         type: "success",
         text: "Patient registered successfully!",
       });
-      setTimeout(onClose, 1500);
+      setTimeout(onClose, 3000);
     },
     onError: (message) => {
       setServerMessage({
