@@ -1,5 +1,8 @@
 ---
-model: googleai/gemini-2.5-pro
+model: googleai/gemini-3-flash-preview
+config:
+  thinkingConfig:
+    thinkingLevel: HIGH
 input:
   schema:
     query: string
