@@ -9,7 +9,7 @@ export const ai = genkit({
 
 export const models = {
   gemini: {
-    fast: googleAI.model("gemini-3-flash-preview"),
-    smart: googleAI.model("gemini-3-flash-preview"),
+    fast: googleAI.model("gemini-2.5-flash"),
+    smart: googleAI.model("gemini-2.5-pro"),
   },
 };

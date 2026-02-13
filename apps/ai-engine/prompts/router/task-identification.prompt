@@ -1,8 +1,5 @@
 ---
-model: googleai/gemini-3-flash-preview
-config:
-  thinkingConfig:
-    thinkingLevel: LOW
+model: googleai/gemini-2.5-flash
 input:
   schema:
     message: string

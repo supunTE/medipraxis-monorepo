@@ -1,5 +1,6 @@
 import type { ChatMessage } from "@repo/models";
 import { ai } from "../../models";
+import { retryMiddleware } from "../../retry-config";
 import "./tools";
 
 export async function runAgent(
@@ -7,10 +8,14 @@ export async function runAgent(
   history: ChatMessage[]
 ): Promise<{ message: string }> {
   const prompt = ai.prompt("appointments/appointment-agent");
-  const response = await prompt({
-    query,
-    history: history.length > 0 ? JSON.stringify(history.slice(-5)) : undefined,
-  });
+  const response = await prompt(
+    {
+      query,
+      history:
+        history.length > 0 ? JSON.stringify(history.slice(-5)) : undefined,
+    },
+    { use: [retryMiddleware] }
+  );
 
   const text = response.text;
 
