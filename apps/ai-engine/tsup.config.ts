@@ -7,5 +7,6 @@ export default defineConfig({
   outDir: "dist",
   clean: true,
   sourcemap: true,
+  noExternal: ["@repo/api-client", "@repo/models"],
   onSuccess: "cp -r prompts dist/prompts",
 });
