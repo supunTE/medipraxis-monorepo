@@ -1,0 +1,14 @@
+services:
+  ai-engine:
+    build:
+      context: ../..
+      dockerfile: apps/ai-engine/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - NODE_ENV=production
+      - GOOGLE_GENAI_API_KEY=${GOOGLE_GENAI_API_KEY}
+      - AI_ENGINE_API_KEY=${AI_ENGINE_API_KEY}
+      - API_BASE_URL=${API_BASE_URL}
+    restart: unless-stopped

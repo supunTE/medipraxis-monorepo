@@ -20,8 +20,7 @@ export type AIActionType =
 
 export interface RouterResponse {
   task: AIActionType;
-  message?: string;
+  message: string;
   isValid: boolean;
   guardRailViolation?: string;
-  shouldCallWorkflow?: boolean;
 }

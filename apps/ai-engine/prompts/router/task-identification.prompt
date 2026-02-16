@@ -1,0 +1,29 @@
+---
+model: googleai/gemini-3-flash-preview
+config:
+  thinkingConfig:
+    thinkingLevel: LOW
+input:
+  schema:
+    message: string
+    history?: string
+output:
+  schema:
+    task: string
+---
+
+Based on the medical practitioner's message and conversation history, identify which task category it belongs to:
+- greeting: General greetings, hello, hi, how are you
+- appointment: Managing patient appointments, scheduling, clinic calendar
+- client_management: Retrieving client/patient reports, patient details, client summaries, medical records
+- general: Platform features, documentation help, workflow assistance
+- unknown: Cannot determine the intent
+
+(Note: "client" always refers to medical practitioner's clients/patients)
+
+If the history shows an ongoing workflow (e.g. an appointment is being booked), classify accordingly even if the latest message is just providing a detail like a name or date.
+
+Respond with the task category name in the "task" field.
+
+Conversation history: {{history}}
+Latest message: "{{message}}"

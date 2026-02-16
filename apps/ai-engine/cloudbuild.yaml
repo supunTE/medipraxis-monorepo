@@ -1,0 +1,59 @@
+steps:
+  # Build the Docker image
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "build",
+        "-f",
+        "apps/ai-engine/Dockerfile",
+        "--cache-from",
+        "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/ai-engine:latest",
+        "-t",
+        "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/ai-engine:$BUILD_ID",
+        "-t",
+        "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/ai-engine:latest",
+        ".",
+      ]
+
+  # Push the image
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "push",
+        "--all-tags",
+        "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/ai-engine",
+      ]
+
+  # Deploy to Cloud Run
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: gcloud
+    args:
+      - "run"
+      - "deploy"
+      - "ai-engine"
+      - "--image"
+      - "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/ai-engine:$BUILD_ID"
+      - "--region"
+      - "${_REGION}"
+      - "--platform"
+      - "managed"
+      - "--port"
+      - "8000"
+      - "--allow-unauthenticated"
+      - "--memory"
+      - "1Gi"
+      - "--cpu"
+      - "1"
+      - "--timeout"
+      - "300"
+      - "--min-instances"
+      - "0"
+      - "--max-instances"
+      - "3"
+
+substitutions:
+  _REGION: asia-southeast1
+  _REPO: ai-engine
+
+options:
+  logging: CLOUD_LOGGING_ONLY

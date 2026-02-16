@@ -33,13 +33,11 @@ export function getTaskService(c: Context<{ Bindings: Env }>) {
 }
 
 export function getAIService(c: Context<{ Bindings: Env }>) {
-  const apiKey = c.env.GOOGLE_AI_API_KEY;
-
-  if (!apiKey) {
-    throw new Error("API key not configured");
+  if (!c.env.AI_ENGINE_URL || !c.env.AI_ENGINE_API_KEY) {
+    throw new Error("AI Engine URL or API key not configured");
   }
 
-  return new AIService();
+  return new AIService(c.env.AI_ENGINE_URL, c.env.AI_ENGINE_API_KEY);
 }
 
 export function getSlotWindowService(c: Context<{ Bindings: Env }>) {

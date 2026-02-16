@@ -1,32 +1,41 @@
-import { processAIQuery } from "@repo/ai-lib";
-import type { RouterResponse } from "@repo/models";
+import type { ChatMessage, RouterResponse } from "@repo/models";
 
 export class AIService {
-  async processQuery(query: string): Promise<RouterResponse> {
-    const response = await processAIQuery({ query });
+  constructor(
+    private readonly aiEngineUrl: string,
+    private readonly aiEngineApiKey: string
+  ) {}
 
-    // Handle workflow actions
-    if (response.shouldCallWorkflow) {
-      switch (response.task) {
-        case "appointment":
-          // TODO: Implement appointment creation workflow
-          return {
-            ...response,
-            message: "Creating appointment...",
-          };
-        case "client_management":
-          // TODO: Implement client management workflow
-          return {
-            ...response,
-            message: "Retrieving client information...",
-          };
-      }
+  async query(
+    query: string,
+    history: ChatMessage[] = [],
+    userId: string
+  ): Promise<RouterResponse> {
+    const response = await fetch(`${this.aiEngineUrl}/api/ai/query`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": this.aiEngineApiKey,
+      },
+      body: JSON.stringify({ query, history, userId }),
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text();
+      throw new Error(
+        `AI Engine request failed (${response.status}): ${errorBody}`
+      );
     }
 
-    // Ensure message is never undefined
-    return {
-      ...response,
-      message: response.message || "I'm here to help! How can I assist you?",
+    const result = (await response.json()) as {
+      success: boolean;
+      data: RouterResponse;
     };
+
+    if (!result.success) {
+      throw new Error("AI Engine returned unsuccessful response");
+    }
+
+    return result.data;
   }
 }
