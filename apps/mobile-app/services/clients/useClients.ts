@@ -123,7 +123,7 @@ export const useCreateClient = (userId: string) => {
           }
           countryCode = phoneNumber.countryCallingCode;
           contactNumber = phoneNumber.nationalNumber;
-        } catch (error) {
+        } catch {
           Alert.alert("Error", "Invalid phone number format");
           return null;
         }
@@ -144,7 +144,7 @@ export const useCreateClient = (userId: string) => {
           }
           emergencyCountryCode = emergencyPhone.countryCallingCode;
           emergencyContactNumber = emergencyPhone.nationalNumber;
-        } catch (error) {
+        } catch {
           Alert.alert("Error", "Invalid emergency contact number format");
           return null;
         }
@@ -185,9 +185,9 @@ export const useCreateClient = (userId: string) => {
       const data = await response.json();
       return data.client;
     },
-    onSuccess: (client) => {
+    onSuccess: async (client) => {
       if (client) {
-        queryClient.invalidateQueries({ queryKey: ["clients", userId] });
+        await queryClient.invalidateQueries({ queryKey: ["clients", userId] });
         Alert.alert("Success", "Client created successfully");
       }
     },

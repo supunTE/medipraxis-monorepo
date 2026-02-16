@@ -17,6 +17,7 @@ import {
   groupClientsByLetter,
   useCreateClient,
   useFetchClients,
+  type CreateClientInput,
 } from "../../../services/clients";
 import { AddClient } from "./addClient";
 import { ClientCardComponent } from "./ClientCard.component";
@@ -57,8 +58,10 @@ export default function ClientsScreen({
   };
 
   // Handle save client
-  const handleSaveClient = async (clientData: unknown): Promise<void> => {
-    await createClientMutation.mutateAsync(clientData as any);
+  const handleSaveClient = async (
+    clientData: CreateClientInput
+  ): Promise<void> => {
+    await createClientMutation.mutateAsync(clientData);
     setIsAddClientVisible(false);
   };
 
