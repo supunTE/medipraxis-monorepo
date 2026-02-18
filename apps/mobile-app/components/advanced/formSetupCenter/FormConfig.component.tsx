@@ -93,6 +93,14 @@ export function FormConfig({ visible, onClose, formTitle }: FormConfigProps) {
     }
   };
 
+  const handleDeleteField = () => {
+    if (editingFieldId) {
+      setFields((prev) => prev.filter((field) => field.id !== editingFieldId));
+      setShowAddFieldModal(false);
+      setEditingFieldId(null);
+    }
+  };
+
   const moveFieldUp = (fieldId: string) => {
     const sortedFields = [...fields].sort((a, b) => a.sequence - b.sequence);
     const currentIndex = sortedFields.findIndex((f) => f.id === fieldId);
@@ -252,6 +260,7 @@ export function FormConfig({ visible, onClose, formTitle }: FormConfigProps) {
           setEditingFieldId(null);
         }}
         onSave={handleSaveField}
+        onDelete={handleDeleteField}
         editingField={getEditingFieldData()}
       />
     </>

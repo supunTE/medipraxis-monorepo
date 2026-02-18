@@ -42,6 +42,7 @@ export interface AddFieldModalProps {
     isRequired: boolean;
     isShareEnabled: boolean;
   }) => void;
+  onDelete?: () => void;
   editingField?: {
     fieldType: string;
     fieldName: string;

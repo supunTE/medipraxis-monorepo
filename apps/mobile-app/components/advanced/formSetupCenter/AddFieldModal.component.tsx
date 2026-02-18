@@ -25,6 +25,7 @@ export function AddFieldModal({
   visible,
   onClose,
   onSave,
+  onDelete,
   editingField,
 }: AddFieldModalProps) {
   const [fontsLoaded] = useFonts({
@@ -60,12 +61,7 @@ export function AddFieldModal({
   };
 
   const handleDelete = () => {
-    // Reset form and close
-    setSelectedFieldType("");
-    setFieldName("");
-    setIsRequired(false);
-    setIsShareEnabled(false);
-    onClose();
+    onDelete?.();
   };
 
   const handleSave = () => {
@@ -98,12 +94,14 @@ export function AddFieldModal({
             <Text style={styles.headerTitle}>
               {editingField ? "Edit Field" : "Add New Field"}
             </Text>
-            <TouchableOpacity
-              onPress={handleDelete}
-              style={styles.deleteButton}
-            >
-              <Trash size={24} color="#EF4444" weight="regular" />
-            </TouchableOpacity>
+            {editingField && (
+              <TouchableOpacity
+                onPress={handleDelete}
+                style={styles.deleteButton}
+              >
+                <Trash size={24} color="#EF4444" weight="regular" />
+              </TouchableOpacity>
+            )}
           </View>
 
           <ScrollView
@@ -159,10 +157,7 @@ export function AddFieldModal({
 
           {/* Action Buttons */}
           <View style={styles.actionButtons}>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={handleDelete}
-            >
+            <TouchableOpacity style={styles.cancelButton} onPress={onClose}>
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -249,7 +244,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: 16,
-    backgroundColor: Color.LightCream,
     borderRadius: 8,
   },
   toggleLabel: {
