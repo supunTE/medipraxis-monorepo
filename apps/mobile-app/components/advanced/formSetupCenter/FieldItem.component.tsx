@@ -5,8 +5,9 @@ import {
 import { Color } from "@repo/config";
 import { useFonts } from "expo-font";
 import { DotsSixVerticalIcon } from "phosphor-react-native";
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import {
+  Animated,
   PanResponder,
   Platform,
   StyleSheet,
@@ -30,6 +31,43 @@ export function FieldItem({
   });
   const dragStartY = useRef<number>(0);
   const isDraggingRef = useRef<boolean>(false);
+
+  // Animation values
+  const scaleXAnim = useRef(new Animated.Value(1)).current;
+  const elevationAnim = useRef(new Animated.Value(0)).current;
+
+  // Animate when dragging state changes
+  useEffect(() => {
+    if (isDragging) {
+      Animated.parallel([
+        Animated.spring(scaleXAnim, {
+          toValue: 0.98,
+          useNativeDriver: true,
+          friction: 8,
+          tension: 40,
+        }),
+        Animated.timing(elevationAnim, {
+          toValue: 1,
+          duration: 200,
+          useNativeDriver: false,
+        }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.spring(scaleXAnim, {
+          toValue: 1,
+          useNativeDriver: true,
+          friction: 8,
+          tension: 40,
+        }),
+        Animated.timing(elevationAnim, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: false,
+        }),
+      ]).start();
+    }
+  }, [isDragging, scaleXAnim, elevationAnim]);
 
   const panResponder = useRef(
     PanResponder.create({
@@ -66,6 +104,17 @@ export function FieldItem({
 
   const FieldIcon = field.icon;
 
+  // Interpolate elevation
+  const elevationValue = elevationAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 8],
+  });
+
+  const shadowOpacity = elevationAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 0.3],
+  });
+
   // Web-compatible drag handlers
   const handleMouseDown = (e: any) => {
     if (Platform.OS === "web") {
@@ -96,7 +145,17 @@ export function FieldItem({
   };
 
   return (
-    <View style={[styles.container, isDragging && styles.dragging]}>
+    <Animated.View
+      style={[
+        styles.container,
+        {
+          transform: [{ scaleX: scaleXAnim }],
+          elevation: elevationValue,
+          shadowOpacity: shadowOpacity,
+          zIndex: isDragging ? 1000 : 1,
+        },
+      ]}
+    >
       {/* Field Icon Section */}
       <TouchableOpacity
         style={styles.iconContainer}
@@ -134,7 +193,7 @@ export function FieldItem({
       >
         <DotsSixVerticalIcon size={20} color={Color.Grey} weight="bold" />
       </View>
-    </View>
+    </Animated.View>
   );
 }
 
@@ -148,14 +207,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     overflow: "hidden",
     backgroundColor: Color.White,
-  },
-  dragging: {
-    opacity: 0.5,
-    elevation: 5,
     shadowColor: Color.Black,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowRadius: 4,
   },
   iconContainer: {
     width: 56,

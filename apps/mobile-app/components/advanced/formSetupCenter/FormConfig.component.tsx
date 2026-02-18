@@ -174,7 +174,6 @@ export function FormConfig({ visible, onClose, formTitle }: FormConfigProps) {
   };
 
   const handleDragEnd = (_fieldId: string) => {
-    console.log("Drag ended for field:", _fieldId);
     draggingFieldIdRef.current = null;
     dragStartYRef.current = 0;
     setDraggingFieldId(null);
