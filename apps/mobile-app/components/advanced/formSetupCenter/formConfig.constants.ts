@@ -5,6 +5,7 @@ import {
   HashIcon,
   TextTIcon,
   ToggleLeftIcon,
+  UploadSimpleIcon,
 } from "phosphor-react-native";
 import type { FieldTypeOption } from "./formConfig.types";
 
@@ -43,6 +44,12 @@ export const FIELD_TYPES: FieldTypeOption[] = [
     id: "date",
     label: "Date field",
     icon: CalendarBlankIcon,
+    disabledForForms: [],
+  },
+  {
+    id: "upload-attachment",
+    label: "Upload attachment",
+    icon: UploadSimpleIcon,
     disabledForForms: [],
   },
 ];
