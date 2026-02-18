@@ -1,4 +1,5 @@
 export { AddFieldModal } from "./AddFieldModal.component";
+export { FieldItem } from "./FieldItem.component";
 export { FieldTypePicker } from "./FieldTypePicker.component";
 export { FormConfig } from "./FormConfig.component";
 export * from "./formConfig.types";

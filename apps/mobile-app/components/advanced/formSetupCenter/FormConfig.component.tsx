@@ -17,7 +17,9 @@ import {
   View,
 } from "react-native";
 import { AddFieldModal } from "./AddFieldModal.component";
-import type { FormConfigProps } from "./formConfig.types";
+import { FieldItem } from "./FieldItem.component";
+import { FIELD_TYPES } from "./formConfig.constants";
+import type { Field, FormConfigProps } from "./formConfig.types";
 
 export function FormConfig({ visible, onClose, formTitle }: FormConfigProps) {
   const [fontsLoaded] = useFonts({
@@ -28,9 +30,17 @@ export function FormConfig({ visible, onClose, formTitle }: FormConfigProps) {
     Lato_700Bold,
   });
 
+  const [fields, setFields] = useState<Field[]>([]);
   const [showAddFieldModal, setShowAddFieldModal] = useState(false);
+  const [editingFieldId, setEditingFieldId] = useState<string | null>(null);
 
   const handleAddNewField = () => {
+    setEditingFieldId(null);
+    setShowAddFieldModal(true);
+  };
+
+  const handleEditField = (fieldId: string) => {
+    setEditingFieldId(fieldId);
     setShowAddFieldModal(true);
   };
 
@@ -40,8 +50,52 @@ export function FormConfig({ visible, onClose, formTitle }: FormConfigProps) {
     isRequired: boolean;
     isShareEnabled: boolean;
   }) => {
-    console.log("Field saved:", fieldData);
-    // TODO: Add field to form configuration
+    const fieldTypeOption = FIELD_TYPES.find(
+      (type) => type.id === fieldData.fieldType
+    );
+
+    if (!fieldTypeOption) return;
+
+    if (editingFieldId) {
+      // Update existing field
+      setFields((prev) =>
+        prev.map((field) =>
+          field.id === editingFieldId
+            ? {
+                ...field,
+                fieldType: fieldData.fieldType,
+                fieldName: fieldData.fieldName,
+                icon: fieldTypeOption.icon,
+                isRequired: fieldData.isRequired,
+                isShareEnabled: fieldData.isShareEnabled,
+              }
+            : field
+        )
+      );
+    } else {
+      // Add new field
+      const newField: Field = {
+        id: Date.now().toString(),
+        fieldType: fieldData.fieldType,
+        fieldName: fieldData.fieldName,
+        icon: fieldTypeOption.icon,
+        isRequired: fieldData.isRequired,
+        isShareEnabled: fieldData.isShareEnabled,
+      };
+      setFields((prev) => [...prev, newField]);
+    }
+  };
+
+  const getEditingFieldData = () => {
+    if (!editingFieldId) return null;
+    const field = fields.find((f) => f.id === editingFieldId);
+    if (!field) return null;
+    return {
+      fieldType: field.fieldType,
+      fieldName: field.fieldName,
+      isRequired: field.isRequired,
+      isShareEnabled: field.isShareEnabled,
+    };
   };
 
   if (!fontsLoaded) {
@@ -75,6 +129,15 @@ export function FormConfig({ visible, onClose, formTitle }: FormConfigProps) {
               <Text style={styles.addDescriptionText}>+ Add Description</Text>
             </TouchableOpacity>
 
+            {/* Display Fields */}
+            {fields.map((field) => (
+              <FieldItem
+                key={field.id}
+                field={field}
+                onPress={() => handleEditField(field.id)}
+              />
+            ))}
+
             {/* Add New Field Button */}
             <TouchableOpacity
               style={styles.addFieldButton}
@@ -96,8 +159,12 @@ export function FormConfig({ visible, onClose, formTitle }: FormConfigProps) {
       {/* Add Field Modal */}
       <AddFieldModal
         visible={showAddFieldModal}
-        onClose={() => setShowAddFieldModal(false)}
+        onClose={() => {
+          setShowAddFieldModal(false);
+          setEditingFieldId(null);
+        }}
         onSave={handleSaveField}
+        editingField={getEditingFieldData()}
       />
     </>
   );

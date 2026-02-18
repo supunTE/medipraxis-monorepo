@@ -23,6 +23,15 @@ export interface FieldTypePickerProps {
   formType?: string; // Used to determine which fields should be disabled
 }
 
+export interface Field {
+  id: string;
+  fieldType: string;
+  fieldName: string;
+  icon: Icon;
+  isRequired: boolean;
+  isShareEnabled: boolean;
+}
+
 export interface AddFieldModalProps {
   visible: boolean;
   onClose: () => void;
@@ -32,4 +41,15 @@ export interface AddFieldModalProps {
     isRequired: boolean;
     isShareEnabled: boolean;
   }) => void;
+  editingField?: {
+    fieldType: string;
+    fieldName: string;
+    isRequired: boolean;
+    isShareEnabled: boolean;
+  } | null;
+}
+
+export interface FieldItemProps {
+  field: Field;
+  onPress: () => void;
 }

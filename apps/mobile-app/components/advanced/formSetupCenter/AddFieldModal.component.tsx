@@ -8,7 +8,7 @@ import { Lato_400Regular, Lato_700Bold } from "@expo-google-fonts/lato";
 import { Color } from "@repo/config";
 import { useFonts } from "expo-font";
 import { Trash } from "phosphor-react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Modal,
   ScrollView,
@@ -25,6 +25,7 @@ export function AddFieldModal({
   visible,
   onClose,
   onSave,
+  editingField,
 }: AddFieldModalProps) {
   const [fontsLoaded] = useFonts({
     DMSans_400Regular,
@@ -38,6 +39,21 @@ export function AddFieldModal({
   const [fieldName, setFieldName] = useState("");
   const [isRequired, setIsRequired] = useState(false);
   const [isShareEnabled, setIsShareEnabled] = useState(false);
+
+  // Populate form when editing existing field
+  useEffect(() => {
+    if (editingField) {
+      setSelectedFieldType(editingField.fieldType);
+      setFieldName(editingField.fieldName);
+      setIsRequired(editingField.isRequired);
+      setIsShareEnabled(editingField.isShareEnabled);
+    } else {
+      setSelectedFieldType("");
+      setFieldName("");
+      setIsRequired(false);
+      setIsShareEnabled(false);
+    }
+  }, [editingField, visible]);
 
   const handleFieldTypeChange = (fieldTypeId: string) => {
     setSelectedFieldType(fieldTypeId);
@@ -79,7 +95,9 @@ export function AddFieldModal({
         <View style={styles.modalContainer}>
           {/* Header with Delete Icon */}
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>Add New Field</Text>
+            <Text style={styles.headerTitle}>
+              {editingField ? "Edit Field" : "Add New Field"}
+            </Text>
             <TouchableOpacity
               onPress={handleDelete}
               style={styles.deleteButton}
