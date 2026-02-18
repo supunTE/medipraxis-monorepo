@@ -6,7 +6,7 @@ import {
 import { Lato_400Regular, Lato_700Bold } from "@expo-google-fonts/lato";
 import { Color } from "@repo/config";
 import { useFonts } from "expo-font";
-import { CaretDownIcon } from "phosphor-react-native/lib/typescript/icons/CaretDown";
+import { CaretDownIcon } from "phosphor-react-native";
 import { useEffect, useRef, useState } from "react";
 import {
   Modal,
