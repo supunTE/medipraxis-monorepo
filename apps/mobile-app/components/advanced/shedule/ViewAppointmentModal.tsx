@@ -1,8 +1,15 @@
-import { DropdownComponent, TextInputComponent } from "@/components/basic";
+import { TextInputComponent } from "@/components/basic";
 import { Text, View } from "@/components/Themed";
 import { Icons } from "@/config";
+import { formatISOToSimple } from "@/utils/timeUtils";
 import { TaskDetails } from "@repo/models";
-import { Modal, Pressable, ScrollView, StyleSheet } from "react-native";
+import {
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TouchableWithoutFeedback,
+} from "react-native";
 
 interface ViewAppointmentModalProps {
   visible: boolean;
@@ -36,134 +43,138 @@ export const ViewAppointmentModal = ({
       visible={visible}
       onRequestClose={onClose}
     >
-      <View style={styles.centeredView}>
-        <View style={styles.cardContainer}>
-          {/* Scrollable Content Area */}
-          <ScrollView
-            contentContainerStyle={styles.cardContent}
-            showsVerticalScrollIndicator={false}
-          >
-            <Text style={styles.headerTitle}>{data?.task_title}</Text>
-            {/* Row 1: Slot Window & Slot No */}
-            <View style={styles.row}>
-              <View style={{ flex: 1, marginRight: 10 }}>
-                <DropdownComponent
-                  value={data?.slot_window_id!.toString()}
-                  onValueChange={() => {}}
-                  options={[
-                    {
-                      value: data?.slot_window_id!.toString() ?? "",
-                      label: data?.slot_window_id!.toString() ?? "",
-                    },
-                  ]}
-                  label="Slot Window"
-                  readOnly={readOnly}
-                />
-              </View>
-              <View style={{ flex: 1 }}>
-                <DropdownComponent
-                  value={data?.appointment_number!.toString()}
-                  onValueChange={() => {}}
-                  options={[
-                    {
+      {/* Enable closing the modal when tapping outside of the card */}
+      <TouchableWithoutFeedback onPress={onClose}>
+        <View style={styles.centeredView}>
+          <TouchableWithoutFeedback onPress={() => {}}>
+            <View style={styles.cardContainer}>
+              {/* Scrollable Content Area */}
+              <ScrollView
+                contentContainerStyle={styles.cardContent}
+                showsVerticalScrollIndicator={true}
+              >
+                <Text style={styles.headerTitle}>{data?.task_title}</Text>
+                {/* Slot Window */}
+                <View style={styles.row}>
+                  <TextInputComponent
+                    label="Slot Window"
+                    inputField={{
+                      placeholder: "Slot Window",
+                      value: formatISOToSimple(data?.start_date, "dateOnly"),
+                      onChangeText: () => {},
+                    }}
+                    inputWrapper={{
+                      accessibilityHint: "Slot Window",
+                      isDisabled: readOnly,
+                    }}
+                  />
+                </View>
+                {/* Slot No. */}
+                <View style={styles.row}>
+                  <TextInputComponent
+                    label="Slot No."
+                    inputField={{
+                      placeholder: "Slot No.",
                       value: data?.appointment_number!.toString() ?? "",
-                      label: data?.appointment_number!.toString() ?? "",
-                    },
-                  ]}
-                  label="Slot No."
-                  readOnly={readOnly}
-                />
+                      onChangeText: () => {},
+                    }}
+                    inputWrapper={{
+                      accessibilityHint: "Slot No.",
+                      isDisabled: readOnly,
+                    }}
+                  />
+                </View>
+                {/* Client Details */}
+                <View style={styles.row}>
+                  <TextInputComponent
+                    label="Client Details"
+                    inputField={{
+                      placeholder: "Client Details",
+                      value: `${data?.client_first_name ?? ""} ${data?.client_last_name ?? ""}`,
+                      onChangeText: () => {},
+                    }}
+                    inputWrapper={{
+                      accessibilityHint: "Client Details",
+                      isDisabled: readOnly,
+                    }}
+                  />
+                </View>
+                {/* Start Date */}
+                <View style={styles.row}>
+                  <TextInputComponent
+                    label="Start Date & time"
+                    startIcon={
+                      <Icons.CalendarDotsIcon
+                        size={20}
+                        weight="bold"
+                        color="#4B5563"
+                      />
+                    }
+                    inputField={{
+                      placeholder: "Enter Start Date & time",
+                      value: formatISOToSimple(data?.start_date),
+                      onChangeText: () => {},
+                    }}
+                    inputWrapper={{
+                      accessibilityHint: "Enter Start Date & time",
+                      isDisabled: readOnly,
+                    }}
+                  />
+                </View>
+                {/* End Date */}
+                <View style={styles.row}>
+                  <TextInputComponent
+                    label="End Date & time"
+                    startIcon={
+                      <Icons.CalendarDotsIcon
+                        size={20}
+                        weight="bold"
+                        color="#4B5563"
+                      />
+                    }
+                    inputField={{
+                      placeholder: "Enter End Date & time",
+                      value: formatISOToSimple(data?.end_date),
+                      onChangeText: () => {},
+                    }}
+                    inputWrapper={{
+                      accessibilityHint: "Enter End Date & time",
+                      isDisabled: readOnly,
+                    }}
+                  />
+                </View>
+                {/* Note */}
+                <View style={styles.row}>
+                  <TextInputComponent
+                    inputWrapper={{
+                      accessibilityHint: "Enter your note",
+                    }}
+                    inputField={{
+                      value: data?.note ?? undefined,
+                      onChangeText: () => {},
+                      placeholder: "Enter note",
+                    }}
+                    label="Note"
+                  />
+                </View>
+              </ScrollView>
+
+              {/* Footer Action Bar */}
+              <View style={styles.footer}>
+                <Pressable style={styles.editButton} onPress={handleEdit}>
+                  <Icons.Pencil size={18} color="white" weight="bold" />
+                  <Text style={styles.buttonText}>Edit</Text>
+                </Pressable>
+
+                <Pressable style={styles.cancelButton} onPress={handleCancel}>
+                  <Icons.Trash size={18} color="white" weight="bold" />
+                  <Text style={styles.buttonText}>Cancel Appointment</Text>
+                </Pressable>
               </View>
             </View>
-            {/* Client Details */}
-            <View style={styles.row}>
-              <DropdownComponent
-                value={data?.client_id!}
-                onValueChange={() => {}}
-                options={[
-                  {
-                    value: data?.client_id ?? "",
-                    label: `${data?.client_first_name ?? ""} ${data?.client_last_name ?? ""}`,
-                  },
-                ]}
-                label="Client Details"
-                readOnly={readOnly}
-              />
-            </View>
-            {/* Start Date */}
-            <View style={styles.row}>
-              <TextInputComponent
-                label="Start Date & time"
-                startIcon={
-                  <Icons.CalendarDotsIcon
-                    size={20}
-                    weight="bold"
-                    color="#4B5563"
-                  />
-                }
-                inputField={{
-                  placeholder: "Enter Start Date & time",
-                  value: data?.start_date,
-                  onChangeText: () => {},
-                }}
-                inputWrapper={{
-                  accessibilityHint: "Enter Start Date & time",
-                  isDisabled: readOnly,
-                }}
-              />
-            </View>
-            {/* End Date */}
-            <View style={styles.row}>
-              <TextInputComponent
-                label="End Date & time"
-                startIcon={
-                  <Icons.CalendarDotsIcon
-                    size={20}
-                    weight="bold"
-                    color="#4B5563"
-                  />
-                }
-                inputField={{
-                  placeholder: "Enter End Date & time",
-                  value: data?.start_date,
-                  onChangeText: () => {},
-                }}
-                inputWrapper={{
-                  accessibilityHint: "Enter End Date & time",
-                  isDisabled: readOnly,
-                }}
-              />
-            </View>
-            {/* Note */}
-            <View style={styles.row}>
-              <TextInputComponent
-                inputWrapper={{
-                  accessibilityHint: "Enter your note",
-                }}
-                inputField={{
-                  value: data?.note ?? undefined,
-                  onChangeText: () => {},
-                  placeholder: "Enter note",
-                }}
-                label="Note"
-              />
-            </View>
-          </ScrollView>
-
-          {/* Footer Action Bar */}
-          <View style={styles.footer}>
-            <Pressable style={styles.editButton} onPress={handleEdit}>
-              <Icons.Pencil size={18} color="white" weight="bold" />
-              <Text style={styles.buttonText}>Edit</Text>
-            </Pressable>
-
-            <Pressable style={styles.cancelButton} onPress={handleCancel}>
-              <Icons.Trash size={18} color="white" weight="bold" />
-              <Text style={styles.buttonText}>Cancel Appointment</Text>
-            </Pressable>
-          </View>
+          </TouchableWithoutFeedback>
         </View>
-      </View>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 };

@@ -196,6 +196,10 @@ export const TextInput: React.FC<TextInputProps> = ({
           borderRadius: 8,
           width: "100%",
           height: 50,
+          backgroundColor: inputWrapper.isDisabled
+            ? Color.LightGrey
+            : Color.White,
+          opacity: inputWrapper.isDisabled ? 0.6 : 1,
         }}
       >
         {hasStartIcon && <InputSlot className="pl-4">{startIcon}</InputSlot>}
@@ -220,6 +224,8 @@ export const TextInput: React.FC<TextInputProps> = ({
               textLargeStyle.fontWeight
             ) as RNTextStyle["fontWeight"],
             textAlign: "left",
+            //                         backgroundColor: inputWrapper.isDisabled ? 'green' : 'yellow',
+            //   opacity: inputWrapper.isDisabled ? 0.6 : 1,
           }}
         />
         {shouldShowToggle && (
