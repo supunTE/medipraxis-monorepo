@@ -113,7 +113,6 @@ export class ClientReportService {
 
   async getReportsByClientId(clientId: string): Promise<ClientReport[]> {
     const report = await this.clientReportRepository.findByClientId(clientId);
-    console.log("service", report);
 
     if (!report) {
       throw new Error("Reports not found");
