@@ -21,7 +21,12 @@ import { FieldItem } from "./FieldItem.component";
 import { FIELD_TYPES } from "./formConfig.constants";
 import type { Field, FormConfigProps } from "./formConfig.types";
 
-export function FormConfig({ visible, onClose, formTitle }: FormConfigProps) {
+export function FormConfig({
+  visible,
+  onClose,
+  formTitle,
+  formType,
+}: FormConfigProps) {
   const [fontsLoaded] = useFonts({
     DMSans_400Regular,
     DMSans_500Medium,
@@ -266,6 +271,7 @@ export function FormConfig({ visible, onClose, formTitle }: FormConfigProps) {
         onSave={handleSaveField}
         onDelete={handleDeleteField}
         editingField={getEditingFieldData()}
+        formType={formType}
       />
     </>
   );

@@ -33,8 +33,10 @@ export function FormSetupCenter({ visible, onClose }: FormSetupCenterProps) {
 
   const [showFormConfig, setShowFormConfig] = useState(false);
   const [selectedFormTitle, setSelectedFormTitle] = useState("");
+  const [selectedFormId, setSelectedFormId] = useState("");
 
-  const handleTilePress = (tileTitle: string) => {
+  const handleTilePress = (tileId: string, tileTitle: string) => {
+    setSelectedFormId(tileId);
     setSelectedFormTitle(tileTitle);
     setShowFormConfig(true);
   };
@@ -88,7 +90,7 @@ export function FormSetupCenter({ visible, onClose }: FormSetupCenterProps) {
                   <Text style={styles.tileDescription}>{tile.description}</Text>
                   <TouchableOpacity
                     style={styles.editButton}
-                    onPress={() => handleTilePress(tile.title)}
+                    onPress={() => handleTilePress(tile.id, tile.title)}
                     activeOpacity={0.7}
                   >
                     <PencilSimpleIcon
@@ -117,6 +119,7 @@ export function FormSetupCenter({ visible, onClose }: FormSetupCenterProps) {
         visible={showFormConfig}
         onClose={() => setShowFormConfig(false)}
         formTitle={selectedFormTitle}
+        formType={selectedFormId}
       />
     </Modal>
   );

@@ -27,6 +27,7 @@ export function AddFieldModal({
   onSave,
   onDelete,
   editingField,
+  formType,
 }: AddFieldModalProps) {
   const [fontsLoaded] = useFonts({
     DMSans_400Regular,
@@ -116,6 +117,7 @@ export function AddFieldModal({
               options={FIELD_TYPES}
               label="Field Type"
               placeholder="Select field type"
+              formType={formType}
             />
 
             {/* Field Name Section */}

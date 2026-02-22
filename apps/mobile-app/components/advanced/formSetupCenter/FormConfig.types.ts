@@ -4,6 +4,7 @@ export type FormConfigProps = {
   visible: boolean;
   onClose: () => void;
   formTitle: string;
+  formType?: string;
 };
 
 export interface FieldTypeOption {
@@ -49,6 +50,7 @@ export interface AddFieldModalProps {
     isRequired: boolean;
     isShareEnabled: boolean;
   } | null;
+  formType?: string;
 }
 
 export interface FieldItemProps {
