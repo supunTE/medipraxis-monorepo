@@ -8,7 +8,7 @@ export default [
   ...config,
   reactRefresh.configs.vite,
   {
-    ignores: ["jest.setup.cjs", "jest.config.cjs"],
+    ignores: ["jest.setup.cjs", "jest.config.cjs", "coverage", "junit.xml"],
   },
   {
     files: ["**/__tests__/**/*.[jt]s?(x)", "**/?(*.)+(spec|test).[jt]s?(x)"],
