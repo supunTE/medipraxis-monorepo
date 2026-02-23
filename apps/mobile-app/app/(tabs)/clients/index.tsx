@@ -6,7 +6,9 @@ import { Color, Font, TextSize, TextVariant, textStyles } from "@repo/config";
 import React, { useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Platform,
   ScrollView,
+  Text,
   TouchableOpacity,
   type LayoutChangeEvent,
   type NativeScrollEvent,
@@ -25,6 +27,10 @@ import { ClientCardComponent } from "./ClientCard.component";
 // Text styles
 const textLargeStyle = textStyles[TextVariant.Body][TextSize.Large];
 
+const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+const NAV_BAR_HEIGHT = Platform.OS === "ios" ? 83 : 60;
+const CIRCLE_SIZE = 18;
+
 interface ClientsScreenProps {
   userId?: string; // Will use default if not provided
 }
@@ -35,8 +41,10 @@ export default function ClientsScreen({
   const [searchQuery, setSearchQuery] = useState("");
   const [visibleSection, setVisibleSection] = useState<string>("A");
   const [isAddClientVisible, setIsAddClientVisible] = useState(false);
+  const [alphabetContainerHeight, setAlphabetContainerHeight] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
   const sectionRefs = useRef<Record<string, number>>({});
+  const isProgrammaticScroll = useRef(false);
 
   // Fetch clients using React Query
   const { data: clients = [], isLoading } = useFetchClients(userId);
@@ -50,7 +58,6 @@ export default function ClientsScreen({
   );
 
   const groupedClients = groupClientsByLetter(filteredClients);
-  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
   const handleClientPress = (clientId: string) => {
     console.log("Client pressed:", clientId);
@@ -69,13 +76,19 @@ export default function ClientsScreen({
   const handleLetterPress = (letter: string) => {
     const yOffset = sectionRefs.current[letter];
     if (yOffset !== undefined && scrollViewRef.current) {
-      scrollViewRef.current.scrollTo({ y: yOffset, animated: true });
+      isProgrammaticScroll.current = true;
       setVisibleSection(letter);
+      scrollViewRef.current.scrollTo({ y: yOffset, animated: true });
+      setTimeout(() => {
+        isProgrammaticScroll.current = false;
+      }, 400);
     }
   };
 
   // Handle scroll to detect visible section
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    if (isProgrammaticScroll.current) return;
+
     const scrollY = event.nativeEvent.contentOffset.y;
     const sortedLetters = Object.keys(groupedClients).sort();
 
@@ -96,6 +109,15 @@ export default function ClientsScreen({
     const { y } = event.nativeEvent.layout;
     sectionRefs.current[letter] = y;
   };
+
+  const handleAlphabetContainerLayout = (event: LayoutChangeEvent) => {
+    setAlphabetContainerHeight(event.nativeEvent.layout.height);
+  };
+
+  const letterSlotHeight =
+    alphabetContainerHeight > 0
+      ? Math.floor(alphabetContainerHeight / ALPHABET.length)
+      : 0;
 
   // Loading state
   if (isLoading) {
@@ -122,18 +144,16 @@ export default function ClientsScreen({
           <TextComponent variant={TextVariant.Title} size={TextSize.Large}>
             Clients
           </TextComponent>
-          <View className="items-center">
-            <ButtonComponent
-              size={ButtonSize.Small}
-              leftIcon={Icons.Plus}
-              buttonColor={Color.Black}
-              textColor={Color.White}
-              iconColor={Color.White}
-              onPress={() => setIsAddClientVisible(true)}
-            >
-              Add Client
-            </ButtonComponent>
-          </View>
+          <ButtonComponent
+            size={ButtonSize.Small}
+            leftIcon={Icons.Plus}
+            buttonColor={Color.Black}
+            textColor={Color.White}
+            iconColor={Color.White}
+            onPress={() => setIsAddClientVisible(true)}
+          >
+            Add Client
+          </ButtonComponent>
         </View>
 
         {/* Search Bar */}
@@ -217,18 +237,16 @@ export default function ClientsScreen({
         <TextComponent variant={TextVariant.Title} size={TextSize.Large}>
           Clients
         </TextComponent>
-        <View className="items-center">
-          <ButtonComponent
-            size={ButtonSize.Small}
-            leftIcon={Icons.Plus}
-            buttonColor={Color.Black}
-            textColor={Color.White}
-            iconColor={Color.White}
-            onPress={() => setIsAddClientVisible(true)}
-          >
-            Add Client
-          </ButtonComponent>
-        </View>
+        <ButtonComponent
+          size={ButtonSize.Small}
+          leftIcon={Icons.Plus}
+          buttonColor={Color.Black}
+          textColor={Color.White}
+          iconColor={Color.White}
+          onPress={() => setIsAddClientVisible(true)}
+        >
+          Add Client
+        </ButtonComponent>
       </View>
 
       {/* Search Bar */}
@@ -274,9 +292,13 @@ export default function ClientsScreen({
       <View className="flex-1 flex-row">
         <ScrollView
           ref={scrollViewRef}
-          className="flex-1 px-5"
+          className="flex-1"
           showsVerticalScrollIndicator={false}
-          style={{ paddingRight: 40 }}
+          contentContainerStyle={{
+            paddingLeft: 20,
+            paddingRight: 44,
+            paddingBottom: 100,
+          }}
           onScroll={handleScroll}
           scrollEventThrottle={16}
         >
@@ -315,50 +337,61 @@ export default function ClientsScreen({
 
         {/* Alphabet Index */}
         <View
-          className="absolute right-0"
           style={{
+            position: "absolute",
             top: 0,
-            bottom: 0,
-            paddingHorizontal: 8,
-            justifyContent: "space-evenly",
+            bottom: NAV_BAR_HEIGHT,
+            right: 12,
+            width: 32,
           }}
+          onLayout={handleAlphabetContainerLayout}
         >
-          {alphabet.map((letter) => {
-            const hasClients = groupedClients[letter];
-            const isVisible = letter === visibleSection;
-            return (
-              <TouchableOpacity
-                key={letter}
-                className="items-center justify-center"
-                onPress={() => hasClients && handleLetterPress(letter)}
-                disabled={!hasClients}
-                style={{
-                  width: 20,
-                  height: 20,
-                  borderRadius: 10,
-                  backgroundColor:
-                    isVisible && hasClients ? Color.Green : "transparent",
-                }}
-              >
-                <TextComponent
-                  variant={TextVariant.Body}
-                  size={TextSize.Small}
+          {letterSlotHeight > 0 &&
+            ALPHABET.map((letter) => {
+              const hasClients = !!groupedClients[letter];
+              const isActive = letter === visibleSection && hasClients;
+
+              return (
+                <TouchableOpacity
+                  key={letter}
+                  onPress={() => hasClients && handleLetterPress(letter)}
+                  disabled={!hasClients}
                   style={{
-                    color:
-                      isVisible && hasClients
+                    height: letterSlotHeight,
+                    width: 32,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <View
+                    style={{
+                      position: "absolute",
+                      width: CIRCLE_SIZE,
+                      height: CIRCLE_SIZE,
+                      borderRadius: CIRCLE_SIZE / 2,
+                      backgroundColor: Color.Green,
+                      opacity: isActive ? 1 : 0,
+                    }}
+                  />
+                  <Text
+                    style={{
+                      fontSize: 11,
+                      fontWeight: "600",
+                      lineHeight: 13,
+                      textAlign: "center",
+                      width: CIRCLE_SIZE,
+                      color: isActive
                         ? Color.White
                         : hasClients
                           ? Color.Grey
                           : Color.LightGrey,
-                    fontWeight: isVisible && hasClients ? "600" : "400",
-                    fontSize: 11,
-                  }}
-                >
-                  {letter}
-                </TextComponent>
-              </TouchableOpacity>
-            );
-          })}
+                    }}
+                  >
+                    {letter}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
         </View>
       </View>
 

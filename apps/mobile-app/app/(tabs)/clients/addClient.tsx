@@ -427,7 +427,7 @@ export const AddClient: React.FC<AddClientProps> = ({
                     Known Conditions
                   </TextComponent>
                 </View>
-                <View className="flex-row gap-2 mb-3">
+                <View className="flex-row items-center gap-2 mb-3">
                   <View className="flex-1">
                     <TextInputComponent
                       inputField={{
