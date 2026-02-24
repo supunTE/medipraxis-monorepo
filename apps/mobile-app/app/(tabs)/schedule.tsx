@@ -8,8 +8,9 @@ import {
 import { ViewAppointmentModal } from "@/components/advanced/shedule/ViewAppointmentModal";
 import { ViewReminderModal } from "@/components/advanced/shedule/ViewReminderModal";
 import { useGetTaskById } from "@/services/tasks/useGetTaskById";
+import { Color } from "@repo/config";
 import { useEffect, useState } from "react";
-import { Alert, StyleSheet } from "react-native";
+import { ActivityIndicator, Alert, StyleSheet } from "react-native";
 
 export default function ScheduleScreen() {
   const [selectedDate, setSelectedDate] = useState("");
@@ -24,7 +25,11 @@ export default function ScheduleScreen() {
   const [viewReminderReadOnly, setViewReminderReadOnly] = useState(true);
 
   // Use the mutation hook to fetch task by ID
-  const { mutate: fetchTask, data: appointmentData } = useGetTaskById({
+  const {
+    mutate: fetchTask,
+    data: appointmentData,
+    isLoading,
+  } = useGetTaskById({
     onSuccess: () => {
       selectedTask?.type == AgendaSelectionType.Appointment &&
         setViewApptModalVisible(true);
@@ -208,6 +213,15 @@ export default function ScheduleScreen() {
         onCancel={handleCloseViewReminderModal}
         readOnly={viewReminderReadOnly}
       />
+
+      {isLoading && (
+        <View
+          className="absolute inset-0 justify-center items-center bg-transparent z-[1000]"
+          style={{ backgroundColor: "rgba(0, 0, 0, 0.2)" }}
+        >
+          <ActivityIndicator size="large" color={Color.TextGreen} />
+        </View>
+      )}
     </View>
   );
 }

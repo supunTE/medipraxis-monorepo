@@ -11,7 +11,7 @@ type UseGetTaskByIdOptions = {
 };
 
 export const useGetTaskById = (options?: UseGetTaskByIdOptions) => {
-  return useMutation({
+  const mutation = useMutation({
     mutationFn: async (payload: GetTaskByIdPayload) => {
       const res = await apiClient.api.tasks[":id"].$get({
         param: {
@@ -41,4 +41,9 @@ export const useGetTaskById = (options?: UseGetTaskByIdOptions) => {
       );
     },
   });
+
+  return {
+    ...mutation,
+    isLoading: mutation.isPending,
+  };
 };
