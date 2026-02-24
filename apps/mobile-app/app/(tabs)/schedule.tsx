@@ -23,8 +23,6 @@ export default function ScheduleScreen() {
     useState(false);
   const [viewReminderReadOnly, setViewReminderReadOnly] = useState(true);
 
-  console.log(viewReminderModalVisible, selectedTask);
-
   // Use the mutation hook to fetch task by ID
   const { mutate: fetchTask, data: appointmentData } = useGetTaskById({
     onSuccess: () => {
@@ -52,11 +50,6 @@ export default function ScheduleScreen() {
       );
     } else if (selectedTask?.type === AgendaSelectionType.Reminder) {
       fetchTask({ task_id: selectedTask.reminderId });
-      //   Alert.alert(
-      //     "Reminder Selected",
-      //     `Reminder ID: ${selectedTask.reminderId}`,
-      //     [{ text: "OK", onPress: () => setSelectedTask(null) }]
-      //   );
     }
   }, [selectedTask]);
 
@@ -167,27 +160,6 @@ export default function ScheduleScreen() {
     setSelectedTask(null);
     // setAppointmentData(null);
   };
-
-  // Format task data for modal display
-  //   const modalData = appointmentData
-  //     ? {
-  //         title: appointmentData.task_title || "Appointment",
-  //         slotWindow: appointmentData.slot_window_id || "N/A",
-  //         slotNo: appointmentData.appointment_number || 0,
-  //         client: appointmentData.client_id || "N/A",
-  //         start_date: appointmentData.start_date || "N/A",
-  //         end_date: appointmentData.end_date || "N/A",
-  //         note: appointmentData.note || "",
-  //       }
-  //     : {
-  //         title: "Loading...",
-  //         slotWindow: "",
-  //         slotNo: 0,
-  //         client: "",
-  //         start_date: "",
-  //         end_date: "",
-  //         note: "",
-  //       };
 
   return (
     <View style={styles.container}>
