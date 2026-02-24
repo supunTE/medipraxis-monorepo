@@ -5,7 +5,10 @@ import {
   AgendaSelectionType,
   CalendarComponent,
 } from "@/components/advanced";
-import { ViewAppointmentModal , ViewReminderModal} from "@/components/advanced/schedule";
+import {
+  ViewAppointmentModal,
+  ViewReminderModal,
+} from "@/components/advanced/schedule";
 import { useGetTaskById } from "@/services/tasks/useGetTaskById";
 import { Color } from "@repo/config";
 import { useEffect, useState } from "react";

@@ -1,2 +1,2 @@
-export * from "./ViewAppointmentModal"
-export * from "./ViewReminderModal"
+export * from "./ViewAppointmentModal";
+export * from "./ViewReminderModal";
