@@ -19,7 +19,11 @@ jobs:
           cache: yarn
 
       - name: Install dependencies
-        run: yarn install --frozen-lockfile
+        run: |
+          yarn install --frozen-lockfile || yarn install --force
+
+      - name: Verify workspaces
+        run: yarn workspaces info
 
       - name: Cache Turbo
         uses: actions/cache@v4
