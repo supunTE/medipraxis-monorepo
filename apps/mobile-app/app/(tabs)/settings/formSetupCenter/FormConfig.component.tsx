@@ -7,12 +7,14 @@ import {
 import { Lato_400Regular, Lato_700Bold } from "@expo-google-fonts/lato";
 import { Color, TextSize, TextVariant } from "@repo/config";
 import { useFonts } from "expo-font";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Modal, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { AddFieldModal } from "./AddFieldModal.component";
 import { FieldItem } from "./FieldItem.component";
 import { FIELD_TYPES } from "./formConfig.constants";
 import type { Field, FormConfigProps } from "./formConfig.types";
+
+const formFieldsStore: Record<string, Field[]> = {};
 
 export function FormConfig({
   visible,
@@ -34,6 +36,21 @@ export function FormConfig({
   const [draggingFieldId, setDraggingFieldId] = useState<string | null>(null);
   const draggingFieldIdRef = useRef<string | null>(null);
   const dragStartYRef = useRef<number>(0);
+
+  // Load fields for the specific form type
+  useEffect(() => {
+    if (formType && visible) {
+      const savedFields = formFieldsStore[formType] || [];
+      setFields(savedFields);
+    }
+  }, [formType, visible]);
+
+  const handleSave = () => {
+    // Save fields to the store for this form type
+    if (formType) {
+      formFieldsStore[formType] = fields;
+    }
+  };
 
   const handleAddNewField = () => {
     setEditingFieldId(null);
@@ -202,7 +219,7 @@ export function FormConfig({
       >
         <View className="flex-1 bg-white">
           <ScrollView
-            contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
+            contentContainerStyle={{ padding: 20, paddingBottom: 160 }}
             keyboardShouldPersistTaps="handled"
             scrollEnabled={!draggingFieldId}
           >
@@ -248,12 +265,22 @@ export function FormConfig({
           </ScrollView>
 
           {/* Action Footer */}
-          <View className="absolute bottom-0 w-full px-4 py-5 border-t border-gray-400 bg-white">
+          <View
+            className="absolute bottom-0 w-full px-4 py-5 border-t bg-white gap-3"
+            style={{ borderTopColor: Color.LightGrey, borderTopWidth: 1 }}
+          >
             <TouchableOpacity
               className="bg-black py-3 px-6 rounded-lg items-center"
+              onPress={handleSave}
+            >
+              <Text className="font-semibold text-white text-base">Save</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              className="bg-white py-3 px-6 rounded-lg items-center border"
+              style={{ borderColor: Color.Black, borderWidth: 1 }}
               onPress={onClose}
             >
-              <Text className="font-semibold text-white text-base">Close</Text>
+              <Text className="font-semibold text-black text-base">Close</Text>
             </TouchableOpacity>
           </View>
         </View>
