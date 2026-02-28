@@ -25,30 +25,32 @@ export interface FieldTypePickerProps {
 }
 
 export interface Field {
-  id: string;
-  fieldType: string;
-  fieldName: string;
-  icon: Icon;
-  isRequired: boolean;
-  isShareEnabled: boolean;
+  field_type: string;
+  display_label: string;
+  description: string;
+  help_text: string;
+  active: boolean;
+  required: boolean;
+  shareable: boolean;
   sequence: number;
+  icon: Icon;
 }
 
 export interface AddFieldModalProps {
   visible: boolean;
   onClose: () => void;
   onSave?: (fieldData: {
-    fieldType: string;
-    fieldName: string;
-    isRequired: boolean;
-    isShareEnabled: boolean;
+    field_type: string;
+    display_label: string;
+    required: boolean;
+    shareable: boolean;
   }) => void;
   onDelete?: () => void;
   editingField?: {
-    fieldType: string;
-    fieldName: string;
-    isRequired: boolean;
-    isShareEnabled: boolean;
+    field_type: string;
+    display_label: string;
+    required: boolean;
+    shareable: boolean;
   } | null;
   formType?: string;
 }
@@ -60,4 +62,9 @@ export interface FieldItemProps {
   onDragMove?: (y: number) => void;
   onDragEnd?: () => void;
   isDragging?: boolean;
+}
+
+export interface FormData {
+  description: string;
+  form_structure: Field[];
 }

@@ -183,9 +183,9 @@ export function FieldItem({
       >
         <View className="flex-row items-center">
           <Text className="text-base font-medium text-black">
-            {field.fieldName}
+            {field.display_label}
           </Text>
-          {field.isRequired && (
+          {field.required && (
             <Text className="text-base font-medium text-red-600 ml-0.5">*</Text>
           )}
         </View>

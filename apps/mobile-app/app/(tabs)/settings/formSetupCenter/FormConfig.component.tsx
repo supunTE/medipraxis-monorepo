@@ -8,13 +8,20 @@ import { Lato_400Regular, Lato_700Bold } from "@expo-google-fonts/lato";
 import { Color, TextSize, TextVariant } from "@repo/config";
 import { useFonts } from "expo-font";
 import React, { useEffect, useRef, useState } from "react";
-import { Modal, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  Modal,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { AddFieldModal } from "./AddFieldModal.component";
 import { FieldItem } from "./FieldItem.component";
 import { FIELD_TYPES } from "./formConfig.constants";
-import type { Field, FormConfigProps } from "./formConfig.types";
+import type { Field, FormConfigProps, FormData } from "./formConfig.types";
 
-const formFieldsStore: Record<string, Field[]> = {};
+const formDataStore: Record<string, FormData> = {};
 
 export function FormConfig({
   visible,
@@ -31,61 +38,84 @@ export function FormConfig({
   });
 
   const [fields, setFields] = useState<Field[]>([]);
+  const [formDescription, setFormDescription] = useState("");
+  const [isDescriptionFocused, setIsDescriptionFocused] = useState(false);
   const [showAddFieldModal, setShowAddFieldModal] = useState(false);
-  const [editingFieldId, setEditingFieldId] = useState<string | null>(null);
-  const [draggingFieldId, setDraggingFieldId] = useState<string | null>(null);
-  const draggingFieldIdRef = useRef<string | null>(null);
+  const [editingFieldSequence, setEditingFieldSequence] = useState<
+    number | null
+  >(null);
+  const [draggingFieldSequence, setDraggingFieldSequence] = useState<
+    number | null
+  >(null);
+  const draggingFieldSequenceRef = useRef<number | null>(null);
   const dragStartYRef = useRef<number>(0);
+  const descriptionInputRef = useRef<any>(null);
 
-  // Load fields for the specific form type
+  // Load form data for the specific form type
   useEffect(() => {
     if (formType && visible) {
-      const savedFields = formFieldsStore[formType] || [];
-      setFields(savedFields);
+      const savedFormData = formDataStore[formType];
+      if (savedFormData) {
+        setFormDescription(savedFormData.description || "");
+        setFields(savedFormData.form_structure || []);
+      } else {
+        setFormDescription("");
+        setFields([]);
+      }
     }
   }, [formType, visible]);
 
   const handleSave = () => {
-    // Save fields to the store for this form type
+    // Save form data to the store for this form type
     if (formType) {
-      formFieldsStore[formType] = fields;
+      const formData = {
+        description: formDescription,
+        form_structure: fields,
+      };
+      formDataStore[formType] = formData;
+
+      //TO DO: API call to save form struct
+      console.log("Form Data JSON:", JSON.stringify(formData, null, 2));
     }
   };
 
   const handleAddNewField = () => {
-    setEditingFieldId(null);
+    setEditingFieldSequence(null);
     setShowAddFieldModal(true);
   };
 
-  const handleEditField = (fieldId: string) => {
-    setEditingFieldId(fieldId);
+  const handleEditField = (fieldSequence: number) => {
+    setEditingFieldSequence(fieldSequence);
     setShowAddFieldModal(true);
   };
 
   const handleSaveField = (fieldData: {
-    fieldType: string;
-    fieldName: string;
-    isRequired: boolean;
-    isShareEnabled: boolean;
+    field_type: string;
+    display_label: string;
+    required: boolean;
+    shareable: boolean;
   }) => {
     const fieldTypeOption = FIELD_TYPES.find(
-      (type) => type.id === fieldData.fieldType
+      (type) => type.id === fieldData.field_type
     );
 
     if (!fieldTypeOption) return;
 
-    if (editingFieldId) {
+    if (editingFieldSequence !== null) {
       // Update existing field
       setFields((prev) =>
         prev.map((field) =>
-          field.id === editingFieldId
+          field.sequence === editingFieldSequence
             ? {
                 ...field,
-                fieldType: fieldData.fieldType,
-                fieldName: fieldData.fieldName,
+                field_type: fieldData.field_type,
+                display_label: fieldData.display_label,
                 icon: fieldTypeOption.icon,
-                isRequired: fieldData.isRequired,
-                isShareEnabled: fieldData.isShareEnabled,
+                required: fieldData.required,
+                shareable: fieldData.shareable,
+                description: field.description || "",
+                help_text: field.help_text || "",
+                active: true,
               }
             : field
         )
@@ -95,12 +125,14 @@ export function FormConfig({
       const maxSequence =
         fields.length > 0 ? Math.max(...fields.map((f) => f.sequence)) : 0;
       const newField: Field = {
-        id: Date.now().toString(),
-        fieldType: fieldData.fieldType,
-        fieldName: fieldData.fieldName,
+        field_type: fieldData.field_type,
+        display_label: fieldData.display_label,
+        description: "",
+        help_text: "",
+        active: true,
+        required: fieldData.required,
+        shareable: fieldData.shareable,
         icon: fieldTypeOption.icon,
-        isRequired: fieldData.isRequired,
-        isShareEnabled: fieldData.isShareEnabled,
         sequence: maxSequence + 1,
       };
       setFields((prev) =>
@@ -110,16 +142,20 @@ export function FormConfig({
   };
 
   const handleDeleteField = () => {
-    if (editingFieldId) {
-      setFields((prev) => prev.filter((field) => field.id !== editingFieldId));
+    if (editingFieldSequence !== null) {
+      setFields((prev) =>
+        prev.filter((field) => field.sequence !== editingFieldSequence)
+      );
       setShowAddFieldModal(false);
-      setEditingFieldId(null);
+      setEditingFieldSequence(null);
     }
   };
 
-  const moveFieldUp = (fieldId: string) => {
+  const moveFieldUp = (fieldSequence: number) => {
     const sortedFields = [...fields].sort((a, b) => a.sequence - b.sequence);
-    const currentIndex = sortedFields.findIndex((f) => f.id === fieldId);
+    const currentIndex = sortedFields.findIndex(
+      (f) => f.sequence === fieldSequence
+    );
 
     if (currentIndex <= 0 || currentIndex >= sortedFields.length) return;
 
@@ -128,10 +164,10 @@ export function FormConfig({
 
     // Swap sequences with previous field
     const updatedFields = fields.map((f) => {
-      if (f.id === currentField?.id) {
+      if (f.sequence === currentField?.sequence) {
         return { ...f, sequence: previousField?.sequence ?? f.sequence };
       }
-      if (f.id === previousField?.id) {
+      if (f.sequence === previousField?.sequence) {
         return { ...f, sequence: currentField?.sequence ?? f.sequence };
       }
       return f;
@@ -140,9 +176,11 @@ export function FormConfig({
     setFields(updatedFields);
   };
 
-  const moveFieldDown = (fieldId: string) => {
+  const moveFieldDown = (fieldSequence: number) => {
     const sortedFields = [...fields].sort((a, b) => a.sequence - b.sequence);
-    const currentIndex = sortedFields.findIndex((f) => f.id === fieldId);
+    const currentIndex = sortedFields.findIndex(
+      (f) => f.sequence === fieldSequence
+    );
 
     if (currentIndex < 0 || currentIndex >= sortedFields.length - 1) return;
 
@@ -151,10 +189,10 @@ export function FormConfig({
 
     // Swap sequences with next field
     const updatedFields = fields.map((f) => {
-      if (f.id === currentField?.id) {
+      if (f.sequence === currentField?.sequence) {
         return { ...f, sequence: nextField?.sequence ?? f.sequence };
       }
-      if (f.id === nextField?.id) {
+      if (f.sequence === nextField?.sequence) {
         return { ...f, sequence: currentField?.sequence ?? f.sequence };
       }
       return f;
@@ -163,47 +201,54 @@ export function FormConfig({
     setFields(updatedFields);
   };
 
-  const handleDragStart = (fieldId: string) => {
-    draggingFieldIdRef.current = fieldId;
+  const handleDragStart = (fieldSequence: number) => {
+    draggingFieldSequenceRef.current = fieldSequence;
     dragStartYRef.current = 0;
-    setDraggingFieldId(fieldId);
+    setDraggingFieldSequence(fieldSequence);
   };
 
-  const handleDragMove = (_fieldId: string, y: number) => {
+  const handleDragMove = (_fieldSequence: number, y: number) => {
     if (dragStartYRef.current === 0) {
       dragStartYRef.current = y;
-    } else if (draggingFieldIdRef.current) {
+    } else if (draggingFieldSequenceRef.current !== null) {
       const deltaY = y - dragStartYRef.current;
       const threshold = 30;
 
       if (deltaY < -threshold) {
         // Dragged up
-        moveFieldUp(draggingFieldIdRef.current);
+        moveFieldUp(draggingFieldSequenceRef.current);
         dragStartYRef.current = y;
       } else if (deltaY > threshold) {
         // Dragged down
-        moveFieldDown(draggingFieldIdRef.current);
+        moveFieldDown(draggingFieldSequenceRef.current);
         dragStartYRef.current = y;
       }
     }
   };
 
-  const handleDragEnd = (_fieldId: string) => {
-    draggingFieldIdRef.current = null;
+  const handleDragEnd = (_fieldSequence: number) => {
+    draggingFieldSequenceRef.current = null;
     dragStartYRef.current = 0;
-    setDraggingFieldId(null);
+    setDraggingFieldSequence(null);
   };
 
   const getEditingFieldData = () => {
-    if (!editingFieldId) return null;
-    const field = fields.find((f) => f.id === editingFieldId);
+    if (editingFieldSequence === null) return null;
+    const field = fields.find((f) => f.sequence === editingFieldSequence);
     if (!field) return null;
     return {
-      fieldType: field.fieldType,
-      fieldName: field.fieldName,
-      isRequired: field.isRequired,
-      isShareEnabled: field.isShareEnabled,
+      field_type: field.field_type,
+      display_label: field.display_label,
+      required: field.required,
+      shareable: field.shareable,
     };
+  };
+
+  const handleDescriptionChange = (text: string) => {
+    const words = text.trim().split(/\s+/);
+    if (words.length <= 200 || text === "") {
+      setFormDescription(text);
+    }
   };
 
   if (!fontsLoaded) {
@@ -221,7 +266,7 @@ export function FormConfig({
           <ScrollView
             contentContainerStyle={{ padding: 20, paddingBottom: 160 }}
             keyboardShouldPersistTaps="handled"
-            scrollEnabled={!draggingFieldId}
+            scrollEnabled={!draggingFieldSequence}
           >
             {/* Title */}
             <TextComponent
@@ -233,23 +278,56 @@ export function FormConfig({
               {formTitle}
             </TextComponent>
 
-            {/* Add Description Button */}
-            <TouchableOpacity className="py-4 px-4 rounded-lg bg-white mb-4">
-              <Text className="text-base text-gray-600">+ Add Description</Text>
-            </TouchableOpacity>
+            {/* Add/Edit Description */}
+            {formDescription || isDescriptionFocused ? (
+              <View className="mb-4">
+                <TextInput
+                  ref={descriptionInputRef}
+                  className="py-3 px-4 rounded-lg bg-white text-base"
+                  style={{
+                    borderColor: isDescriptionFocused
+                      ? Color.LightGrey
+                      : "transparent",
+                    borderWidth: 1,
+                    color: Color.Black,
+                  }}
+                  placeholder="Enter form description (max 200 words)"
+                  placeholderTextColor={Color.Grey}
+                  value={formDescription}
+                  onChangeText={handleDescriptionChange}
+                  onFocus={() => setIsDescriptionFocused(true)}
+                  onBlur={() => setIsDescriptionFocused(false)}
+                  multiline
+                  numberOfLines={3}
+                  textAlignVertical="top"
+                />
+              </View>
+            ) : (
+              <TouchableOpacity
+                className="py-4 px-4 rounded-lg bg-white mb-4"
+                onPress={() => {
+                  setIsDescriptionFocused(true);
+                  setTimeout(() => descriptionInputRef.current?.focus(), 100);
+                }}
+              >
+                <Text className="text-base" style={{ color: Color.Grey }}>
+                  + Add Description
+                </Text>
+              </TouchableOpacity>
+            )}
 
             {/* Display Fields */}
             {[...fields]
               .sort((a, b) => a.sequence - b.sequence)
               .map((field) => (
                 <FieldItem
-                  key={field.id}
+                  key={field.sequence}
                   field={field}
-                  onPress={() => handleEditField(field.id)}
-                  onDragStart={() => handleDragStart(field.id)}
-                  onDragMove={(y: number) => handleDragMove(field.id, y)}
-                  onDragEnd={() => handleDragEnd(field.id)}
-                  isDragging={draggingFieldId === field.id}
+                  onPress={() => handleEditField(field.sequence)}
+                  onDragStart={() => handleDragStart(field.sequence)}
+                  onDragMove={(y: number) => handleDragMove(field.sequence, y)}
+                  onDragEnd={() => handleDragEnd(field.sequence)}
+                  isDragging={draggingFieldSequence === field.sequence}
                 />
               ))}
 
@@ -291,7 +369,7 @@ export function FormConfig({
         visible={showAddFieldModal}
         onClose={() => {
           setShowAddFieldModal(false);
-          setEditingFieldId(null);
+          setEditingFieldSequence(null);
         }}
         onSave={handleSaveField}
         onDelete={handleDeleteField}

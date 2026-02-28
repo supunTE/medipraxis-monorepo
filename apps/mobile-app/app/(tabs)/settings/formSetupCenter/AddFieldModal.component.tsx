@@ -37,10 +37,10 @@ export function AddFieldModal({
   // Populate form when editing existing field
   useEffect(() => {
     if (editingField) {
-      setSelectedFieldType(editingField.fieldType);
-      setFieldName(editingField.fieldName);
-      setIsRequired(editingField.isRequired);
-      setIsShareEnabled(editingField.isShareEnabled);
+      setSelectedFieldType(editingField.field_type);
+      setFieldName(editingField.display_label);
+      setIsRequired(editingField.required);
+      setIsShareEnabled(editingField.shareable);
     } else {
       setSelectedFieldType("");
       setFieldName("");
@@ -60,10 +60,10 @@ export function AddFieldModal({
   const handleSave = () => {
     if (selectedFieldType && fieldName.trim()) {
       onSave?.({
-        fieldType: selectedFieldType,
-        fieldName: fieldName.trim(),
-        isRequired,
-        isShareEnabled,
+        field_type: selectedFieldType,
+        display_label: fieldName.trim(),
+        required: isRequired,
+        shareable: isShareEnabled,
       });
       // Reset form
       setSelectedFieldType("");
