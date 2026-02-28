@@ -99,4 +99,20 @@ export class FormRepository {
 
     return data as Form;
   }
+
+  async findActiveByUserIdAndFormType(
+    userId: string,
+    formType: string
+  ): Promise<Form | null> {
+    const { data, error } = await this.db
+      .from("form")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("form_type", formType)
+      .eq("is_active", true)
+      .single();
+
+    if (error || !data) return null;
+    return data as Form;
+  }
 }

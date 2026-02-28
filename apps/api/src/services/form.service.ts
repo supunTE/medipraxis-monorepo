@@ -45,4 +45,14 @@ export class FormService {
 
     return await this.formRepository.create(input, newVersion);
   }
+
+  async getActiveForm(userId: string, formType: string): Promise<Form> {
+    const form = await this.formRepository.findActiveByUserIdAndFormType(
+      userId,
+      formType
+    );
+
+    if (!form) throw new Error("No active form found");
+    return form;
+  }
 }

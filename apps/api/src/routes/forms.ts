@@ -15,6 +15,11 @@ const forms = new Hono()
     FormController.getFormsByUserId
   )
   .get(
+    "/active",
+    zValidator("query", getFormQuerySchema),
+    FormController.getActiveForm
+  )
+  .get(
     "/:id",
     zValidator("param", getFormParamSchema),
     FormController.getFormById

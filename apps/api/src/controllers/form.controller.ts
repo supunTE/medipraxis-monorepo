@@ -52,4 +52,27 @@ export class FormController {
       return c.json({ error: message }, status);
     }
   }
+
+  static async getActiveForm(c: APIContext<{ query: GetFormQuery }>) {
+    try {
+      const formService = getFormService(c);
+      const userId = c.req.query("user_id") as string;
+      const formType = c.req.query("form_type") as string;
+
+      if (!formType) {
+        return c.json({ error: "form_type is required" }, 400);
+      }
+
+      const form = await formService.getActiveForm(userId, formType);
+      return c.json({ form });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to get active form";
+      const status =
+        error instanceof Error && error.message === "No active form found"
+          ? 404
+          : 500;
+      return c.json({ error: message }, status);
+    }
+  }
 }
