@@ -35,13 +35,10 @@ export class ClientRepository {
     countryCode: string,
     contactNumber: string
   ): Promise<ContactInfo | null> {
-    // Remove leading plus sign from country code
-    const cleanCountryCode = countryCode.replace(/^\+/, "");
-
     const { data, error } = await this.db
       .from(CLIENT_QUERIES.CONTACT_TABLE)
       .select("*")
-      .eq(CLIENT_QUERIES.COUNTRY_CODE, cleanCountryCode)
+      .eq(CLIENT_QUERIES.COUNTRY_CODE, countryCode)
       .eq(CLIENT_QUERIES.CONTACT_NUMBER, contactNumber)
       .single();
 
@@ -55,9 +52,8 @@ export class ClientRepository {
   async createContactInfo(
     contactInfo: CreateContactInfoInput
   ): Promise<ContactInfo> {
-    // Remove leading plus sign from country code
     const data = {
-      country_code: contactInfo.country_code?.replace(/^\+/, "") ?? null,
+      country_code: contactInfo.country_code,
       contact_number: contactInfo.contact_number,
     };
     const { data: contact, error } = await this.db
