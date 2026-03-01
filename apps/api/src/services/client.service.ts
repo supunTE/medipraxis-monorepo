@@ -3,7 +3,7 @@ import type {
   CreateClientInput,
   UpdateClientInput,
 } from "@repo/models";
-import { ClientRepository } from "../repositories";
+import type { ClientRepository } from "../repositories";
 
 export class ClientService {
   private clientRepository: ClientRepository;
