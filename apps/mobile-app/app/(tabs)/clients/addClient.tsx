@@ -21,6 +21,7 @@ import {
   View,
 } from "react-native";
 import { z } from "zod";
+import type { CreateClientInput } from "../../../services/clients";
 
 const titleOptions = [
   { label: "Mr", value: "Mr" },
@@ -41,8 +42,10 @@ const genderOptions = [
 const clientSchema = z.object({
   title: z.string().min(1, "Title is required"),
   firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().optional(),
-  gender: z.string().min(1, "Gender is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  gender: z.enum(["MALE", "FEMALE", "OTHER"], {
+    message: "Gender is required",
+  }),
   dateOfBirth: z
     .string()
     .min(1, "Date of birth is required")
@@ -121,7 +124,7 @@ type ClientFormData = z.infer<typeof clientSchema>;
 interface AddClientProps {
   visible: boolean;
   onClose: () => void;
-  onSave?: (clientData: unknown) => void | Promise<void>;
+  onSave?: (clientData: CreateClientInput) => void | Promise<void>;
 }
 
 export const AddClient: React.FC<AddClientProps> = ({
@@ -145,7 +148,7 @@ export const AddClient: React.FC<AddClientProps> = ({
       title: "",
       firstName: "",
       lastName: "",
-      gender: "",
+      gender: undefined,
       dateOfBirth: "",
       contactNumber: "",
       emergencyContactName: "",
@@ -182,19 +185,19 @@ export const AddClient: React.FC<AddClientProps> = ({
   };
 
   const onSubmit = (data: ClientFormData): void => {
-    // Prepare client data
-    const clientData = {
+    // Prepare client data matching CreateClientInput type
+    const clientData: CreateClientInput = {
       title: data.title,
       firstName: data.firstName,
-      lastName: data.lastName || null,
+      lastName: data.lastName,
       gender: data.gender,
       dateOfBirth: data.dateOfBirth,
       contactNumber: data.contactNumber,
-      emergencyContactName: data.emergencyContactName || null,
-      emergencyContactNumber: data.emergencyContactNumber || null,
-      emergencyContactRelationship: data.emergencyContactRelationship || null,
-      knownConditions: conditions.length > 0 ? conditions : null,
-      note: data.note || null,
+      emergencyContactName: data.emergencyContactName,
+      emergencyContactNumber: data.emergencyContactNumber,
+      emergencyContactRelationship: data.emergencyContactRelationship,
+      knownConditions: conditions.length > 0 ? conditions : undefined,
+      note: data.note,
     };
 
     void onSave?.(clientData);
@@ -286,12 +289,13 @@ export const AddClient: React.FC<AddClientProps> = ({
                   name="lastName"
                   render={({ field: { onChange, value } }) => (
                     <TextInputComponent
-                      label="Last Name"
+                      label="Last Name *"
                       inputField={{
-                        value: value || "",
+                        value,
                         onChangeText: onChange,
                         placeholder: "Siriwardane",
                       }}
+                      errorText={errors.lastName?.message}
                     />
                   )}
                 />
@@ -423,7 +427,7 @@ export const AddClient: React.FC<AddClientProps> = ({
                     Known Conditions
                   </TextComponent>
                 </View>
-                <View className="flex-row gap-2 mb-3">
+                <View className="flex-row items-center gap-2 mb-3">
                   <View className="flex-1">
                     <TextInputComponent
                       inputField={{
