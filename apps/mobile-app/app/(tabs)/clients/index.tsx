@@ -2,6 +2,13 @@ import { ButtonComponent, ButtonSize, TextComponent } from "@/components/basic";
 import { View } from "@/components/Themed";
 import { Input, InputField, InputSlot } from "@/components/ui/input";
 import { Icons } from "@/config";
+import {
+  groupClientsByLetter,
+  useCreateClient,
+  useFetchClientById,
+  useFetchClients,
+  type CreateClientInput,
+} from "@/services/clients";
 import { Color, Font, TextSize, TextVariant, textStyles } from "@repo/config";
 import React, { useRef, useState } from "react";
 import {
@@ -15,13 +22,6 @@ import {
   type NativeSyntheticEvent,
   type TextStyle as RNTextStyle,
 } from "react-native";
-import {
-  groupClientsByLetter,
-  useCreateClient,
-  useFetchClientById,
-  useFetchClients,
-  type CreateClientInput,
-} from "../../../services/clients";
 import { AddClient } from "./addClient";
 import { ClientCardComponent } from "./ClientCard.component";
 import { ViewClient } from "./viewClient";
