@@ -5,11 +5,11 @@ import { Icons } from "@/config";
 import {
   groupClientsByLetter,
   useCreateClient,
-  useFetchClientById,
   useFetchClients,
   type CreateClientInput,
 } from "@/services/clients";
 import { Color, Font, TextSize, TextVariant, textStyles } from "@repo/config";
+import { useRouter } from "expo-router";
 import React, { useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -24,7 +24,6 @@ import {
 } from "react-native";
 import { AddClient } from "./addClient";
 import { ClientCardComponent } from "./ClientCard.component";
-import { ViewClient } from "./viewClient";
 
 // Text styles
 const textLargeStyle = textStyles[TextVariant.Body][TextSize.Large];
@@ -41,7 +40,6 @@ export default function ClientsScreen({
   userId = "2a3c19b8-d352-4b30-a2ac-1cdf993d310c", // Default hard coded user ID
 }: ClientsScreenProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedClient, setSelectedClient] = useState<any>(null);
   const [visibleSection, setVisibleSection] = useState<string>("A");
   const [isAddClientVisible, setIsAddClientVisible] = useState(false);
   const [alphabetContainerHeight, setAlphabetContainerHeight] = useState(0);
@@ -49,15 +47,11 @@ export default function ClientsScreen({
   const sectionRefs = useRef<Record<string, number>>({});
   const isProgrammaticScroll = useRef(false);
 
+  // useRouter gives us programmatic navigation — needed because navigation
+  const router = useRouter();
+
   // Fetch clients using React Query
   const { data: clients = [], isLoading } = useFetchClients(userId);
-
-  // Fetch full client details when selected
-  const { data: fullClientDetails, isLoading: isLoadingClientDetails } =
-    useFetchClientById(selectedClient?.id || "");
-
-  // Use full details if available, otherwise use the display client
-  const clientToDisplay = fullClientDetails || selectedClient;
 
   // Create client mutation
   const createClientMutation = useCreateClient(userId);
@@ -70,17 +64,7 @@ export default function ClientsScreen({
   const groupedClients = groupClientsByLetter(filteredClients);
 
   const handleClientPress = (clientId: string) => {
-    console.log("Client pressed:", clientId);
-    // Find the client data
-    const client = clients.find((c: any) => c.id === clientId);
-    if (client) {
-      setSelectedClient(client);
-    }
-  };
-
-  // Handle close from detail view
-  const handleCloseDetail = () => {
-    setSelectedClient(null);
+    router.push(`/clients/${clientId}` as any);
   };
 
   // Handle save client
@@ -420,34 +404,6 @@ export default function ClientsScreen({
         onClose={() => setIsAddClientVisible(false)}
         onSave={(data) => void handleSaveClient(data)}
       />
-
-      {/* View Client Modal */}
-      {selectedClient && fullClientDetails && !isLoadingClientDetails && (
-        <ViewClient
-          client={clientToDisplay}
-          visible={!!selectedClient}
-          onClose={handleCloseDetail}
-          onViewProfile={() => {
-            console.log("View profile for:", clientToDisplay?.id);
-            // Navigate to full profile view
-          }}
-          onShareCalendar={() => {
-            console.log("Share calendar for:", clientToDisplay?.id);
-            // Handle calendar sharing
-          }}
-          onCall={() => {
-            console.log("Call client:", clientToDisplay?.contact_number);
-            // Handle call action
-          }}
-        />
-      )}
-
-      {/* Loading State for Client Details */}
-      {selectedClient && isLoadingClientDetails && (
-        <View className="absolute inset-0 justify-center items-center bg-black/50">
-          <ActivityIndicator size="large" color={Color.Green} />
-        </View>
-      )}
     </View>
   );
 }
