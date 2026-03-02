@@ -68,9 +68,12 @@ export const Icon = React.forwardRef<
 type ParameterTypes = Omit<Parameters<typeof createIcon>[0], "Root">;
 
 const accessClassName = (style: any) => {
+  if (!style) return "";
   const styleObject = Array.isArray(style) ? style[0] : style;
+  if (!styleObject) return "";
   const keys = Object.keys(styleObject);
-  return styleObject[keys[1]];
+  const key = keys[1];
+  return key ? styleObject[key] : undefined;
 };
 
 const createIconUI = ({ ...props }: ParameterTypes) => {
