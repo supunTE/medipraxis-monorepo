@@ -1,4 +1,4 @@
-import { TextComponent } from "@/components/basic";
+import { ButtonComponent, ButtonSize, TextComponent } from "@/components/basic";
 import {
   DMSans_400Regular,
   DMSans_500Medium,
@@ -263,6 +263,14 @@ export function FormConfig({
         presentationStyle="pageSheet"
       >
         <View className="flex-1 bg-white">
+          {/* Header with Back Button */}
+          <View className="px-5 pt-4 pb-2 flex-row items-center">
+            <ButtonComponent.BackButton
+              size={ButtonSize.Small}
+              onPress={onClose}
+            />
+          </View>
+
           <ScrollView
             contentContainerStyle={{ padding: 20, paddingBottom: 160 }}
             keyboardShouldPersistTaps="handled"
@@ -344,7 +352,7 @@ export function FormConfig({
 
           {/* Action Footer */}
           <View
-            className="absolute bottom-0 w-full px-4 py-5 border-t bg-white gap-3"
+            className="absolute bottom-0 w-full px-4 py-5 border-t bg-white"
             style={{ borderTopColor: Color.LightGrey, borderTopWidth: 1 }}
           >
             <TouchableOpacity
@@ -352,13 +360,6 @@ export function FormConfig({
               onPress={handleSave}
             >
               <Text className="font-semibold text-white text-base">Save</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              className="bg-white py-3 px-6 rounded-lg items-center border"
-              style={{ borderColor: Color.Black, borderWidth: 1 }}
-              onPress={onClose}
-            >
-              <Text className="font-semibold text-black text-base">Close</Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -1,4 +1,4 @@
-import { TextComponent } from "@/components/basic";
+import { ButtonComponent, ButtonSize, TextComponent } from "@/components/basic";
 import {
   DMSans_400Regular,
   DMSans_500Medium,
@@ -46,6 +46,16 @@ export function FormSetupCenter({ visible, onClose }: FormSetupCenterProps) {
 
   const content = (
     <View className="flex-1 bg-white">
+      {/* Back Button - only show in modal mode */}
+      {onClose && (
+        <View className="px-5 pt-4 pb-2">
+          <ButtonComponent.BackButton
+            size={ButtonSize.Small}
+            onPress={onClose}
+          />
+        </View>
+      )}
+
       <ScrollView
         contentContainerStyle={{ flexGrow: 1, paddingVertical: 20 }}
         showsVerticalScrollIndicator={false}
@@ -105,18 +115,6 @@ export function FormSetupCenter({ visible, onClose }: FormSetupCenterProps) {
             </View>
           ))}
         </View>
-
-        {/* Close Button - only show in modal mode */}
-        {onClose && (
-          <View className="px-4 py-5 border-t border-gray-400 bg-white">
-            <TouchableOpacity
-              className="bg-black py-3 px-6 rounded-lg items-center"
-              onPress={onClose}
-            >
-              <Text className="font-semibold text-white text-base">Close</Text>
-            </TouchableOpacity>
-          </View>
-        )}
       </ScrollView>
     </View>
   );
