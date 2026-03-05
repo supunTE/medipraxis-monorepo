@@ -5,7 +5,7 @@ import { Color, Font, TextSize, TextVariant, textStyles } from "@repo/config";
 import React, { useState } from "react";
 import {
   ScrollView,
-  StyleSheet,
+  TouchableOpacity,
   View,
   type TextStyle as RNTextStyle,
 } from "react-native";
@@ -13,13 +13,16 @@ import {
 // Text styles
 const textLargeStyle = textStyles[TextVariant.Body][TextSize.Large];
 
+type TabType = "completed" | "pending";
+
 export default function ReportsScreen() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState<TabType>("completed");
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-white px-5 pt-5">
       {/* Header with Title and Button */}
-      <View style={styles.header}>
+      <View className="flex-row justify-between items-center mb-5">
         <TextComponent
           variant={TextVariant.Title}
           size={TextSize.Large}
@@ -42,7 +45,7 @@ export default function ReportsScreen() {
       </View>
 
       {/* Search Bar */}
-      <View style={styles.searchContainer}>
+      <View className="mb-5">
         <Input
           variant="outline"
           size="md"
@@ -80,47 +83,59 @@ export default function ReportsScreen() {
         </Input>
       </View>
 
+      {/* Tabs */}
+      <View className="flex-row justify-center items-center mb-5 gap-4">
+        <TouchableOpacity
+          onPress={() => setActiveTab("completed")}
+          className="px-6 py-2 rounded-lg"
+          style={{
+            backgroundColor:
+              activeTab === "completed" ? Color.Green : "transparent",
+          }}
+        >
+          <TextComponent
+            variant={TextVariant.Body}
+            size={TextSize.Medium}
+            color={Color.Black}
+          >
+            Completed
+          </TextComponent>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => setActiveTab("pending")}
+          className="px-6 py-2 rounded-lg"
+          style={{
+            backgroundColor:
+              activeTab === "pending" ? Color.Green : "transparent",
+          }}
+        >
+          <TextComponent
+            variant={TextVariant.Body}
+            size={TextSize.Medium}
+            color={Color.Black}
+          >
+            Pending
+          </TextComponent>
+        </TouchableOpacity>
+      </View>
+
       {/* Reports List */}
-      <ScrollView style={styles.content}>
+      <ScrollView className="flex-1">
         {/* TODO: Add reports list here */}
-        <View style={styles.emptyState}>
+        <View className="flex-1 justify-center items-center pt-10">
           <TextComponent
             variant={TextVariant.Body}
             size={TextSize.Medium}
             color={Color.Black}
             style={{ opacity: 0.5 }}
           >
-            No reports available yet
+            {activeTab === "completed"
+              ? "No completed reports yet"
+              : "No pending reports yet"}
           </TextComponent>
         </View>
       </ScrollView>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#FFFFFF",
-    paddingHorizontal: 20,
-    paddingTop: 20,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  searchContainer: {
-    marginBottom: 20,
-  },
-  content: {
-    flex: 1,
-  },
-  emptyState: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingTop: 40,
-  },
-});
