@@ -33,11 +33,12 @@
 
 ```ts
 <TextInputComponent
-    value={textInput}
-    onChangeText={setTextInput}
-    placeholder="Enter your name"
+    inputField={{
+        value: textInput,
+        onChangeText: setTextInput,
+        placeholder: "Enter your name",
+    }}
     label="Text Input"
-    showPasswordToggle={false}
  />
 ```
 
@@ -66,49 +67,179 @@ const usernameSchema = z
 
 <TextInputComponent
     inputWrapper={{
-    accessibilityHint: "Enter your username",
+        accessibilityHint: "Enter your username",
     }}
     inputField={{
-    value: username,
-    onChangeText: setUsername,
-    placeholder: "Enter username",
+        value: username,
+        onChangeText: setUsername,
+        placeholder: "Enter username",
     }}
     label="Username"
-    inputType={KeyboardInputType.Text}
-    validationSchema={usernameSchema}
+    inputType={TextInputType.Text}
     helperText="Username must be 3-20 characters"
-    validateOnChange={true}
 />
 
 <TextInputComponent
     inputWrapper={{
-    accessibilityHint: "Enter your password",
+        accessibilityHint: "Enter your password",
     }}
     inputField={{
-    value: password,
-    onChangeText: setPassword,
-    placeholder: "Enter password",
+        value: password,
+        onChangeText: setPassword,
+        placeholder: "Enter password",
     }}
     label="Password"
-    inputType={KeyboardInputType.Password}
-    validationSchema={passwordSchema}
+    inputType={TextInputType.Password}
     helperText="Password must be at least 8 characters with uppercase, lowercase, and number"
-    validateOnChange={true}
 />
+```
 
-<TextInputComponent.OTPField
-    inputWrapper={{
-    accessibilityHint: "Enter OTP digit",
-    }}
+## TextInput Component - Phone Number with Validation
+
+```ts
+const [contactNumber, setContactNumber] = useState("");
+const [emergencyContactNumber, setEmergencyContactNumber] = useState("");
+const [errors, setErrors] = useState<{
+  contactNumber?: string;
+  emergencyContactNumber?: string;
+}>({});
+
+// Mandatory phone number with validation
+<TextInputComponent
+    label="Contact Number *"
+    inputType={TextInputType.Phone}
     inputField={{
-    value: otp,
-    onChangeText: setOtp,
+        value: contactNumber,
+        onChangeText: (text) => {
+            setContactNumber(text);
+            if (errors.contactNumber) {
+                setErrors({ ...errors, contactNumber: undefined });
+            }
+        },
+        placeholder: "+94 70 123 4567",
     }}
-    label="Enter OTP"
-    size={60}
-    validationSchema={otpSchema}
+    errorText={errors.contactNumber}
 />
 
+// Optional phone number with validation (only validates if value provided)
+<TextInputComponent
+    label="Emergency Contact Number"
+    inputType={TextInputType.Phone}
+    inputField={{
+        value: emergencyContactNumber,
+        onChangeText: (text) => {
+            setEmergencyContactNumber(text);
+            if (errors.emergencyContactNumber) {
+                setErrors({ ...errors, emergencyContactNumber: undefined });
+            }
+        },
+        placeholder: "+94 70 123 4567",
+    }}
+    errorText={errors.emergencyContactNumber}
+/>
+
+// Validation function for mandatory phone number
+const validateContactNumber = (): boolean => {
+    if (!contactNumber.trim()) {
+        setErrors({ ...errors, contactNumber: "Contact number is required" });
+        return false;
+    }
+
+    const cleaned = contactNumber.replace(/[\s-]/g, '');
+    const phonePattern = /^\+[1-9]\d{1,14}$/;
+    if (!phonePattern.test(cleaned)) {
+        setErrors({
+            ...errors,
+            contactNumber: "Invalid phone number format. (e.g., +94701234567)",
+        });
+        return false;
+    }
+    return true;
+};
+
+// Validation function for optional phone number
+const validateEmergencyContactNumber = (): boolean => {
+    // Only validate if emergency contact number is provided
+    if (emergencyContactNumber.trim()) {
+        const cleaned = emergencyContactNumber.replace(/[\s-]/g, '');
+        const phonePattern = /^\+[1-9]\d{1,14}$/;
+        if (!phonePattern.test(cleaned)) {
+            setErrors({
+                ...errors,
+                emergencyContactNumber: "Invalid phone number format. (e.g., +94701234567)",
+            });
+            return false;
+        }
+    }
+    return true;
+};
+```
+
+## TextInput Component - Date of Birth with Validation
+
+```ts
+const [dateOfBirth, setDateOfBirth] = useState("");
+const [errors, setErrors] = useState<{ dateOfBirth?: string }>({});
+
+<TextInputComponent
+    label="Date of birth *"
+    inputField={{
+        value: dateOfBirth,
+        onChangeText: (text) => {
+            setDateOfBirth(text);
+            if (errors.dateOfBirth) {
+                setErrors({ ...errors, dateOfBirth: undefined });
+            }
+        },
+        placeholder: "29/12/1998",
+    }}
+    errorText={errors.dateOfBirth}
+/>
+
+// Validation function for date of birth
+const validateDateOfBirth = (): boolean => {
+    if (!dateOfBirth.trim()) {
+        setErrors({ ...errors, dateOfBirth: "Date of birth is required" });
+        return false;
+    }
+
+    // Check format DD/MM/YYYY
+    const datePattern = /^\d{2}\/\d{2}\/\d{4}$/;
+    if (!datePattern.test(dateOfBirth)) {
+        setErrors({ ...errors, dateOfBirth: "Invalid date format (DD/MM/YYYY)" });
+        return false;
+    }
+
+    const parts = dateOfBirth.split('/').map(Number);
+    const day = parts[0];
+    const month = parts[1];
+    const year = parts[2];
+
+    if (!day || !month || !year) {
+        setErrors({ ...errors, dateOfBirth: "Invalid date" });
+        return false;
+    }
+
+    const dateObj = new Date(year, month - 1, day);
+
+    // Check if date is valid (handles leap years automatically)
+    if (
+        dateObj.getDate() !== day ||
+        dateObj.getMonth() !== month - 1 ||
+        dateObj.getFullYear() !== year
+    ) {
+        setErrors({ ...errors, dateOfBirth: "Invalid date" });
+        return false;
+    }
+
+    // Check if date is not in the future
+    if (dateObj > new Date()) {
+        setErrors({ ...errors, dateOfBirth: "Date of birth cannot be in the future" });
+        return false;
+    }
+
+    return true;
+};
 ```
 
 ## Text Input Field - OTP
@@ -125,15 +256,14 @@ const otpSchema = z
 
 <TextInputComponent.OTPField
     inputWrapper={{
-    accessibilityHint: "Enter OTP digit",
+        accessibilityHint: "Enter OTP digit",
     }}
     inputField={{
-    value: otp,
-    onChangeText: setOtp,
+        value: otp,
+        onChangeText: setOtp,
     }}
     label="Enter OTP"
     size={60}
-    validationSchema={otpSchema}
 />
 ```
 
@@ -179,9 +309,75 @@ const countryOptions = [
     options={countryOptions}
     label="Country"
     placeholder="Select a country"
-    validationSchema={requiredSchema}
-    validateOnChange={true}
 />
+```
+
+## Dropdown Component - With Validation
+
+```ts
+const [title, setTitle] = useState("");
+const [gender, setGender] = useState("");
+const [errors, setErrors] = useState<{
+  title?: string;
+  gender?: string;
+}>({});
+
+const titleOptions = [
+    { label: "Mr", value: "Mr" },
+    { label: "Mrs", value: "Mrs" },
+    { label: "Ms", value: "Ms" },
+    { label: "Dr", value: "Dr" },
+];
+
+const genderOptions = [
+    { label: "Male", value: "Male" },
+    { label: "Female", value: "Female" },
+    { label: "Other", value: "Other" },
+];
+
+<DropdownComponent
+    label="Title *"
+    value={title}
+    onValueChange={(value) => {
+        setTitle(value);
+        if (errors.title) {
+            setErrors({ ...errors, title: undefined });
+        }
+    }}
+    options={titleOptions}
+    placeholder="Select"
+    errorText={errors.title}
+/>
+
+<DropdownComponent
+    label="Gender *"
+    value={gender}
+    onValueChange={(value) => {
+        setGender(value);
+        if (errors.gender) {
+            setErrors({ ...errors, gender: undefined });
+        }
+    }}
+    options={genderOptions}
+    placeholder="Select"
+    errorText={errors.gender}
+/>
+
+// Validation function
+const validateDropdowns = (): boolean => {
+    const newErrors: { title?: string; gender?: string } = {};
+
+    if (!title.trim()) {
+        newErrors.title = "Title is required";
+    }
+
+    if (!gender.trim()) {
+        newErrors.gender = "Gender is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+};
 ```
 
 # Chip Component

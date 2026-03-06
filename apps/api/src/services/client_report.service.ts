@@ -111,6 +111,35 @@ export class ClientReportService {
     return report;
   }
 
+  async getReportsByClientId(
+    clientId: string
+  ): Promise<(ClientReport & { status: string | null })[]> {
+    const reports = await this.clientReportRepository.findByClientId(clientId);
+
+    const reportsWithStatus = reports.map((report) => {
+      let status: string | null = null;
+
+      if (report.file_path) {
+        if (report.expiry_date) {
+          const expiryDate = new Date(report.expiry_date);
+          const now = new Date();
+          status = expiryDate < now ? "expired" : "uploaded";
+        } else {
+          status = "uploaded";
+        }
+      } else if (report.request_report_id) {
+        status = "pending";
+      }
+
+      return {
+        ...report,
+        status,
+      };
+    });
+
+    return reportsWithStatus;
+  }
+
   async getReportFileUrl(reportId: string): Promise<string> {
     const report = await this.clientReportRepository.findById(reportId);
 

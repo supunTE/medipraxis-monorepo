@@ -147,4 +147,25 @@ export class ClientReportController {
       return c.json({ error: message }, 500);
     }
   }
+
+  static async getReportsByClientId(
+    c: APIContext<{ param: { clientId: string } }, "/clientId/:clientId">
+  ) {
+    try {
+      const clientReportService = getClientReportService(c);
+      const clientId = c.req.param("clientId");
+
+      const report = await clientReportService.getReportsByClientId(clientId);
+
+      return c.json({ report });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to get report";
+      const status =
+        error instanceof Error && error.message === "Report not found"
+          ? 404
+          : 500;
+      return c.json({ error: message }, status);
+    }
+  }
 }

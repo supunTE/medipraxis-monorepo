@@ -12,6 +12,7 @@ const clientReports = new Hono()
     ClientReportController.getPendingReports
   )
   .get("/:id", ClientReportController.getReportById)
+  .get("/clientId/:clientId", ClientReportController.getReportsByClientId)
   .get("/:id/file", ClientReportController.getReportFileUrl)
   .delete("/:id", ClientReportController.deleteReport);
 

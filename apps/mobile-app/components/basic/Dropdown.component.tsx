@@ -10,7 +10,6 @@ import {
   Text,
   View,
 } from "react-native";
-import { type z } from "zod";
 
 // Option type for dropdown items
 export interface DropdownOption {
@@ -26,10 +25,8 @@ interface DropdownProps {
   placeholder?: string;
   label?: string;
   helperText?: string;
+  errorText?: string;
   showHelperText?: boolean;
-  isInvalid?: boolean;
-  validationSchema?: z.ZodString;
-  validateOnChange?: boolean;
 }
 
 // Text styles
@@ -149,64 +146,28 @@ const DropdownComponent = ({
   placeholder = "Select an option",
   label,
   helperText,
+  errorText,
   showHelperText = true,
-  isInvalid = false,
-  validationSchema,
-  validateOnChange = true,
 }: DropdownProps) => {
-  const [validationError, setValidationError] = useState<string | null>(null);
-  const [isValid, setIsValid] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef<View>(null);
 
-  // Validate input
-  useEffect(() => {
-    if (!validationSchema) {
-      setValidationError(null);
-      setIsValid(false);
-      return;
-    }
-
-    if (!validateOnChange && value === "") {
-      setValidationError(null);
-      setIsValid(false);
-      return;
-    }
-
-    const result = validationSchema.safeParse(value);
-
-    if (result.success) {
-      setValidationError(null);
-      setIsValid(true);
-    } else {
-      setIsValid(false);
-      if (value !== "") {
-        const zodError = result.error.issues[0]?.message || "Invalid selection";
-        setValidationError(zodError);
-      } else {
-        setValidationError(null);
-      }
-    }
-  }, [value, validationSchema, validateOnChange]);
-
-  // Determine border color based on validation
+  // Determine border color based on error state
   const getBorderColor = () => {
-    if (isInvalid || validationError) return Color.Danger;
-    if (isValid && value !== "") return Color.Success;
+    if (errorText) return Color.Danger;
     return Color.LightGrey;
   };
 
   // Get helper text to display
   const getHelperText = (): string | null => {
     if (!showHelperText) return null;
-    if (validationError) return validationError;
+    if (errorText) return errorText;
     return helperText || null;
   };
 
   // Determine helper text color
   const getHelperTextColor = () => {
-    if (validationError) return Color.Danger;
-    if (isValid) return Color.Success;
+    if (errorText) return Color.Danger;
     return Color.Grey;
   };
 
