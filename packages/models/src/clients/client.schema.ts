@@ -180,15 +180,17 @@ export type GetAllClientsQuery = z.infer<typeof getAllClientsQuerySchema>;
 export type GetClientByPhoneQuery = z.infer<typeof getClientByPhoneQuerySchema>;
 
 export type CreateClientInput = z.infer<typeof createClientSchema>;
-export type CreateContactInfoInput = Pick<
-  CreateClientInput,
-  "country_code" | "contact_number"
+type RequireNonNull<T> = {
+  [P in keyof T]-?: NonNullable<T[P]>;
+};
+
+export type CreateContactInfoInput = RequireNonNull<
+  Pick<CreateClientInput, "country_code" | "contact_number">
 >;
 export type UpdateClientInput = z.infer<typeof updateClientSchema>;
 
-export type ContactInfo = Pick<
-  CreateClientInput,
-  "country_code" | "contact_number" | "contact_id"
+export type ContactInfo = RequireNonNull<
+  Pick<CreateClientInput, "contact_id" | "country_code" | "contact_number">
 > & { created_date: string };
 
 export type GenderType = z.infer<typeof genderEnum>;

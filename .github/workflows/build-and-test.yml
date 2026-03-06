@@ -9,44 +9,62 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 2
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "yarn"
+          cache: yarn
 
       - name: Install dependencies
-        run: yarn install --immutable
+        run: |
+          yarn install --frozen-lockfile || yarn install --force
 
-      - name: Setup Turbo cache
+      - name: Verify workspaces
+        run: yarn workspaces info
+
+      - name: Cache Turbo
         uses: actions/cache@v4
         with:
           path: .turbo
-          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          key: ${{ runner.os }}-turbo-${{ hashFiles('**/package.json', '**/yarn.lock', 'turbo.json') }}
           restore-keys: |
             ${{ runner.os }}-turbo-
 
-      - name: Build all workspaces
+      - name: Build
         run: yarn build
 
-      - name: Lint all workspaces
+      - name: Lint
         run: yarn lint
 
-      - name: Type check all workspaces
+      - name: Typecheck
         run: yarn check-types
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+      - name: Test web-app
+        run: yarn workspace web-app test:ci
+
+      - name: Test api
+        run: yarn workspace api test:ci
+
+      - name: Test mobile-app
+        run: yarn workspace mobile-app test:ci
+
+      - name: Upload test results
         if: always()
+        uses: actions/upload-artifact@v4
         with:
-          name: build-outputs
-          path: |
-            apps/*/dist
-            apps/*/build
+          name: test-results
+          path: "**/junit.xml"
+          retention-days: 7
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: "**/coverage"
           retention-days: 7

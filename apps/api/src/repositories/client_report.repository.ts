@@ -136,6 +136,22 @@ export class ClientReportRepository {
   }
 
   /**
+   * Find client reports by client ID
+   */
+  async findByClientId(clientId: string): Promise<ClientReport[]> {
+    const { data, error } = await this.db
+      .from(CLIENT_REPORT_QUERIES.CLIENT_REPORT_TABLE)
+      .select(CLIENT_REPORT_QUERIES.FIND_ALL)
+      .eq(CLIENT_REPORT_QUERIES.CLIENT_ID, clientId);
+
+    if (error) {
+      throw new Error(`Failed to fetch client reports: ${error.message}`);
+    }
+
+    return (data as ClientReport[]) || [];
+  }
+
+  /**
    * Delete a client report (also removes file from storage)
    */
   async delete(reportId: string): Promise<boolean> {

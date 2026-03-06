@@ -3,7 +3,7 @@ import type {
   CreateClientInput,
   UpdateClientInput,
 } from "@repo/models";
-import { ClientRepository } from "../repositories";
+import type { ClientRepository } from "../repositories";
 
 export class ClientService {
   private clientRepository: ClientRepository;
@@ -30,8 +30,10 @@ export class ClientService {
     countryCode: string,
     contactNumber: string
   ): Promise<Client[]> {
+    // Remove leading plus sign from country code
+    const cleanCountryCode = countryCode?.replace(/^\\+/, "") ?? "";
     const clients = await this.clientRepository.findByPhone(
-      countryCode,
+      cleanCountryCode,
       contactNumber
     );
     return clients;
@@ -42,14 +44,17 @@ export class ClientService {
     let contactId = input.contact_id;
 
     if (input.country_code && input.contact_number) {
+      // Remove leading plus sign from country code
+      const cleanCountryCode = input.country_code.replace(/^\\+/, "");
+
       let contact = await this.clientRepository.findContactInfo(
-        input.country_code,
+        cleanCountryCode,
         input.contact_number
       );
 
       if (!contact) {
         contact = await this.clientRepository.createContactInfo({
-          country_code: input.country_code,
+          country_code: cleanCountryCode,
           contact_number: input.contact_number,
         });
       }

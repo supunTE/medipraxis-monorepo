@@ -9,6 +9,7 @@ import {
   EyeIcon,
   EyeSlashIcon,
   HeartIcon,
+  InfoIcon,
   MagnifyingGlassIcon,
   PlusIcon,
   ShoppingCartIcon,
@@ -33,6 +34,7 @@ export const Icons = {
   Calendar: CalendarIcon,
   CaretRight: CaretRightIcon,
   CaretUp: CaretUpIcon,
+  Info: InfoIcon,
 } as const;
 
 export type IconName = keyof typeof Icons;
