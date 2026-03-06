@@ -2,7 +2,7 @@ import type { IconName } from "@/config";
 import { apiClient } from "@/lib/api-client";
 import type { Client } from "@repo/models";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { parsePhoneNumber } from "libphonenumber-js";
+import parsePhoneNumber from "libphonenumber-js";
 import { Alert } from "react-native";
 
 // Client type for UI display
