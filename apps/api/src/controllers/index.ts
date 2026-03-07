@@ -1,6 +1,7 @@
 export * from "./ai.controller";
 export * from "./client.controller";
 export * from "./client_report.controller";
+export * from "./form.controller";
 export * from "./otp.controller";
 export * from "./request_report.controller";
 export * from "./shareable-calendar-link.controller";
