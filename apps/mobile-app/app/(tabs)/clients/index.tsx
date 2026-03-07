@@ -2,7 +2,14 @@ import { ButtonComponent, ButtonSize, TextComponent } from "@/components/basic";
 import { View } from "@/components/Themed";
 import { Input, InputField, InputSlot } from "@/components/ui/input";
 import { Icons } from "@/config";
+import {
+  groupClientsByLetter,
+  useCreateClient,
+  useFetchClients,
+  type CreateClientInput,
+} from "@/services/clients";
 import { Color, Font, TextSize, TextVariant, textStyles } from "@repo/config";
+import { useRouter } from "expo-router";
 import React, { useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -15,12 +22,6 @@ import {
   type NativeSyntheticEvent,
   type TextStyle as RNTextStyle,
 } from "react-native";
-import {
-  groupClientsByLetter,
-  useCreateClient,
-  useFetchClients,
-  type CreateClientInput,
-} from "../../../services/clients";
 import { AddClient } from "./addClient";
 import { ClientCardComponent } from "./ClientCard.component";
 
@@ -46,6 +47,9 @@ export default function ClientsScreen({
   const sectionRefs = useRef<Record<string, number>>({});
   const isProgrammaticScroll = useRef(false);
 
+  // useRouter gives us programmatic navigation — needed because navigation
+  const router = useRouter();
+
   // Fetch clients using React Query
   const { data: clients = [], isLoading } = useFetchClients(userId);
 
@@ -60,8 +64,7 @@ export default function ClientsScreen({
   const groupedClients = groupClientsByLetter(filteredClients);
 
   const handleClientPress = (clientId: string) => {
-    console.log("Client pressed:", clientId);
-    // Navigate to client details
+    router.push(`/clients/${clientId}` as any);
   };
 
   // Handle save client

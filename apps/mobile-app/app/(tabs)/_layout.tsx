@@ -1,5 +1,5 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { BottomTabBarProps } from "@react-navigation/bottom-tabs";
+import { type BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { LinearGradient } from "expo-linear-gradient";
 import { Link, Tabs } from "expo-router";
 import {
@@ -72,7 +72,11 @@ function CustomTabBar({
         >
           <View className="flex-row items-center bg-[#F8FFDA] rounded-[20px] px-2 py-2">
             {state.routes.map((route, index) => {
-              if (["_sitemap", "+not-found", "ai/index"].includes(route.name))
+              if (
+                ["_sitemap", "+not-found", "ai/index", "clients/[id]"].includes(
+                  route.name
+                )
+              )
                 return null;
 
               const descriptor = descriptors[route.key];
@@ -205,8 +209,15 @@ export default function TabLayout() {
           }}
         />
 
-        {/* Hidden AI Route */}
+        {/* Hidden Route */}
         <Tabs.Screen name="ai/index" options={{ href: null }} />
+        <Tabs.Screen
+          name="clients/[id]"
+          options={{
+            href: null,
+            headerShown: false,
+          }}
+        />
       </Tabs>
 
       <AIAssistantModal
