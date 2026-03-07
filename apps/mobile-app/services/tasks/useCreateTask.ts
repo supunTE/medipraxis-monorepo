@@ -1,14 +1,21 @@
-import { useMutation } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import { useMutation } from "@tanstack/react-query";
 
 export type CreateTaskPayload = {
   task_title: string;
-  client: string;
-  start_date: string;
-  end_date: string;
-  note: string;
-  alarm: boolean;
   user_id: string;
+  end_date: string;
+  // Optional fields
+  task_type_id?: string;
+  task_status_id?: string;
+  client_id?: string;
+  start_date?: string;
+  note?: string;
+  set_alarm?: boolean;
+  // Appointment-specific
+  appointment_number?: number;
+  slot_window_id?: string;
+  created_by?: "PRACTITIONER" | "CLIENT";
 };
 
 type UseCreateTaskOptions = {

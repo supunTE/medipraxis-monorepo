@@ -60,12 +60,8 @@ export const useCreateAppointmentSlot = (
         const res = await apiClient.api["slot-windows"].$post({
           json: {
             user_id: payload.user_id,
-            start_date: payload.date,
-            end_date: payload.date,
-            // start, end date should remove after api update and date, start_time, end_time should be added
-            // date: payload.date,
-            // start_time: payload.start_time,
-            // end_time: payload.end_time,
+            start_date: payload.start_time,
+            end_date: payload.end_time,
             total_slots: payload.total_slots,
             note: payload.note,
             location: payload.location,
