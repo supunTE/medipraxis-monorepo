@@ -282,18 +282,17 @@ export default function TaskForm({ visible, onClose }: Props) {
           {/* 2. APPOINTMENT SPECIFIC FIELDS */}
           {eventType === EVENT_TYPES.APPOINTMENT && (
             <View className="gap-4 mt-2.5">
-              <TextInputComponent
-                label="Enter the title"
-                inputField={{
-                  value: taskTitle,
-                  onChangeText: (v) => setField("taskTitle", v),
-                  placeholder: "Enter the title",
-                }}
-                inputType={TextInputType.Text}
-              />
-
               {!attachToSlot ? (
                 <>
+                  <TextInputComponent
+                    label="Enter the title"
+                    inputField={{
+                      value: taskTitle,
+                      onChangeText: (v) => setField("taskTitle", v),
+                      placeholder: "Enter the title",
+                    }}
+                    inputType={TextInputType.Text}
+                  />
                   <TouchableOpacity
                     className="my-1.5"
                     onPress={() => toggleAttachToSlot(true)}

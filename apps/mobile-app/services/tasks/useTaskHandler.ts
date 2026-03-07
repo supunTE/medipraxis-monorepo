@@ -234,6 +234,7 @@ export const useTaskHandler = (onClose: () => void) => {
         return {
           ...prev,
           attachToSlot: true,
+          taskTitle: "",
           location: "",
           startDate: "",
           endDate: "",
