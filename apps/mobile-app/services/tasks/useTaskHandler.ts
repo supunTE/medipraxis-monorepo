@@ -141,6 +141,29 @@ const extractTime = (dateStr: string): string => {
   return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 };
 
+/**
+ * Ensures strict ISO-like format with a 'T' separator in local timezone,
+ * fixing dates that might otherwise use space as separator (e.g., from DB).
+ */
+const formatDateTime = (dateStr: string): string => {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+};
+
+/**
+ * Extracts only the YYYY-MM-DD date part.
+ */
+const formatDateOnly = (dateStr: string): string => {
+  if (!dateStr) return "";
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
+
 export const useTaskHandler = (onClose: () => void) => {
   const [formState, setFormState] = useState<FormState>(DEFAULT_FORM_STATE);
 
@@ -289,8 +312,8 @@ export const useTaskHandler = (onClose: () => void) => {
       createTask({
         task_title: formState.taskTitle,
         user_id: formState.userId,
-        end_date: formState.endDate,
-        start_date: formState.startDate,
+        end_date: formatDateTime(formState.endDate),
+        start_date: formatDateTime(formState.startDate),
         client_id: formState.client || undefined,
         note: formState.note,
         set_alarm: formState.alarm,
@@ -363,9 +386,12 @@ export const useTaskHandler = (onClose: () => void) => {
         createAppointment({
           task_title: formState.taskTitle,
           user_id: formState.userId,
-          end_date: formState.endDate,
-          start_date: formState.startDate,
-          client_id: formState.client || undefined,
+          end_date: formatDateTime(formState.endDate),
+          // Sending date-only for start_date to bypass a backend bug in getAppointmentCountForDate
+          // (which blindly appends T00:00:00). WARNING: The appointment start time will be saved
+          // as midnight local time in the database!
+          start_date: formatDateOnly(formState.startDate),
+          client_id: formState.client,
           note: formState.note,
           task_type_id: TASK_TYPE_IDS.APPOINTMENT,
           task_status_id: TASK_STATUS_IDS.NOT_STARTED,
