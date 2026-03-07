@@ -1,5 +1,11 @@
-import { EVENT_TYPES, useTaskHandler } from "@/services/tasks/useTaskHandler";
-import React, { useState } from "react";
+import { useFetchClients } from "@/services/clients/useClients";
+import { useGetSlotWindows } from "@/services/slot-windows/useGetSlotWindows";
+import {
+  EVENT_TYPES,
+  useTaskHandler,
+  type EventType,
+} from "@/services/tasks/useTaskHandler";
+import React, { useMemo, useState } from "react";
 import { Modal, ScrollView, TouchableOpacity, View } from "react-native";
 
 import {
@@ -37,26 +43,32 @@ export default function TaskForm({ visible, onClose }: Props) {
   };
   const days = ["M", "T", "W", "T", "F", "S", "S"];
 
-  const clientOptions = [
-    { label: "Jennifer ( 012 3456789 )", value: "Jennifer ( 012 3456789 )" },
-    { label: "Michael ( 098 7654321 )", value: "Michael ( 098 7654321 )" },
-    { label: "Sarah ( 011 2233445 )", value: "Sarah ( 011 2233445 )" },
-  ];
-
-  const slotWindowOptions = [
-    { label: "Sat 9-11PM", value: "Sat 9-11PM" },
-    { label: "Sun 10-12AM", value: "Sun 10-12AM" },
-  ];
-
-  const slotNoOptions = [
-    { label: "No. 05 (10:15PM)", value: "No. 05 (10:15PM)" },
-    { label: "No. 06 (10:30PM)", value: "No. 06 (10:30PM)" },
-  ];
-
-  const { formState, setField, handleSave, isPending } =
-    useTaskHandler(onClose);
+  const {
+    formState,
+    setField,
+    handleSave,
+    resetForm,
+    switchEventType,
+    toggleAttachToSlot,
+    toggleRecurring,
+    isPending,
+  } = useTaskHandler(onClose);
   const [showEndDateTime, setShowEndDateTime] = useState(false);
-  const [isRecurring, setIsRecurring] = useState(false);
+
+  const { data: clients = [] } = useFetchClients(formState.userId);
+
+  const clientOptions = useMemo(
+    () =>
+      clients.map((c) => ({
+        label: c.name,
+        value: c.id,
+      })),
+    [clients]
+  );
+
+  const { data: slotWindows = [] } = useGetSlotWindows({
+    userId: formState.userId,
+  });
 
   const {
     taskTitle,
@@ -72,7 +84,54 @@ export default function TaskForm({ visible, onClose }: Props) {
     slotWindow,
     slotNo,
     attachToSlot,
+    slotDate,
+    repeatUntil,
+    isRecurring,
   } = formState;
+
+  const formatTime = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  };
+
+  const formatDay = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString([], { weekday: "short" });
+  };
+
+  const slotWindowOptions = useMemo(
+    () =>
+      slotWindows.map((sw) => ({
+        label: `${formatDay(sw.start_date)} ${formatTime(sw.start_date)}-${formatTime(sw.end_date)}`,
+        value: sw.slot_window_id,
+      })),
+    [slotWindows]
+  );
+
+  const selectedSlotWindow = useMemo(
+    () => slotWindows.find((sw) => sw.slot_window_id === slotWindow),
+    [slotWindows, slotWindow]
+  );
+
+  const slotNoOptions = useMemo(() => {
+    if (!selectedSlotWindow) return [];
+    const { total_slots, start_date, end_date } = selectedSlotWindow;
+    const startMs = new Date(start_date).getTime();
+    const endMs = new Date(end_date).getTime();
+    const slotDuration = (endMs - startMs) / total_slots;
+
+    return Array.from({ length: total_slots }, (_, i) => {
+      const slotTime = new Date(startMs + i * slotDuration);
+      const time = slotTime.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      return {
+        label: `No. ${String(i + 1).padStart(2, "0")} (${time})`,
+        value: String(i + 1),
+      };
+    });
+  }, [selectedSlotWindow]);
 
   const toggleDay = (dayIndex: number) => {
     const updatedDays = repeatDays.includes(dayIndex)
@@ -87,7 +146,7 @@ export default function TaskForm({ visible, onClose }: Props) {
       animationType="slide"
       presentationStyle="pageSheet"
     >
-      <View style={{ flex: 1, backgroundColor: "#fff" }}>
+      <View className="flex-1 bg-white">
         <ScrollView
           contentContainerClassName="p-5 pb-[150px]"
           keyboardShouldPersistTaps="handled"
@@ -103,7 +162,7 @@ export default function TaskForm({ visible, onClose }: Props) {
           {/* Event Type Radio Group */}
           <RadioGroupComponent
             value={eventType}
-            onChange={(val) => setField("eventType", val)}
+            onChange={(val) => switchEventType(val as EventType)}
             options={eventTypes.map((type) => ({
               label: EVENT_TYPE_LABELS[type as keyof typeof EVENT_TYPE_LABELS],
               value: type,
@@ -115,7 +174,7 @@ export default function TaskForm({ visible, onClose }: Props) {
             <ToggleButton
               label="Recurring"
               isActive={isRecurring}
-              onToggle={setIsRecurring}
+              onToggle={toggleRecurring}
             />
           )}
 
@@ -146,9 +205,10 @@ export default function TaskForm({ visible, onClose }: Props) {
               {!isRecurring && (
                 <DateTimePickerComponent
                   label="Date"
-                  value={endDate}
-                  onChange={(v) => setField("endDate", v)}
+                  value={slotDate}
+                  onChange={(v) => setField("slotDate", v)}
                   placeholder="Nov 15, 2025"
+                  mode="date"
                 />
               )}
 
@@ -157,6 +217,7 @@ export default function TaskForm({ visible, onClose }: Props) {
                 value={startDate}
                 onChange={(v) => setField("startDate", v)}
                 placeholder="08:00 am"
+                mode="time"
               />
 
               <DateTimePickerComponent
@@ -164,15 +225,17 @@ export default function TaskForm({ visible, onClose }: Props) {
                 value={endDate}
                 onChange={(v) => setField("endDate", v)}
                 placeholder="11:30 am"
+                mode="time"
               />
 
               {isRecurring && (
                 <>
                   <DateTimePickerComponent
                     label="Repeat Until"
-                    value={endDate}
-                    onChange={(v) => setField("endDate", v)}
-                    placeholder="Nov 15, 2025 11:30 am"
+                    value={repeatUntil}
+                    onChange={(v) => setField("repeatUntil", v)}
+                    placeholder="Nov 15, 2025"
+                    mode="date"
                   />
 
                   <View>
@@ -233,7 +296,7 @@ export default function TaskForm({ visible, onClose }: Props) {
                 <>
                   <TouchableOpacity
                     className="my-1.5"
-                    onPress={() => setField("attachToSlot", true)}
+                    onPress={() => toggleAttachToSlot(true)}
                   >
                     <TextComponent
                       variant={TextVariant.Body}
@@ -302,11 +365,7 @@ export default function TaskForm({ visible, onClose }: Props) {
                   </View>
                   <TouchableOpacity
                     className="my-1.5"
-                    onPress={() => {
-                      setField("attachToSlot", false);
-                      setField("slotWindow", "");
-                      setField("slotNo", "");
-                    }}
+                    onPress={() => toggleAttachToSlot(false)}
                   >
                     <TextComponent
                       variant={TextVariant.Body}
@@ -356,6 +415,7 @@ export default function TaskForm({ visible, onClose }: Props) {
                 value={startDate}
                 onChange={(v) => setField("startDate", v)}
                 placeholder="Nov 15, 2025  08:00 am"
+                mode="datetime"
               />
 
               {!showEndDateTime ? (
@@ -378,6 +438,7 @@ export default function TaskForm({ visible, onClose }: Props) {
                     value={endDate}
                     onChange={(v) => setField("endDate", v)}
                     placeholder="Nov 15, 2025  08:00 am"
+                    mode="datetime"
                   />
                   <TouchableOpacity
                     className="my-1.5"
@@ -400,17 +461,19 @@ export default function TaskForm({ visible, onClose }: Props) {
             </View>
           )}
 
-          {/* Common Note Field */}
-          <View className="gap-4 mt-4">
-            <TextAreaComponent
-              label="Note"
-              inputField={{
-                value: note,
-                onChangeText: (v) => setField("note", v),
-                placeholder: "Type additional notes here",
-              }}
-            />
-          </View>
+          {/* Note Field */}
+          {!(eventType === EVENT_TYPES.APPOINTMENT && attachToSlot) && (
+            <View className="gap-4 mt-4">
+              <TextAreaComponent
+                label="Note"
+                inputField={{
+                  value: note,
+                  onChangeText: (v) => setField("note", v),
+                  placeholder: "Type additional notes here",
+                }}
+              />
+            </View>
+          )}
 
           {/* Alarm - only for Reminder/Task */}
           {eventType === EVENT_TYPES.TASK && (
@@ -433,7 +496,10 @@ export default function TaskForm({ visible, onClose }: Props) {
                 size={ButtonSize.Large}
                 buttonColor={Color.LightGrey}
                 textColor={Color.Grey}
-                onPress={onClose}
+                onPress={() => {
+                  resetForm();
+                  onClose();
+                }}
               >
                 Close
               </ButtonComponent>
