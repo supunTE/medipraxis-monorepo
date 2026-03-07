@@ -2,7 +2,7 @@ import { Icon } from "@/components/ui/icon";
 import { Input, InputField, InputSlot } from "@/components/ui/input";
 import { Icons } from "@/config";
 import { Color, Font, TextSize, TextVariant, textStyles } from "@repo/config";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Modal,
   ScrollView,
@@ -141,6 +141,46 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
   const yearsOptions = Array.from({ length: 40 }, (_, i) => baseYear - 10 + i);
   const hoursOptions = Array.from({ length: 12 }, (_, i) => i + 1);
   const minutesOptions = Array.from({ length: 60 }, (_, i) => i);
+
+  const ITEM_HEIGHT = 44;
+  const monthScrollRef = useRef<ScrollView>(null);
+  const yearScrollRef = useRef<ScrollView>(null);
+  const hourScrollRef = useRef<ScrollView>(null);
+  const minuteScrollRef = useRef<ScrollView>(null);
+
+  // Auto-scroll month/year to selected item
+  useEffect(() => {
+    if (showMonthYearPicker) {
+      setTimeout(() => {
+        const monthIdx = tempDate.getMonth();
+        monthScrollRef.current?.scrollTo({
+          y: Math.max(0, monthIdx * ITEM_HEIGHT - ITEM_HEIGHT),
+          animated: false,
+        });
+        const yearIdx = tempDate.getFullYear() - (baseYear - 10);
+        yearScrollRef.current?.scrollTo({
+          y: Math.max(0, yearIdx * ITEM_HEIGHT - ITEM_HEIGHT),
+          animated: false,
+        });
+      }, 50);
+    }
+  }, [showMonthYearPicker]);
+
+  // Auto-scroll time picker to selected hour/minute
+  useEffect(() => {
+    if (showTimePicker) {
+      setTimeout(() => {
+        hourScrollRef.current?.scrollTo({
+          y: Math.max(0, (tempHours - 1) * ITEM_HEIGHT - ITEM_HEIGHT),
+          animated: false,
+        });
+        minuteScrollRef.current?.scrollTo({
+          y: Math.max(0, tempMinutes * ITEM_HEIGHT - ITEM_HEIGHT),
+          animated: false,
+        });
+      }, 50);
+    }
+  }, [showTimePicker]);
 
   return (
     <View className={`w-full ${className || ""}`}>
@@ -349,73 +389,93 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
                 {/* Overlay: Month/Year Grid Dropdown */}
                 {showMonthYearPicker && (
                   <View
-                    className="absolute top-0 left-4 bg-white rounded-2xl z-20 flex-row p-2 w-[240px]"
+                    className="absolute top-0 left-4 bg-white rounded-2xl z-20 p-2 w-[240px]"
                     style={{
                       elevation: 10,
-                      maxHeight: 280,
+                      maxHeight: 320,
                       shadowColor: "#000",
                       shadowOffset: { width: 0, height: 4 },
                       shadowOpacity: 0.15,
                       shadowRadius: 10,
                     }}
                   >
-                    {/* Months Scroll */}
-                    <ScrollView
-                      className="flex-1 pr-1 border-r border-[#eee]"
-                      showsVerticalScrollIndicator={false}
-                    >
-                      {monthNamesFull.map((m, idx) => {
-                        const isActive = tempDate.getMonth() === idx;
-                        return (
-                          <TouchableOpacity
-                            key={m}
-                            className={`py-3 px-2 rounded-lg items-center ${isActive ? "bg-[#e8f5e9]" : ""}`}
-                            onPress={() => {
-                              const newDate = new Date(tempDate);
-                              newDate.setMonth(idx);
-                              setTempDate(newDate);
-                              setShowMonthYearPicker(false);
-                            }}
-                          >
-                            <Text
-                              className={`text-base ${isActive ? "text-primary font-bold" : "text-[#444]"}`}
-                              style={{ color: isActive ? Color.Green : "#444" }}
+                    <View className="flex-row flex-1">
+                      {/* Months Scroll */}
+                      <ScrollView
+                        ref={monthScrollRef}
+                        className="flex-1 pr-1 border-r border-[#eee]"
+                        showsVerticalScrollIndicator={false}
+                      >
+                        {monthNamesFull.map((m, idx) => {
+                          const isActive = tempDate.getMonth() === idx;
+                          return (
+                            <TouchableOpacity
+                              key={m}
+                              className={`py-3 px-2 rounded-lg items-center ${isActive ? "bg-[#e8f5e9]" : ""}`}
+                              onPress={() => {
+                                const newDate = new Date(tempDate);
+                                newDate.setMonth(idx);
+                                setTempDate(newDate);
+                              }}
                             >
-                              {shortMonthNames[idx]}
-                            </Text>
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </ScrollView>
+                              <Text
+                                className={`text-base ${isActive ? "text-primary font-bold" : "text-[#444]"}`}
+                                style={{
+                                  color: isActive ? Color.Green : "#444",
+                                }}
+                              >
+                                {shortMonthNames[idx]}
+                              </Text>
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </ScrollView>
 
-                    {/* Years Scroll */}
-                    <ScrollView
-                      className="flex-1 pl-1"
-                      showsVerticalScrollIndicator={false}
-                    >
-                      {yearsOptions.map((y) => {
-                        const isActive = tempDate.getFullYear() === y;
-                        return (
-                          <TouchableOpacity
-                            key={y}
-                            className={`py-3 px-2 rounded-lg items-center ${isActive ? "bg-[#e8f5e9]" : ""}`}
-                            onPress={() => {
-                              const newDate = new Date(tempDate);
-                              newDate.setFullYear(y);
-                              setTempDate(newDate);
-                              setShowMonthYearPicker(false);
-                            }}
-                          >
-                            <Text
-                              className={`text-base ${isActive ? "text-primary font-bold" : "text-[#444]"}`}
-                              style={{ color: isActive ? Color.Green : "#444" }}
+                      {/* Years Scroll */}
+                      <ScrollView
+                        ref={yearScrollRef}
+                        className="flex-1 pl-1"
+                        showsVerticalScrollIndicator={false}
+                      >
+                        {yearsOptions.map((y) => {
+                          const isActive = tempDate.getFullYear() === y;
+                          return (
+                            <TouchableOpacity
+                              key={y}
+                              className={`py-3 px-2 rounded-lg items-center ${isActive ? "bg-[#e8f5e9]" : ""}`}
+                              onPress={() => {
+                                const newDate = new Date(tempDate);
+                                newDate.setFullYear(y);
+                                setTempDate(newDate);
+                              }}
                             >
-                              {y}
-                            </Text>
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </ScrollView>
+                              <Text
+                                className={`text-base ${isActive ? "text-primary font-bold" : "text-[#444]"}`}
+                                style={{
+                                  color: isActive ? Color.Green : "#444",
+                                }}
+                              >
+                                {y}
+                              </Text>
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </ScrollView>
+                    </View>
+                    <TouchableOpacity
+                      className="items-center py-2 mt-1"
+                      onPress={() => setShowMonthYearPicker(false)}
+                    >
+                      <Text
+                        style={{
+                          fontFamily: "Lato_700Bold",
+                          color: Color.Green,
+                          fontSize: 14,
+                        }}
+                      >
+                        DONE
+                      </Text>
+                    </TouchableOpacity>
                   </View>
                 )}
               </View>
@@ -490,6 +550,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
                 <View className="flex-row flex-1">
                   {/* Hours Scroll */}
                   <ScrollView
+                    ref={hourScrollRef}
                     className="flex-1 pr-1 border-r border-[#eee]"
                     showsVerticalScrollIndicator={false}
                   >
@@ -514,6 +575,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
 
                   {/* Minutes Scroll */}
                   <ScrollView
+                    ref={minuteScrollRef}
                     className="flex-1 px-1 border-r border-[#eee]"
                     showsVerticalScrollIndicator={false}
                   >
@@ -560,6 +622,22 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
                     })}
                   </ScrollView>
                 </View>
+                {mode !== "time" && (
+                  <TouchableOpacity
+                    className="items-center py-2 mt-1"
+                    onPress={() => setShowTimePicker(false)}
+                  >
+                    <Text
+                      style={{
+                        fontFamily: "Lato_700Bold",
+                        color: Color.Green,
+                        fontSize: 14,
+                      }}
+                    >
+                      DONE
+                    </Text>
+                  </TouchableOpacity>
+                )}
               </View>
             )}
 
