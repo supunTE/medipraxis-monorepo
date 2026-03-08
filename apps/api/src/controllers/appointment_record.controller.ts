@@ -1,6 +1,11 @@
+import type {
+  CreateAppointmentRecordInput,
+  GetAppointmentRecordParam,
+  GetAppointmentRecordQuery,
+  UpdateAppointmentRecordInput,
+} from "@repo/models";
 import { getAppointmentRecordService } from "../lib";
 import type { APIContext } from "../types/api-context";
-import type { CreateAppointmentRecordInput, GetAppointmentRecordQuery } from "@repo/models";
 
 export class AppointmentRecordController {
   static async create(c: APIContext<{ json: CreateAppointmentRecordInput }>) {
@@ -49,6 +54,28 @@ export class AppointmentRecordController {
           ? 404
           : 500;
       return c.json({ error: message }, status);
+    }
+  }
+  static async update(
+    c: APIContext<
+      { json: UpdateAppointmentRecordInput; param: GetAppointmentRecordParam },
+      "/:id"
+    >
+  ) {
+    try {
+      const service = getAppointmentRecordService(c);
+      const recordId = c.req.param("id");
+      const body = c.req.valid("json") as UpdateAppointmentRecordInput;
+
+      const record = await service.updateRecord(recordId, body);
+
+      return c.json({ success: true, record });
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to update appointment record";
+      return c.json({ error: message }, 400);
     }
   }
 }

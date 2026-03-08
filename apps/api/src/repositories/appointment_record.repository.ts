@@ -1,6 +1,7 @@
 import type {
   AppointmentRecord,
   CreateAppointmentRecordInput,
+  UpdateAppointmentRecordInput,
 } from "@repo/models";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -59,6 +60,31 @@ export class AppointmentRecordRepository {
       .single();
 
     if (error || !data) return null;
+    return data as AppointmentRecord;
+  }
+
+  async update(
+    recordId: string,
+    input: UpdateAppointmentRecordInput
+  ): Promise<AppointmentRecord> {
+    const { data, error } = await this.db
+      .from("appointment_record")
+      .update({
+        ...(input.appointment_data !== undefined && {
+          appointment_data: input.appointment_data,
+        }),
+        ...(input.note !== undefined && { note: input.note }),
+        updated_date: new Date().toISOString(),
+      })
+      .eq("appointment_record_id", recordId)
+      .eq("deleted", false)
+      .select()
+      .single();
+
+    if (error || !data) {
+      throw new Error(error?.message || "Failed to update appointment record");
+    }
+
     return data as AppointmentRecord;
   }
 }

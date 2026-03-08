@@ -1,6 +1,7 @@
 import type {
   AppointmentRecord,
   CreateAppointmentRecordInput,
+  UpdateAppointmentRecordInput,
 } from "@repo/models";
 import type { AppointmentRecordRepository } from "../repositories";
 
@@ -32,5 +33,12 @@ export class AppointmentRecordService {
       );
     if (!record) throw new Error("Appointment record not found");
     return record;
+  }
+
+  async updateRecord(
+    recordId: string,
+    input: UpdateAppointmentRecordInput
+  ): Promise<AppointmentRecord> {
+    return await this.appointmentRecordRepository.update(recordId, input);
   }
 }
