@@ -2,7 +2,7 @@ import type {
   CreateTaskInput,
   Task,
   TaskDetails,
-  UpdateTaskInput,
+  UpdateTaskData,
 } from "@repo/models";
 import { TaskType, type TaskStatus } from "@repo/models";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -116,9 +116,9 @@ export class TaskRepository {
 
   async update(
     taskId: string,
-    taskData: UpdateTaskInput
+    taskData: UpdateTaskData
   ): Promise<Task | null> {
-    const updateData: any = {
+    const updateData: UpdateTaskData & { modified_date: string } = {
       ...taskData,
       modified_date: new Date().toISOString(),
     };

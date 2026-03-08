@@ -78,8 +78,8 @@ export const createTaskSchema = z.object({
 export const updateTaskSchema = z
   .object({
     task_title: z.string().optional(),
-    task_type_id: z.string().optional(),
-    task_status_id: z.string().optional(),
+    task_type: TaskTypeEnum.optional(),
+    task_status: TaskStatusEnum.optional(),
     client_id: z.string().optional(),
     start_date: z.string().optional(),
     end_date: z.string().optional(),
@@ -114,7 +114,12 @@ export type GetAppointmentsByClientQuery = z.infer<
   typeof getAppointmentsByClientQuerySchema
 >;
 export type CreateTaskInput = z.infer<typeof createTaskSchema>;
+// TODO: UpdateTaskInput & UpdateTaskData can be merged if we introduce enums to the tasks db table
 export type UpdateTaskInput = z.infer<typeof updateTaskSchema>;
+export type UpdateTaskData = Omit<UpdateTaskInput, "task_type" | "task_status"> & {
+  task_type_id?: string;
+  task_status_id?: string;
+};
 export type ReserveAppointmentByClientInput = z.infer<
   typeof reserveAppointmentByClientSchema
 >;
