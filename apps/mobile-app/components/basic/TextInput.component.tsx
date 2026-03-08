@@ -82,7 +82,6 @@ export const TextInput: React.FC<TextInputProps> = ({
   helperText,
   errorText,
   hideHelperText = false,
-  validateOnChange = true,
   startIcon,
 }) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);

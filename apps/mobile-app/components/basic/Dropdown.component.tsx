@@ -28,7 +28,6 @@ interface DropdownProps {
   errorText?: string;
   showHelperText?: boolean;
   isInvalid?: boolean;
-  validationSchema?: z.ZodString;
   validateOnChange?: boolean;
   readOnly?: boolean;
 }
@@ -152,9 +151,6 @@ const DropdownComponent = ({
   helperText,
   errorText,
   showHelperText = true,
-  isInvalid = false,
-  validationSchema,
-  validateOnChange = true,
   readOnly = false,
 }: DropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
