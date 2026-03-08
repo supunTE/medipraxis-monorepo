@@ -6,9 +6,9 @@ import {
 import Loader from "@/components/basic/Loader.component";
 import { Text } from "@/components/Themed";
 import { Icons } from "@/config";
-import { useUpdateTask } from "@/services/tasks/useUpdateTask";
+import { useUpdateTask } from "@/services/tasks";
 import { formatISOToSimple } from "@/utils/timeUtils";
-import { TaskDetails } from "@repo/models";
+import { type TaskDetails } from "@repo/models";
 import { useState } from "react";
 import {
   Alert,
@@ -64,9 +64,7 @@ export const ViewReminderModal = ({
     updateTask({
       task_id: data.task_id,
       data: {
-        task_status_id: isChecked
-          ? "dbbdc7fa-aba7-43ab-8252-4766c1fbcfc1" // completed
-          : "6fe35772-6214-468c-ae26-1b2f2f067740", // inprogress
+        task_status: isChecked ? "COMPLETED" : "IN_PROGRESS",
       },
     });
   };

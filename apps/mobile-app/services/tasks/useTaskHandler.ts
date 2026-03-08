@@ -1,7 +1,7 @@
 import { DayOfWeek } from "@repo/models";
 import { useState } from "react";
 import { Alert } from "react-native";
-import { useCreateAppointmentSlot } from "./useCreateAppointmentSlot";
+import { useCreateAppointmentSlot } from "@/services/slotWindows";
 import { useCreateTask } from "./useCreateTask";
 
 export const EVENT_TYPES = {

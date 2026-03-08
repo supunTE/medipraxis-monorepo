@@ -1,7 +1,7 @@
 import { apiClient } from "@/lib/api-client";
 import { useMutation } from "@tanstack/react-query";
 
-import { DayOfWeek } from "@repo/models";
+import { type DayOfWeek } from "@repo/models";
 
 export type CreateAppointmentSlotPayload =
   | {

@@ -4,7 +4,7 @@ import {
   CheckboxIndicator,
   CheckboxLabel,
 } from "@/components/ui/checkbox";
-import { EVENT_TYPES, useTaskHandler } from "@/services/tasks/useTaskHandler";
+import { EVENT_TYPES, useTaskHandler } from "@/services/tasks";
 import { CheckIcon, GlobeIcon } from "phosphor-react-native";
 import React, { useState } from "react";
 import {
