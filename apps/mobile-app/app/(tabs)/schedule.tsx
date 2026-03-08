@@ -1,6 +1,3 @@
-import { useEffect, useState } from "react";
-import { Alert, StyleSheet } from "react-native";
-
 import { View } from "@/components/Themed";
 import {
   type AgendaData,
@@ -8,36 +5,58 @@ import {
   AgendaSelectionType,
   CalendarComponent,
 } from "@/components/advanced";
+import {
+  ViewAppointmentModal,
+  ViewReminderModal,
+} from "@/components/advanced/schedule";
+import Loader from "@/components/basic/Loader.component";
+import { useGetTaskById } from "@/services/tasks/useGetTaskById";
+import { useEffect, useState } from "react";
+import { Alert, StyleSheet } from "react-native";
 
 export default function ScheduleScreen() {
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTask, setSelectedTask] = useState<AgendaSelection | null>(
     null
   );
+  const [viewApptModalVisible, setViewApptModalVisible] = useState(false);
+  const [viewApptReadOnly, setViewApptReadOnly] = useState(true);
 
-  // Debug toast when appointment/reminder is selected
-  // TODO: Implement proper navigation to detail popups/screens
+  const [viewReminderModalVisible, setViewReminderModalVisible] =
+    useState(false);
+  const [viewReminderReadOnly, setViewReminderReadOnly] = useState(true);
+
+  // Use the mutation hook to fetch task by ID
+  const {
+    mutate: fetchTask,
+    data: appointmentData,
+    isLoading,
+  } = useGetTaskById({
+    onSuccess: () => {
+      selectedTask?.type == AgendaSelectionType.Appointment &&
+        setViewApptModalVisible(true);
+      selectedTask?.type == AgendaSelectionType.Reminder &&
+        setViewReminderModalVisible(true);
+    },
+    onError: (message) => {
+      console.error("Failed to load appointment:", message);
+      Alert.alert("Error", message);
+      setSelectedTask(null);
+    },
+  });
+
+  // Trigger fetch when appointment is selected
   useEffect(() => {
-    if (selectedTask) {
-      if (selectedTask.type === AgendaSelectionType.Appointment) {
-        Alert.alert(
-          "Appointment Selected",
-          `Appointment ID: ${selectedTask.appointmentId}\nGroup ID: ${selectedTask.groupId || "null"}`,
-          [{ text: "OK", onPress: () => setSelectedTask(null) }]
-        );
-      } else if (selectedTask.type === AgendaSelectionType.EmptySlot) {
-        Alert.alert(
-          "Empty Slot Selected",
-          `Group ID: ${selectedTask.groupId}\nSlot Number: ${selectedTask.slotNumber}`,
-          [{ text: "OK", onPress: () => setSelectedTask(null) }]
-        );
-      } else if (selectedTask.type === AgendaSelectionType.Reminder) {
-        Alert.alert(
-          "Reminder Selected",
-          `Reminder ID: ${selectedTask.reminderId}`,
-          [{ text: "OK", onPress: () => setSelectedTask(null) }]
-        );
-      }
+    if (selectedTask?.type === AgendaSelectionType.Appointment) {
+      fetchTask({ task_id: selectedTask.appointmentId });
+    } else if (selectedTask?.type === AgendaSelectionType.EmptySlot) {
+      Alert.alert(
+        "Empty Slot Selected",
+        `Group ID: ${selectedTask.groupId}\nSlot Number: ${selectedTask.slotNumber}`,
+        [{ text: "OK", onPress: () => setSelectedTask(null) }]
+      );
+    } else if (selectedTask?.type === AgendaSelectionType.Reminder) {
+      fetchTask({ task_id: selectedTask.reminderId });
     }
   }, [selectedTask]);
 
@@ -46,7 +65,11 @@ export default function ScheduleScreen() {
   const sampleAgendaData: AgendaData = {
     timeBlocks: [
       {
-        content: { id: "apt-001", title: "Appointment", client: "John Doe" },
+        content: {
+          id: "08c6d070-7d58-48d5-8cc1-7486952b5cd2",
+          title: "Appointment",
+          client: "John Doe",
+        },
         startTime: "1:00 am",
         endTime: "2:00 am",
       },
@@ -91,7 +114,10 @@ export default function ScheduleScreen() {
     ],
     reminders: [
       {
-        content: { id: "rem-001", title: "Check records" },
+        content: {
+          id: "d6bb74bd-8d22-47a4-8171-a7d327685b4d",
+          title: "Check records",
+        },
         startTime: "2:30 am",
       },
       {
@@ -130,6 +156,28 @@ export default function ScheduleScreen() {
     ],
   };
 
+  const handleCloseViewApptModal = () => {
+    setViewApptModalVisible(false);
+    setSelectedTask(null);
+    setViewApptReadOnly(true);
+  };
+
+  const handleCloseViewReminderModal = () => {
+    setViewReminderModalVisible(false);
+    setSelectedTask(null);
+    setViewReminderReadOnly(true);
+  };
+
+  const handleEditViewApptModal = () => {
+    setViewApptReadOnly(false);
+    setSelectedTask(null);
+  };
+
+  const handleEditViewReminderModal = () => {
+    setViewReminderReadOnly(false);
+    setSelectedTask(null);
+  };
+
   return (
     <View style={styles.container}>
       <CalendarComponent
@@ -157,6 +205,25 @@ export default function ScheduleScreen() {
           })
         }
       />
+      <ViewAppointmentModal
+        visible={viewApptModalVisible}
+        data={appointmentData?.task!}
+        onClose={handleCloseViewApptModal}
+        onEdit={handleEditViewApptModal}
+        onCancel={handleCloseViewApptModal}
+        readOnly={viewApptReadOnly}
+      />
+
+      <ViewReminderModal
+        visible={viewReminderModalVisible}
+        data={appointmentData?.task!}
+        onClose={handleCloseViewReminderModal}
+        onEdit={handleEditViewReminderModal}
+        onCancel={handleCloseViewReminderModal}
+        readOnly={viewReminderReadOnly}
+      />
+
+      {isLoading && <Loader />}
     </View>
   );
 }
