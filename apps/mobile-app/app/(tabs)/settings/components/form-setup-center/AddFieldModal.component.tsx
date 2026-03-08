@@ -81,7 +81,10 @@ export function AddFieldModal({
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View className="flex-1 bg-black/50 justify-center items-center p-5">
-        <View className="bg-white rounded-xl w-full max-w-[500px] max-h-[80%] overflow-hidden">
+        <View
+          className="bg-white rounded-xl w-full max-w-[500px]"
+          style={{ maxHeight: "80%" }}
+        >
           {/* Header with Delete Icon */}
           <View className="flex-row justify-between items-center px-5 py-4 border-b border-gray-300/30">
             <Text className="font-semibold text-xl text-black">
@@ -95,9 +98,10 @@ export function AddFieldModal({
           </View>
 
           <ScrollView
-            className="flex-1"
+            style={{ flexGrow: 0, flexShrink: 1 }}
             contentContainerStyle={{ padding: 20 }}
             keyboardShouldPersistTaps="handled"
+            nestedScrollEnabled
           >
             {/* Field Type Dropdown */}
             <FieldTypePicker
