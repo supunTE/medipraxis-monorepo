@@ -5,6 +5,9 @@ import { useCreateAppointmentSlot } from "./useCreateAppointmentSlot";
 import { useCreateTask } from "./useCreateTask";
 import { useReserveAppointment } from "./useReserveAppointment";
 
+// Todo: React hook form integration
+// Todo: Appointment slot window slot no options integration with backend, backend implementation
+
 export const EVENT_TYPES = {
   TASK: "task",
   APPOINTMENT_SLOT_WINDOW: "slot_window",
