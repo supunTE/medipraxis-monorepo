@@ -1,19 +1,23 @@
+import { Tabs } from "expo-router";
 import { useEffect, useState } from "react";
-import { Alert, StyleSheet } from "react-native";
+import { Alert, Pressable, StyleSheet, Text } from "react-native";
 
-import { View } from "@/components/Themed";
 import {
   type AgendaData,
   type AgendaSelection,
   AgendaSelectionType,
   CalendarComponent,
 } from "@/components/advanced";
+import TaskForm from "@/components/advanced/taskPanel/TaskForm";
+import { View } from "@/components/Themed";
+import { PlusIcon } from "phosphor-react-native";
 
 export default function ScheduleScreen() {
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTask, setSelectedTask] = useState<AgendaSelection | null>(
     null
   );
+  const [showForm, setShowForm] = useState(false);
 
   // Debug toast when appointment/reminder is selected
   // TODO: Implement proper navigation to detail popups/screens
@@ -132,6 +136,19 @@ export default function ScheduleScreen() {
 
   return (
     <View style={styles.container}>
+      <Tabs.Screen
+        options={{
+          headerRight: () => (
+            <Pressable
+              onPress={() => setShowForm(true)}
+              className="flex-row items-center bg-mp-green px-4 py-2 rounded-full mr-4 gap-1"
+            >
+              <PlusIcon size={14} color="white" weight="bold" />
+              <Text className="text-white font-bold text-lg">Create</Text>
+            </Pressable>
+          ),
+        }}
+      />
       <CalendarComponent
         agendaData={sampleAgendaData}
         selectedDate={selectedDate}
@@ -157,6 +174,8 @@ export default function ScheduleScreen() {
           })
         }
       />
+
+      <TaskForm visible={showForm} onClose={() => setShowForm(false)} />
     </View>
   );
 }
