@@ -1,6 +1,12 @@
-import { TextComponent } from "@/components/basic";
+import { ChipComponent, ChipVariant, TextComponent } from "@/components/basic";
 import { Color, TextSize, TextVariant } from "@repo/config";
-import { Eye, FileImage, FilePdf } from "phosphor-react-native";
+import {
+  CalendarBlankIcon,
+  ClockIcon,
+  EyeIcon,
+  FileImageIcon,
+  FilePdfIcon,
+} from "phosphor-react-native";
 import React from "react";
 import { TouchableOpacity, View } from "react-native";
 
@@ -49,14 +55,11 @@ export const ReportTile: React.FC<ReportTileProps> = ({
     });
   };
 
+  // Determine if reports are completed or pending
+  const isCompleted = reports.some((report) => report.file_path);
+
   return (
-    <View
-      className="bg-white rounded-2xl p-4 shadow-sm"
-      style={{
-        borderWidth: 1,
-        borderColor: "#E5E5E5",
-      }}
-    >
+    <View className="bg-white rounded-2xl p-4 shadow-sm border border-[#E5E5E5]">
       {/* Header: Client Name and View Client Button */}
       <View className="flex-row justify-between items-center mb-3">
         <TextComponent
@@ -68,12 +71,11 @@ export const ReportTile: React.FC<ReportTileProps> = ({
         </TextComponent>
 
         <TouchableOpacity
-          className="flex-row items-center gap-2 px-3 py-2 rounded-lg"
-          style={{ backgroundColor: Color.Black }}
+          className="flex-row items-center gap-2 px-3 py-2 rounded-lg bg-black"
           onPress={() => onViewClient?.(clientId)}
           activeOpacity={0.7}
         >
-          <Eye size={16} color={Color.White} weight="regular" />
+          <EyeIcon size={16} color={Color.White} weight="regular" />
           <TextComponent
             variant={TextVariant.Button}
             size={TextSize.Small}
@@ -92,27 +94,25 @@ export const ReportTile: React.FC<ReportTileProps> = ({
             return (
               <TouchableOpacity
                 key={report.report_id}
-                className="flex-row items-center gap-3 p-3 rounded-lg"
-                style={{
-                  backgroundColor: "#F8F8F8",
-                  borderWidth: 1,
-                  borderColor: "#E5E5E5",
-                }}
+                className="flex-row items-center gap-3 p-3 rounded-lg bg-white border border-[#E5E5E5] self-start shadow-sm"
                 onPress={() =>
                   onReportClick?.(report.report_id, report.file_path!)
                 }
                 activeOpacity={0.7}
               >
                 {report.file_type === "PDF" ? (
-                  <FilePdf size={24} color={Color.Black} weight="regular" />
+                  <FilePdfIcon size={24} color={Color.Black} weight="regular" />
                 ) : (
-                  <FileImage size={24} color={Color.Black} weight="regular" />
+                  <FileImageIcon
+                    size={24}
+                    color={Color.Black}
+                    weight="regular"
+                  />
                 )}
                 <TextComponent
                   variant={TextVariant.Body}
                   size={TextSize.Small}
                   color={Color.Black}
-                  style={{ flex: 1 }}
                 >
                   {report.report_title || "Untitled Report"}
                 </TextComponent>
@@ -135,26 +135,38 @@ export const ReportTile: React.FC<ReportTileProps> = ({
         })}
       </View>
 
-      {/* Footer: Date and Time */}
-      <View
-        className="flex-row justify-between items-center pt-2 border-t-[1px]"
-        style={{ borderTopColor: "#E5E5E5" }}
-      >
-        <TextComponent
-          variant={TextVariant.Body}
-          size={TextSize.Small}
-          color={Color.Grey}
-        >
-          {formatDate(reportDate)}
-        </TextComponent>
-        <TextComponent
-          variant={TextVariant.Body}
-          size={TextSize.Small}
-          color={Color.Grey}
-        >
-          {formatTime(reportDate)}
-        </TextComponent>
+      {/* Date and Time */}
+      <View className="flex-row justify-between items-center mb-3">
+        <View className="flex-row items-center gap-2">
+          <CalendarBlankIcon size={16} color={Color.Grey} weight="regular" />
+          <TextComponent
+            variant={TextVariant.Body}
+            size={TextSize.Small}
+            color={Color.Grey}
+          >
+            {formatDate(reportDate)}
+          </TextComponent>
+        </View>
+        <View className="flex-row items-center gap-2">
+          <ClockIcon size={16} color={Color.Grey} weight="regular" />
+          <TextComponent
+            variant={TextVariant.Body}
+            size={TextSize.Small}
+            color={Color.Grey}
+          >
+            {formatTime(reportDate)}
+          </TextComponent>
+        </View>
       </View>
+
+      {/* Horizontal Divider */}
+      <View className="border-t border-[#E5E5E5] mb-3" />
+
+      {/* Status Chip */}
+      <ChipComponent
+        text={isCompleted ? "Completed" : "Pending"}
+        variant={isCompleted ? ChipVariant.Green : ChipVariant.LightGreen}
+      />
     </View>
   );
 };
