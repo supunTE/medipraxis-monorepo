@@ -2,6 +2,7 @@ export * from "./client.repository";
 export * from "./client_report.repository";
 export * from "./form.repository";
 export * from "./otp.repository";
+export * from "./refresh-token.repository";
 export * from "./request_report.repository";
 export * from "./shareable-calendar-link.repository";
 export * from "./shareable_user_link.repository";
