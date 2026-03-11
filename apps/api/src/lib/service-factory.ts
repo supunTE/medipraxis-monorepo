@@ -4,6 +4,7 @@ import {
   ClientRepository,
   FormRepository,
   OtpRepository,
+  RefreshTokenRepository,
   RequestReportRepository,
   ShareableCalendarLinkRepository,
   ShareableUserLinkRepository,
@@ -13,6 +14,7 @@ import {
 } from "../repositories";
 import {
   AIService,
+  AuthService,
   ClientReportService,
   ClientService,
   FormService,
@@ -131,4 +133,11 @@ export function getFormService(c: Context<{ Bindings: Env }>) {
   const db = createDatabaseClient(c.env);
   const formRepository = new FormRepository(db);
   return new FormService(formRepository);
+}
+
+export function getAuthService(c: Context<{ Bindings: Env }>) {
+  const db = createDatabaseClient(c.env);
+  const userRepository = new UserRepository(db);
+  const refreshTokenRepository = new RefreshTokenRepository(db);
+  return new AuthService(userRepository, refreshTokenRepository);
 }
