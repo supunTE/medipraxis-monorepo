@@ -248,15 +248,18 @@ export class TaskController {
     }
   }
 
-  // Get user's task summary for today
+  // Get user's task summary for today 
   static async getTaskSummaryByUserId(
     c: APIContext<{ query: GetTaskSummaryQuery }>
   ) {
     try {
       const taskService = getTaskService(c);
       const userId = c.req.query("user_id") as string;
-      const date =
-        c.req.query("date") ?? new Date().toISOString().split("T")[0];
+      const dateParam = c.req.query("date");
+      const date: string =
+        dateParam !== undefined
+          ? dateParam
+          : (new Date().toISOString().split("T")[0] as string);
 
       const summary = await taskService.getTaskSummaryForToday(userId, date);
 
