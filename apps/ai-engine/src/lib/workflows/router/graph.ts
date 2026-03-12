@@ -2,6 +2,7 @@ import type { AIActionType, ChatMessage, RouterResponse } from "@repo/models";
 import { z } from "genkit";
 import { ai } from "../../models";
 import { processAppointments } from "../appointments/graph";
+import { processReminders } from "../reminders/graph";
 import {
   generateResponse,
   guardRailCheck,
@@ -9,7 +10,7 @@ import {
   VALID_TASKS,
 } from "./nodes";
 
-const WORKFLOW_TASKS: AIActionType[] = ["appointment"];
+const WORKFLOW_TASKS: AIActionType[] = ["appointment", "reminder"];
 const NOT_IMPLEMENTED_TASKS: AIActionType[] = ["client_management"];
 
 async function _processAIQuery(
@@ -49,6 +50,8 @@ async function _processAIQuery(
     > = {
       appointment: (q, h, u) =>
         processAppointments({ query: q, history: h, userId: u }),
+      reminder: (q, h, u) =>
+        processReminders({ query: q, history: h, userId: u }),
     };
 
     const workflow = workflowMap[task];

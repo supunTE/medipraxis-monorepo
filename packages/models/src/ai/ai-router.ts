@@ -14,6 +14,7 @@ export interface UIChatMessage {
 export type AIActionType =
   | "greeting"
   | "appointment"
+  | "reminder"
   | "client_management"
   | "general"
   | "unknown";
