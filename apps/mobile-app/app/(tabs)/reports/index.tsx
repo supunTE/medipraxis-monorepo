@@ -56,7 +56,7 @@ export default function ReportsScreen() {
         </TextComponent>
 
         <ButtonComponent
-          size={ButtonSize.Medium}
+          size={ButtonSize.Small}
           buttonColor={Color.Black}
           textColor={Color.White}
           onPress={() => {

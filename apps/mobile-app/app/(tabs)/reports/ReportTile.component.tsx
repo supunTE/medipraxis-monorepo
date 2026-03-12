@@ -1,4 +1,10 @@
-import { ChipComponent, ChipVariant, TextComponent } from "@/components/basic";
+import {
+  ButtonComponent,
+  ButtonSize,
+  ChipComponent,
+  ChipVariant,
+  TextComponent,
+} from "@/components/basic";
 import { Color, TextSize, TextVariant } from "@repo/config";
 import {
   CalendarBlankIcon,
@@ -64,26 +70,22 @@ export const ReportTile: React.FC<ReportTileProps> = ({
       <View className="flex-row justify-between items-center mb-3">
         <TextComponent
           variant={TextVariant.Title}
-          size={TextSize.Medium}
+          size={TextSize.Small}
           color={Color.Black}
         >
           {clientFirstName} {clientLastName}
         </TextComponent>
 
-        <TouchableOpacity
-          className="flex-row items-center gap-2 px-3 py-2 rounded-lg bg-black"
+        <ButtonComponent
+          size={ButtonSize.Small}
+          leftIcon={EyeIcon}
+          buttonColor={Color.Black}
+          textColor={Color.White}
+          iconColor={Color.White}
           onPress={() => onViewClient?.(clientId)}
-          activeOpacity={0.7}
         >
-          <EyeIcon size={16} color={Color.White} weight="regular" />
-          <TextComponent
-            variant={TextVariant.Button}
-            size={TextSize.Small}
-            color={Color.White}
-          >
-            View Client
-          </TextComponent>
-        </TouchableOpacity>
+          View Client
+        </ButtonComponent>
       </View>
 
       {/* Reports List */}
