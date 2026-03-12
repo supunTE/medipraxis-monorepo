@@ -1,5 +1,13 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Color, TextSize, TextVariant, textStyles } from "@repo/config";
+import {
+  Color,
+  Font,
+  FontStyle,
+  FontWeight,
+  TextSize,
+  TextVariant,
+  textStyles,
+} from "@repo/config";
 import type { User } from "@repo/models";
 import { useEffect, useState } from "react";
 import {
@@ -18,8 +26,27 @@ import {
   Text as SvgText,
 } from "react-native-svg";
 
-const HARDCODED_USER_ID = "2a3c19b8-d352-4b30-a2ac-1cdf993d310c"; // Hardcoded for demo purposes
+const HARDCODED_USER_ID = "2a3c19b8-d352-4b30-a2ac-1cdf993d310c";
 const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+
+const fontFamilyMap: Record<Font, string> = {
+  [Font.Lato]: "Lato",
+  [Font.DMsans]: "DMSans",
+};
+
+const fontWeightMap: Record<FontWeight, "400" | "500" | "600" | "700" | "800"> =
+  {
+    [FontWeight.Regular]: "400",
+    [FontWeight.Medium]: "500",
+    [FontWeight.SemiBold]: "600",
+    [FontWeight.Bold]: "700",
+    [FontWeight.ExtraBold]: "800",
+  };
+
+const fontStyleMap: Record<FontStyle, "normal" | "italic"> = {
+  [FontStyle.Normal]: "normal",
+  [FontStyle.Italic]: "italic",
+};
 
 function getFormattedDate(): string {
   const today = new Date();
@@ -48,20 +75,35 @@ function applyTextStyle(variant: TextVariant, size: TextSize) {
   const style =
     textStyles[variant][size as keyof (typeof textStyles)[typeof variant]];
 
-  const fontFamilyMap: Record<string, string> = {
-    lato: "Lato",
-    dm_sans: "DMSans",
-  };
-
   return {
-    fontFamily: fontFamilyMap[style.fontFamily] ?? undefined,
+    fontFamily: fontFamilyMap[style.fontFamily],
     fontSize: style.fontSize,
-    fontWeight: String(style.fontWeight) as any,
-    fontStyle: style.fontStyle as any,
+    fontWeight: fontWeightMap[style.fontWeight as FontWeight],
+    fontStyle: fontStyleMap[style.fontStyle],
     ...(style.lineHeight && { lineHeight: style.lineHeight }),
     ...(style.letterSpacing && { letterSpacing: style.letterSpacing }),
   };
 }
+
+function getLocalDateString(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+type UserResponse = {
+  success: boolean;
+  user: User;
+};
+
+type TaskSummaryResponse = {
+  success: boolean;
+  date: string;
+  appointment_count: number;
+  reminder_count: number;
+};
 
 interface HomeCardProps {
   onNotificationPress?: () => void;
@@ -72,7 +114,7 @@ interface HomeCardProps {
 export default function HomeCard({
   onNotificationPress,
   onSettingsPress,
-  notificationCount = 0,
+  notificationCount = 8,
 }: HomeCardProps) {
   const [user, setUser] = useState<User | null>(null);
   const [appointmentCount, setAppointmentCount] = useState<number>(0);
@@ -82,24 +124,23 @@ export default function HomeCard({
   useEffect(() => {
     async function fetchData() {
       try {
-        const [userRes, appointmentsRes, tasksRes] = await Promise.all([
+        const today = getLocalDateString();
+
+        const [userRes, summaryRes] = await Promise.all([
           fetch(`${BASE_URL}/api/users/${HARDCODED_USER_ID}`),
           fetch(
-            `${BASE_URL}/api/tasks?user_id=${HARDCODED_USER_ID}&task_type=APPOINTMENT`
-          ),
-          fetch(
-            `${BASE_URL}/api/tasks?user_id=${HARDCODED_USER_ID}&task_type=REMINDER`
+            `${BASE_URL}/api/tasks/summary?user_id=${HARDCODED_USER_ID}&date=${today}`
           ),
         ]);
 
-        const userData = await userRes.json();
-        const appointmentsData = await appointmentsRes.json();
-        const tasksData = await tasksRes.json();
+        const userData = (await userRes.json()) as UserResponse;
+        const summaryData = (await summaryRes.json()) as TaskSummaryResponse;
 
-        if (userData.success) setUser(userData.user as User);
-        if (appointmentsData.success)
-          setAppointmentCount(appointmentsData.tasks?.length ?? 0);
-        if (tasksData.success) setTaskCount(tasksData.tasks?.length ?? 0);
+        if (userData.success) setUser(userData.user);
+        if (summaryData.success) {
+          setAppointmentCount(summaryData.appointment_count);
+          setTaskCount(summaryData.reminder_count);
+        }
       } catch (error) {
         console.error("HomeCard fetch error:", error);
       } finally {
@@ -107,7 +148,7 @@ export default function HomeCard({
       }
     }
 
-    fetchData();
+    void fetchData();
   }, []);
 
   return (

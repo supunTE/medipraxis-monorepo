@@ -142,3 +142,11 @@ export enum TaskStatus {
   NOT_STARTED = "NOT_STARTED",
   COMPLETED = "COMPLETED",
 }
+
+/* Get task summaries for home page */
+export const getTaskSummaryQuerySchema = z.object({
+  user_id: z.string(),
+  date: z.string().optional(),
+});
+
+export type GetTaskSummaryQuery = z.infer<typeof getTaskSummaryQuerySchema>;
