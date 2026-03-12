@@ -71,13 +71,13 @@ const RPCTest = () => {
         },
         json: {
           task_title: "Updated: Daily Blood Sugar Monitoring",
-          task_type_id: "24f21ec7-bf59-4c35-9c54-36cb24afafbe",
+          task_type: "APPOINTMENT",
           client_id: "24f21ec7-bf59-4c35-9c54-36cb24afafb3",
           start_date: "2025-12-20T06:46:42.023",
           end_date: "2025-12-26T05:32:21.756",
           note: "Updated: Patient needs to monitor blood sugar levels twice daily.",
           set_alarm: true,
-          task_status_id: "24f21ec7-bf59-4c35-9c54-36cb24afafbb",
+          task_status: "COMPLETED",
           appointment_number: 1,
         },
       });
