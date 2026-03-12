@@ -27,6 +27,9 @@ interface DropdownProps {
   helperText?: string;
   errorText?: string;
   showHelperText?: boolean;
+  isInvalid?: boolean;
+  validateOnChange?: boolean;
+  readOnly?: boolean;
 }
 
 // Text styles
@@ -148,6 +151,7 @@ const DropdownComponent = ({
   helperText,
   errorText,
   showHelperText = true,
+  readOnly = false,
 }: DropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const triggerRef = useRef<View>(null);
@@ -210,8 +214,10 @@ const DropdownComponent = ({
         className="border rounded-lg w-full h-[50px] flex-row items-center justify-between px-4"
         style={{
           borderColor: getBorderColor(),
-          backgroundColor: Color.White,
+          backgroundColor: readOnly ? Color.LightGrey : Color.White,
+          opacity: readOnly ? 0.6 : 1,
         }}
+        disabled={readOnly}
       >
         <Text
           className="flex-1"

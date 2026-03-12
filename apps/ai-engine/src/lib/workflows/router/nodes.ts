@@ -5,6 +5,7 @@ import { retryMiddleware } from "../../retry-config";
 export const VALID_TASKS = [
   "greeting",
   "appointment",
+  "reminder",
   "client_management",
   "general",
   "unknown",

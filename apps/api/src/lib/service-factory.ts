@@ -2,6 +2,7 @@ import type { Context } from "hono";
 import {
   ClientReportRepository,
   ClientRepository,
+  FormRepository,
   OtpRepository,
   RequestReportRepository,
   ShareableCalendarLinkRepository,
@@ -14,6 +15,7 @@ import {
   AIService,
   ClientReportService,
   ClientService,
+  FormService,
   OtpService,
   RequestReportService,
   ShareableCalendarLinkService,
@@ -123,4 +125,10 @@ export function getShareableCalendarLinkService(c: Context<{ Bindings: Env }>) {
     slotWindowRepository,
     taskRepository
   );
+}
+
+export function getFormService(c: Context<{ Bindings: Env }>) {
+  const db = createDatabaseClient(c.env);
+  const formRepository = new FormRepository(db);
+  return new FormService(formRepository);
 }

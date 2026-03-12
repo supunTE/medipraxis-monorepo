@@ -91,6 +91,8 @@ const usernameSchema = z
     label="Password"
     inputType={TextInputType.Password}
     helperText="Password must be at least 8 characters with uppercase, lowercase, and number"
+    validateOnChange={true}
+    startIcon={<Icons.CalendarDotsIcon size={20} weight="bold" color="#4B5563"/>}
 />
 ```
 
@@ -309,6 +311,9 @@ const countryOptions = [
     options={countryOptions}
     label="Country"
     placeholder="Select a country"
+    validationSchema={requiredSchema}
+    validateOnChange={true}
+    readOnly={true}
 />
 ```
 
@@ -402,4 +407,10 @@ const validateDropdowns = (): boolean => {
     iconPosition="left"
 />
 <ChipComponent text="Light Theme" variant={ChipVariant.LightGreen} />
+```
+
+# Loader Component
+
+```ts
+<Loader />
 ```

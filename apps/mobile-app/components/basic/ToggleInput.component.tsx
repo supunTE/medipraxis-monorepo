@@ -112,6 +112,7 @@ export const ToggleButton = ({
           false: Color.Grey,
           true: Color.Green,
         }}
+        disabled={!onToggle}
       />
     </View>
   );
