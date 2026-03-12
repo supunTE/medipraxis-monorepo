@@ -250,10 +250,70 @@ export class ClientReportService {
     userId: string,
     completed?: boolean
   ): Promise<any[]> {
+    // Fetch either completed or pending reports based on the flag
+    if (completed === false) {
+      // Get pending reports (from request_report table)
+      const rawReports =
+        await this.clientReportRepository.findPendingReportsByUserId(userId);
+
+      const groupedMap = new Map<
+        string,
+        {
+          client_id: string;
+          client_first_name: string;
+          client_last_name: string;
+          report_date: string;
+          reports: Array<{
+            report_id: string;
+            report_title: string | null;
+            file_path: string | null;
+            file_type: string | null;
+          }>;
+        }
+      >();
+
+      for (const requestReport of rawReports) {
+        const client = requestReport.client;
+        if (!client) continue;
+
+        const reportDate = requestReport.created_date.split("T")[0];
+        const key = `${requestReport.client_id}_${reportDate}`;
+
+        if (!groupedMap.has(key)) {
+          groupedMap.set(key, {
+            client_id: requestReport.client_id,
+            client_first_name: client.first_name,
+            client_last_name: client.last_name,
+            report_date: reportDate,
+            reports: [],
+          });
+        }
+
+        const group = groupedMap.get(key)!;
+
+        // For pending reports, extract display_label from requested_reports array
+        const requestedReports = requestReport.requested_reports || [];
+
+        // Add each requested report as a separate entry
+        if (Array.isArray(requestedReports) && requestedReports.length > 0) {
+          for (const report of requestedReports) {
+            group.reports.push({
+              report_id: requestReport.request_report_id,
+              report_title: report.display_label || "Report",
+              file_path: null,
+              file_type: null,
+            });
+          }
+        }
+      }
+
+      return Array.from(groupedMap.values());
+    }
+
+    // Get completed reports (from client_report table)
     const rawReports =
-      await this.clientReportRepository.findGroupedByUserIdAndDate(
-        userId,
-        completed
+      await this.clientReportRepository.findCompletedReportsGroupedByUserIdAndDate(
+        userId
       );
 
     const groupedMap = new Map<
@@ -276,7 +336,7 @@ export class ClientReportService {
       const client = report.client;
       if (!client) continue;
 
-      const reportDate = report.created_date.split("T")[0]; // Extract date part
+      const reportDate = report.created_date.split("T")[0];
       const key = `${report.client_id}_${reportDate}`;
 
       if (!groupedMap.has(key)) {
