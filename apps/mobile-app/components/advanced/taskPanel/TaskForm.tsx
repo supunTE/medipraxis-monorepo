@@ -94,17 +94,35 @@ export default function TaskForm({ visible, onClose }: Props) {
     return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   };
 
-  const formatDay = (dateStr: string) => {
+  const getOrdinalSuffix = (day: number) => {
+    if (day > 3 && day < 21) return "th";
+    switch (day % 10) {
+      case 1:
+        return "st";
+      case 2:
+        return "nd";
+      case 3:
+        return "rd";
+      default:
+        return "th";
+    }
+  };
+
+  const formatDateWithDay = (dateStr: string) => {
     const d = new Date(dateStr);
-    return d.toLocaleDateString([], { weekday: "short" });
+    const dayName = d.toLocaleDateString([], { weekday: "short" });
+    const dayOfMonth = d.getDate();
+    return `${dayOfMonth}${getOrdinalSuffix(dayOfMonth)} ${dayName}`;
   };
 
   const slotWindowOptions = useMemo(
     () =>
-      slotWindows.map((sw) => ({
-        label: `${formatDay(sw.start_date)} ${formatTime(sw.start_date)}-${formatTime(sw.end_date)}`,
-        value: sw.slot_window_id,
-      })),
+      slotWindows
+        .filter((sw) => new Date(sw.end_date) > new Date())
+        .map((sw) => ({
+          label: `${formatDateWithDay(sw.start_date)} ${formatTime(sw.start_date)}-${formatTime(sw.end_date)}`,
+          value: sw.slot_window_id,
+        })),
     [slotWindows]
   );
 
