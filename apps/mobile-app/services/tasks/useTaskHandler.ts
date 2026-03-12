@@ -178,7 +178,6 @@ export const useTaskHandler = (onClose: () => void) => {
     },
     onError: (message) => {
       Alert.alert("Error", message);
-      console.error(message);
     },
   });
 
@@ -192,7 +191,6 @@ export const useTaskHandler = (onClose: () => void) => {
       },
       onError: (message) => {
         Alert.alert("Error", message);
-        console.error(message);
       },
     });
 
@@ -205,7 +203,6 @@ export const useTaskHandler = (onClose: () => void) => {
       },
       onError: (message) => {
         Alert.alert("Error", message);
-        console.error(message);
       },
     });
 
@@ -218,7 +215,6 @@ export const useTaskHandler = (onClose: () => void) => {
       },
       onError: (message) => {
         Alert.alert("Error", message);
-        console.error(message);
       },
     });
 
