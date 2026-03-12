@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Icons } from "@/config";
 import {
   Color,
   Font,
@@ -29,21 +29,22 @@ import {
 const HARDCODED_USER_ID = "2a3c19b8-d352-4b30-a2ac-1cdf993d310c";
 const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
-const fontFamilyMap: Record<Font, string> = {
+const fontFamilyMap: { [key in Font]: string } = {
   [Font.Lato]: "Lato",
   [Font.DMsans]: "DMSans",
 };
 
-const fontWeightMap: Record<FontWeight, "400" | "500" | "600" | "700" | "800"> =
-  {
-    [FontWeight.Regular]: "400",
-    [FontWeight.Medium]: "500",
-    [FontWeight.SemiBold]: "600",
-    [FontWeight.Bold]: "700",
-    [FontWeight.ExtraBold]: "800",
-  };
+const fontWeightMap: {
+  [key in FontWeight]: "400" | "500" | "600" | "700" | "800";
+} = {
+  [FontWeight.Regular]: "400",
+  [FontWeight.Medium]: "500",
+  [FontWeight.SemiBold]: "600",
+  [FontWeight.Bold]: "700",
+  [FontWeight.ExtraBold]: "800",
+};
 
-const fontStyleMap: Record<FontStyle, "normal" | "italic"> = {
+const fontStyleMap: { [key in FontStyle]: "normal" | "italic" } = {
   [FontStyle.Normal]: "normal",
   [FontStyle.Italic]: "italic",
 };
@@ -111,6 +112,9 @@ interface HomeCardProps {
   notificationCount?: number;
 }
 
+const BellIcon = Icons.Bell;
+const SettingsIcon = Icons.Gear;
+
 export default function HomeCard({
   onNotificationPress,
   onSettingsPress,
@@ -153,7 +157,8 @@ export default function HomeCard({
 
   return (
     <ImageBackground
-      source={require("@/assets/images/home/card-background.png")}
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      source={require("@/assets/images/home/card-background.png") as number}
       style={{ width: "100%", height: 300 }}
       imageStyle={{ borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}
       resizeMode="cover"
@@ -166,11 +171,7 @@ export default function HomeCard({
 
         <View className="flex-row items-center gap-3">
           <TouchableOpacity onPress={onNotificationPress} className="relative">
-            <Ionicons
-              name="notifications-outline"
-              size={22}
-              color={Color.Black}
-            />
+            <BellIcon size={22} color={Color.Black} />
             {notificationCount > 0 && (
               <View
                 className="absolute -top-1 -right-1 rounded-full min-w-4 h-4 justify-center items-center px-1"
@@ -186,7 +187,7 @@ export default function HomeCard({
           </TouchableOpacity>
 
           <TouchableOpacity onPress={onSettingsPress}>
-            <Ionicons name="settings-outline" size={22} color={Color.Black} />
+            <SettingsIcon size={22} color={Color.Black} />
           </TouchableOpacity>
         </View>
       </View>
@@ -233,7 +234,8 @@ export default function HomeCard({
           style={{ backgroundColor: Color.LightCream, minHeight: 120 }}
         >
           <Image
-            source={require("@/assets/images/home/appointment.png")}
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
+            source={require("@/assets/images/home/appointment.png") as number}
             style={{
               position: "absolute",
               left: -8,
@@ -271,7 +273,8 @@ export default function HomeCard({
           style={{ backgroundColor: Color.LightCream, minHeight: 120 }}
         >
           <Image
-            source={require("@/assets/images/home/tasks.png")}
+            // eslint-disable-next-line @typescript-eslint/no-require-imports
+            source={require("@/assets/images/home/tasks.png") as number}
             style={{
               position: "absolute",
               right: -8,

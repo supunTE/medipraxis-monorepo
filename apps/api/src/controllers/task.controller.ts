@@ -248,7 +248,7 @@ export class TaskController {
     }
   }
 
-  // Get user's task summary for today 
+  // Get user's task summary for today
   static async getTaskSummaryByUserId(
     c: APIContext<{ query: GetTaskSummaryQuery }>
   ) {
