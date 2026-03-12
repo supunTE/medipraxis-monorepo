@@ -1,6 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Color, TextSize, TextVariant, textStyles } from "@repo/config";
+import type { User } from "@repo/models";
+import { useEffect, useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   ImageBackground,
   Text,
@@ -14,6 +17,9 @@ import {
   Svg,
   Text as SvgText,
 } from "react-native-svg";
+
+const HARDCODED_USER_ID = "2a3c19b8-d352-4b30-a2ac-1cdf993d310c"; // Hardcoded for demo purposes
+const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 function getFormattedDate(): string {
   const today = new Date();
@@ -58,22 +64,52 @@ function applyTextStyle(variant: TextVariant, size: TextSize) {
 }
 
 interface HomeCardProps {
-  name?: string;
-  notificationCount?: number;
-  appointmentCount?: number;
-  taskCount?: number;
   onNotificationPress?: () => void;
   onSettingsPress?: () => void;
+  notificationCount?: number;
 }
 
 export default function HomeCard({
-  name = "Katherine",
-  notificationCount = 8,
-  appointmentCount = 15,
-  taskCount = 7,
   onNotificationPress,
   onSettingsPress,
+  notificationCount = 0,
 }: HomeCardProps) {
+  const [user, setUser] = useState<User | null>(null);
+  const [appointmentCount, setAppointmentCount] = useState<number>(0);
+  const [taskCount, setTaskCount] = useState<number>(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [userRes, appointmentsRes, tasksRes] = await Promise.all([
+          fetch(`${BASE_URL}/api/users/${HARDCODED_USER_ID}`),
+          fetch(
+            `${BASE_URL}/api/tasks?user_id=${HARDCODED_USER_ID}&task_type=APPOINTMENT`
+          ),
+          fetch(
+            `${BASE_URL}/api/tasks?user_id=${HARDCODED_USER_ID}&task_type=REMINDER`
+          ),
+        ]);
+
+        const userData = await userRes.json();
+        const appointmentsData = await appointmentsRes.json();
+        const tasksData = await tasksRes.json();
+
+        if (userData.success) setUser(userData.user as User);
+        if (appointmentsData.success)
+          setAppointmentCount(appointmentsData.tasks?.length ?? 0);
+        if (tasksData.success) setTaskCount(tasksData.tasks?.length ?? 0);
+      } catch (error) {
+        console.error("HomeCard fetch error:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
+
   return (
     <ImageBackground
       source={require("@/assets/images/home/card-background.png")}
@@ -120,25 +156,32 @@ export default function HomeCard({
           {getGreeting()}
         </Text>
 
-        <Svg height={56} width="100%">
-          <Defs>
-            <LinearGradient id="nameGradient" x1="0" y1="0" x2="1" y2="0">
-              <Stop offset="0" stopColor={Color.TextGreen} />
-              <Stop offset="0.5" stopColor={Color.Green} />
-              <Stop offset="1" stopColor={Color.TextGreen} />
-            </LinearGradient>
-          </Defs>
-          <SvgText
-            fill="url(#nameGradient)"
-            fontSize={44}
-            fontWeight="800"
-            fontStyle="italic"
-            x="0"
-            y="48"
-          >
-            {name}
-          </SvgText>
-        </Svg>
+        {loading ? (
+          <ActivityIndicator
+            color={Color.Green}
+            style={{ alignSelf: "flex-start", marginTop: 8 }}
+          />
+        ) : (
+          <Svg height={56} width="100%">
+            <Defs>
+              <LinearGradient id="nameGradient" x1="0" y1="0" x2="1" y2="0">
+                <Stop offset="0" stopColor={Color.TextGreen} />
+                <Stop offset="0.5" stopColor={Color.Green} />
+                <Stop offset="1" stopColor={Color.TextGreen} />
+              </LinearGradient>
+            </Defs>
+            <SvgText
+              fill="url(#nameGradient)"
+              fontSize={44}
+              fontWeight="800"
+              fontStyle="italic"
+              x="0"
+              y="48"
+            >
+              {user?.first_name ?? ""}
+            </SvgText>
+          </Svg>
+        )}
       </View>
 
       {/* Stats Cards Row */}
@@ -177,7 +220,7 @@ export default function HomeCard({
               lineHeight: 36,
             }}
           >
-            {String(appointmentCount).padStart(2, "0")}
+            {loading ? "--" : String(appointmentCount).padStart(2, "0")}
           </Text>
         </View>
 
@@ -205,7 +248,7 @@ export default function HomeCard({
               textAlign: "center",
             }}
           >
-            TASKS
+            REMINDERS
           </Text>
           <Text
             style={{
@@ -215,7 +258,7 @@ export default function HomeCard({
               lineHeight: 36,
             }}
           >
-            {String(taskCount).padStart(2, "0")}
+            {loading ? "--" : String(taskCount).padStart(2, "0")}
           </Text>
         </View>
       </View>
