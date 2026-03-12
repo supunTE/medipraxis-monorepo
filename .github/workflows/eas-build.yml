@@ -1,7 +1,7 @@
 name: EAS Build
 
 on:
-  # push:
+  # push: # Triggers the workflow when code is pushed to the main branch
   #   branches:
   #     - main # Or whichever branch you want to trigger the build
   workflow_dispatch: # Allows you to trigger the build manually from the GitHub UI
