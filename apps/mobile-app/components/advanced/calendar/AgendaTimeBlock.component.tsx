@@ -6,6 +6,9 @@ import { Animated, Pressable, useWindowDimensions } from "react-native";
 import { HOUR_HEIGHT } from "./calendar.constants";
 import { type AgendaBlockContent } from "./calendar.types";
 
+const APPOINTMENT_TEXT_LINE_HEIGHT = 14;
+const TWO_LINE_MIN_HEIGHT = APPOINTMENT_TEXT_LINE_HEIGHT * 2 + 4;
+
 interface AgendaTimeBlockProps {
   content: AgendaBlockContent;
   startTime: string;
@@ -35,6 +38,11 @@ export function AgendaTimeBlock({
   const RIGHT_MARGIN = 16;
   const availableWidth = screenWidth - LEFT_MARGIN - RIGHT_MARGIN;
   const columnWidth = availableWidth * 0.7;
+  const numberOfLines = height >= TWO_LINE_MIN_HEIGHT ? 2 : 1;
+  const displayText =
+    numberOfLines > 1 && content.client
+      ? `${content.title}\n#${content.client}`
+      : content.title;
 
   const handlePressIn = () => {
     Animated.spring(scaleAnim, {
@@ -68,7 +76,7 @@ export function AgendaTimeBlock({
       }}
     >
       <Animated.View
-        className="h-full flex flex-row items-center gap-2 border border-l-4 pl-4"
+        className="px-1 h-full border border-l-4 justify-center overflow-hidden"
         style={{
           backgroundColor: bgColor,
           borderColor: borderColor,
@@ -78,19 +86,12 @@ export function AgendaTimeBlock({
         <TextComponent
           size={TextSize.Small}
           variant={TextVariant.Body}
-          numberOfLines={1}
+          numberOfLines={numberOfLines}
+          ellipsizeMode="tail"
+          style={{ lineHeight: APPOINTMENT_TEXT_LINE_HEIGHT }}
         >
-          {content.title}
+          {displayText}
         </TextComponent>
-        {content.client && (
-          <TextComponent
-            size={TextSize.Small}
-            variant={TextVariant.Body}
-            numberOfLines={1}
-          >
-            #{content.client}
-          </TextComponent>
-        )}
       </Animated.View>
     </Pressable>
   );

@@ -4,7 +4,7 @@ import { Color, TextSize, TextVariant } from "@repo/config";
 import clsx from "clsx";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRef, useState } from "react";
-import { Animated, Pressable, View, useWindowDimensions } from "react-native";
+import { Animated, Pressable, useWindowDimensions, View } from "react-native";
 import { AgendaBlockModal } from "./AgendaBlockModal.component";
 import {
   AGENDA_COLORS,
@@ -12,6 +12,9 @@ import {
   MIN_SLOT_DURATION_MINUTES,
 } from "./calendar.constants";
 import { type AgendaBlockContent } from "./calendar.types";
+
+const APPOINTMENT_TEXT_LINE_HEIGHT = 14;
+const TWO_LINE_MIN_HEIGHT = APPOINTMENT_TEXT_LINE_HEIGHT * 2 + 4;
 
 interface AgendaTimeBlockGroupProps {
   groupId: string;
@@ -54,6 +57,7 @@ export function AgendaTimeBlockGroup({
   // Calculate slot duration in minutes
   const totalDurationMinutes = (endHourDecimal - startHourDecimal) * 60;
   const slotDurationMinutes = totalDurationMinutes / slots;
+  const numberOfLines = slotHeight >= TWO_LINE_MIN_HEIGHT ? 2 : 1;
 
   // Count reserved slots
   const reservedSlots = contents.filter((content) => content !== null).length;
@@ -104,7 +108,7 @@ export function AgendaTimeBlockGroup({
             <View
               key={index}
               className={clsx(
-                "flex flex-row items-center gap-2 border border-l-4 pl-4",
+                "px-1 border border-l-4 justify-center overflow-hidden",
                 {
                   "opacity-100": content,
                   "opacity-50": !content,
@@ -117,24 +121,17 @@ export function AgendaTimeBlockGroup({
               }}
             >
               {content && !showSummaryOverlay && (
-                <>
-                  <TextComponent
-                    size={TextSize.Small}
-                    variant={TextVariant.Body}
-                    numberOfLines={1}
-                  >
-                    {content.title}
-                  </TextComponent>
-                  {content.client && (
-                    <TextComponent
-                      size={TextSize.Small}
-                      variant={TextVariant.Body}
-                      numberOfLines={1}
-                    >
-                      #{content.client}
-                    </TextComponent>
-                  )}
-                </>
+                <TextComponent
+                  size={TextSize.Small}
+                  variant={TextVariant.Body}
+                  numberOfLines={numberOfLines}
+                  ellipsizeMode="tail"
+                  style={{ lineHeight: APPOINTMENT_TEXT_LINE_HEIGHT }}
+                >
+                  {numberOfLines > 1 && content.client
+                    ? `${content.title}\n#${content.client}`
+                    : content.title}
+                </TextComponent>
               )}
             </View>
           );

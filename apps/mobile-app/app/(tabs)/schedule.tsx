@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import { useQueryClient } from "@tanstack/react-query";
+import { useCallback, useMemo, useState } from "react";
 import { Alert, StyleSheet } from "react-native";
 
 import { View } from "@/components/Themed";
 import {
+  type AgendaBlockContent,
   type AgendaData,
-  type AgendaSelection,
-  AgendaSelectionType,
   CalendarComponent,
 } from "@/components/advanced";
 import {
@@ -13,178 +14,158 @@ import {
   ViewReminderModal,
 } from "@/components/advanced/schedule";
 import Loader from "@/components/basic/Loader.component";
-import { useGetReminders, useGetTaskById } from "@/services/tasks";
+import { useGetSlotWindows } from "@/services/slotWindows";
+import {
+  useGetAppointments,
+  useGetReminders,
+  useGetTaskById,
+} from "@/services/tasks";
+import { formatISOToTime } from "@/utils";
+import { type TaskDetails } from "@repo/models";
 
 const USER_ID = "2a3c19b8-d352-4b30-a2ac-1cdf993d310c";
 
 export default function ScheduleScreen() {
+  const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState(
     () => new Date().toISOString().split("T")[0]!
   );
-  const [selectedTask, setSelectedTask] = useState<AgendaSelection | null>(
+  const [selectedReminderId, setSelectedReminderId] = useState<string | null>(
     null
   );
+  const [selectedAppointmentId, setSelectedAppointmentId] = useState<
+    string | null
+  >(null);
   const [viewApptModalVisible, setViewApptModalVisible] = useState(false);
   const [viewApptReadOnly, setViewApptReadOnly] = useState(true);
-
   const [viewReminderModalVisible, setViewReminderModalVisible] =
     useState(false);
   const [viewReminderReadOnly, setViewReminderReadOnly] = useState(true);
 
-  // Fetch reminders from backend for selected date
-  const { reminders } = useGetReminders(USER_ID, selectedDate);
+  const slotWindowsQuery = useGetSlotWindows(USER_ID, selectedDate);
+  const appointmentsQuery = useGetAppointments(USER_ID, selectedDate);
+  const remindersQuery = useGetReminders(USER_ID, selectedDate);
+  const timeBlockGroups =
+    slotWindowsQuery.timeBlockGroups as AgendaData["timeBlockGroups"];
+  const appointments = appointmentsQuery.appointments;
+  const reminders = remindersQuery.reminders as AgendaData["reminders"];
 
-  const agendaData: AgendaData = useMemo(
-    () => ({
-      reminders,
-    }),
-    [reminders]
+  useFocusEffect(
+    useCallback(() => {
+      void Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["slot-windows", USER_ID] }),
+        queryClient.invalidateQueries({ queryKey: ["appointments", USER_ID] }),
+        queryClient.invalidateQueries({ queryKey: ["reminders", USER_ID] }),
+      ]);
+    }, [queryClient])
   );
 
-  // Sample agenda data for reference
-  // const sampleAgendaData: AgendaData = {
-  //   timeBlocks: [
-  //     {
-  //       content: { id: "apt-001", title: "Appointment", client: "John Doe" },
-  //       startTime: "1:00 am",
-  //       endTime: "2:00 am",
-  //     },
-  //   ],
-  //   timeBlockGroups: [
-  //     {
-  //       id: "group-001",
-  //       startTime: "3:30 am",
-  //       endTime: "5:30 am",
-  //       slots: 8,
-  //       contents: [
-  //         { id: "apt-002", title: "Appointment", client: "Anna" },
-  //         null,
-  //         { id: "apt-003", title: "Appointment", client: "Michael" },
-  //         { id: "apt-004", title: "Appointment", client: "Sophie" },
-  //         null,
-  //         { id: "apt-005", title: "Appointment", client: "Ella" },
-  //         null,
-  //         null,
-  //       ],
-  //     },
-  //     {
-  //       id: "group-002",
-  //       startTime: "8:15 am",
-  //       endTime: "10:15 am",
-  //       slots: 12,
-  //       contents: [
-  //         { id: "apt-006", title: "Appointment", client: "David" },
-  //         null,
-  //         { id: "apt-007", title: "Appointment", client: "Emma" },
-  //         { id: "apt-008", title: "Appointment", client: "Oliver" },
-  //         null,
-  //         null,
-  //         { id: "apt-009", title: "Appointment", client: "Liam" },
-  //         null,
-  //         null,
-  //         { id: "apt-010", title: "Appointment", client: "Noah" },
-  //         null,
-  //         null,
-  //       ],
-  //     },
-  //   ],
-  //   reminders: [
-  //     {
-  //       content: { id: "rem-001", title: "Check records" },
-  //       startTime: "2:30 am",
-  //     },
-  //     {
-  //       content: { id: "rem-002", title: "Call pharmacy" },
-  //       startTime: "6:00 am",
-  //     },
-  //     {
-  //       content: { id: "rem-003", title: "Review lab results" },
-  //       startTime: "7:30 am",
-  //     },
-  //     {
-  //       content: { id: "rem-004", title: "Follow up with patient" },
-  //       startTime: "9:45 am",
-  //     },
-  //     {
-  //       content: { id: "rem-005", title: "Check inventory" },
-  //       startTime: "9:50 am",
-  //     },
-  //     {
-  //       content: { id: "rem-006", title: "Lunch break" },
-  //       startTime: "12:00 pm",
-  //       endTime: "12:30 pm",
-  //     },
-  //     {
-  //       content: { id: "rem-007", title: "Team meeting prep" },
-  //       startTime: "2:00 pm",
-  //     },
-  //     {
-  //       content: { id: "rem-008", title: "Review notes" },
-  //       startTime: "2:10 pm",
-  //     },
-  //     {
-  //       content: { id: "rem-009", title: "Call supplier" },
-  //       startTime: "2:15 pm",
-  //     },
-  //   ],
-  // };
-
-  // Use the mutation hook to fetch task by ID
-  const {
-    mutate: fetchTask,
-    data: appointmentData,
-    isLoading,
-  } = useGetTaskById({
+  const appointmentTaskQuery = useGetTaskById({
     onSuccess: () => {
-      if (selectedTask?.type === AgendaSelectionType.Appointment) {
-        setViewApptModalVisible(true);
-      }
-      if (selectedTask?.type === AgendaSelectionType.Reminder) {
-        setViewReminderModalVisible(true);
-      }
+      setViewApptModalVisible(true);
     },
     onError: (message) => {
-      console.error("Failed to load appointment:", message);
       Alert.alert("Error", message);
-      setSelectedTask(null);
+      setSelectedAppointmentId(null);
     },
   });
 
-  // Trigger fetch when appointment/reminder is selected
-  useEffect(() => {
-    if (selectedTask?.type === AgendaSelectionType.Appointment) {
-      fetchTask({ task_id: selectedTask.appointmentId });
-    } else if (selectedTask?.type === AgendaSelectionType.EmptySlot) {
-      Alert.alert(
-        "Empty Slot Selected",
-        `Group ID: ${selectedTask.groupId}\nSlot Number: ${selectedTask.slotNumber}`,
-        [{ text: "OK", onPress: () => setSelectedTask(null) }]
-      );
-    } else if (selectedTask?.type === AgendaSelectionType.Reminder) {
-      fetchTask({ task_id: selectedTask.reminderId });
-    }
-  }, [selectedTask]);
+  const reminderTaskQuery = useGetTaskById({
+    onSuccess: () => {
+      setViewReminderModalVisible(true);
+    },
+    onError: (message) => {
+      Alert.alert("Error", message);
+      setSelectedReminderId(null);
+    },
+  });
+
+  const buildAppointmentContent = (
+    appointment: TaskDetails
+  ): AgendaBlockContent => {
+    const clientName = [
+      appointment.client_first_name,
+      appointment.client_last_name,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    return {
+      id: appointment.task_id,
+      title: appointment.task_title,
+      ...(clientName ? { client: clientName } : {}),
+    };
+  };
+
+  const agendaData: AgendaData = useMemo(() => {
+    const mappedTimeBlockGroups = (timeBlockGroups ?? []).map((group) => ({
+      ...group,
+      contents: [...group.contents],
+    }));
+
+    const groupsById = new Map(
+      mappedTimeBlockGroups.map((group) => [group.id, group])
+    );
+    const timeBlocks: NonNullable<AgendaData["timeBlocks"]> = [];
+
+    appointments.forEach((appointment) => {
+      const content = buildAppointmentContent(appointment);
+
+      if (appointment.slot_window_id) {
+        const group = groupsById.get(appointment.slot_window_id);
+        const slotIndex =
+          appointment.appointment_number !== null
+            ? appointment.appointment_number - 1
+            : -1;
+
+        if (group && slotIndex >= 0 && slotIndex < group.contents.length) {
+          group.contents[slotIndex] = content;
+          return;
+        }
+      }
+
+      timeBlocks.push({
+        content,
+        startTime: formatISOToTime(appointment.start_date),
+        endTime: formatISOToTime(appointment.end_date),
+      });
+    });
+
+    return {
+      reminders,
+      timeBlocks,
+      timeBlockGroups: mappedTimeBlockGroups,
+    };
+  }, [appointments, reminders, timeBlockGroups]);
 
   const handleCloseViewApptModal = () => {
     setViewApptModalVisible(false);
-    setSelectedTask(null);
+    setSelectedAppointmentId(null);
     setViewApptReadOnly(true);
-  };
-
-  const handleCloseViewReminderModal = () => {
-    setViewReminderModalVisible(false);
-    setSelectedTask(null);
-    setViewReminderReadOnly(true);
   };
 
   const handleEditViewApptModal = () => {
     setViewApptReadOnly(false);
-    setSelectedTask(null);
+  };
+
+  const handleCloseViewReminderModal = () => {
+    setViewReminderModalVisible(false);
+    setSelectedReminderId(null);
+    setViewReminderReadOnly(true);
   };
 
   const handleEditViewReminderModal = () => {
     setViewReminderReadOnly(false);
-    setSelectedTask(null);
+  };
+
+  const handleReminderPress = (reminderId: string) => {
+    setSelectedReminderId(reminderId);
+    reminderTaskQuery.mutate({ task_id: reminderId });
+  };
+
+  const handleAppointmentPress = (appointmentId: string) => {
+    setSelectedAppointmentId(appointmentId);
+    appointmentTaskQuery.mutate({ task_id: appointmentId });
   };
 
   return (
@@ -193,31 +174,22 @@ export default function ScheduleScreen() {
         agendaData={agendaData}
         selectedDate={selectedDate}
         onDateChange={setSelectedDate}
-        onAppointmentPress={(appointment, groupId) =>
-          setSelectedTask({
-            type: AgendaSelectionType.Appointment,
-            appointmentId: appointment.id,
-            groupId,
-          })
+        onAppointmentPress={(appointment) =>
+          handleAppointmentPress(appointment.id)
         }
         onEmptySlotPress={(groupId, slotNumber) =>
-          setSelectedTask({
-            type: AgendaSelectionType.EmptySlot,
-            groupId,
-            slotNumber,
-          })
+          Alert.alert(
+            "Available Slot",
+            `Window ID: ${groupId}\nSlot Number: ${slotNumber + 1}`
+          )
         }
-        onReminderPress={(reminder) =>
-          setSelectedTask({
-            type: AgendaSelectionType.Reminder,
-            reminderId: reminder.id,
-          })
-        }
+        onReminderPress={(reminder) => handleReminderPress(reminder.id)}
       />
-      {appointmentData?.task && (
+
+      {appointmentTaskQuery.data?.task && selectedAppointmentId && (
         <ViewAppointmentModal
           visible={viewApptModalVisible}
-          data={appointmentData.task}
+          data={appointmentTaskQuery.data.task}
           onClose={handleCloseViewApptModal}
           onEdit={handleEditViewApptModal}
           onCancel={handleCloseViewApptModal}
@@ -225,10 +197,10 @@ export default function ScheduleScreen() {
         />
       )}
 
-      {appointmentData?.task && (
+      {reminderTaskQuery.data?.task && selectedReminderId && (
         <ViewReminderModal
           visible={viewReminderModalVisible}
-          data={appointmentData.task}
+          data={reminderTaskQuery.data.task}
           onClose={handleCloseViewReminderModal}
           onEdit={handleEditViewReminderModal}
           onCancel={handleCloseViewReminderModal}
@@ -236,7 +208,11 @@ export default function ScheduleScreen() {
         />
       )}
 
-      {isLoading && <Loader />}
+      {(slotWindowsQuery.isLoading ||
+        appointmentsQuery.isLoading ||
+        remindersQuery.isLoading ||
+        appointmentTaskQuery.isLoading ||
+        reminderTaskQuery.isLoading) && <Loader />}
     </View>
   );
 }

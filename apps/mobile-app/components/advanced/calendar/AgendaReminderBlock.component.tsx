@@ -92,7 +92,9 @@ export function AgendaReminderBlock({
           size={isMerged ? TextSize.Medium : TextSize.Small}
           variant={TextVariant.Body}
           numberOfLines={2}
-          style={isCompleted ? { textDecorationLine: "line-through" } : undefined}
+          style={
+            isCompleted ? { textDecorationLine: "line-through" } : undefined
+          }
         >
           {content.title}
         </TextComponent>

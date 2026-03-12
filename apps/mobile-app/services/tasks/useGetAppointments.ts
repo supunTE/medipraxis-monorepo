@@ -1,9 +1,26 @@
-import { apiClient } from "@/lib/api-client";
-import { TaskType } from "@repo/models";
-import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 
-export const useGetAppointments = (userId: string, date?: string) => {
-  return useQuery({
+import { apiClient } from "@/lib/api-client";
+import { TaskDetails, TaskType } from "@repo/models";
+import { type UseQueryResult, useQuery } from "@tanstack/react-query";
+
+type GetAppointmentsResponse = {
+  tasks: TaskDetails[];
+  count: number;
+};
+
+type UseGetAppointmentsResult = UseQueryResult<
+  GetAppointmentsResponse,
+  Error
+> & {
+  appointments: TaskDetails[];
+};
+
+export const useGetAppointments = (
+  userId: string,
+  date?: string
+): UseGetAppointmentsResult => {
+  const query = useQuery<GetAppointmentsResponse, Error>({
     queryKey: ["appointments", userId, date],
     queryFn: async () => {
       const res = await apiClient.api.tasks.$get({
@@ -18,8 +35,18 @@ export const useGetAppointments = (userId: string, date?: string) => {
         throw new Error("Failed to fetch appointments");
       }
 
-      return res.json();
+      return (await res.json()) as GetAppointmentsResponse;
     },
     enabled: !!userId,
   });
+
+  const appointments = useMemo(
+    () =>
+      (query.data?.tasks ?? []).filter(
+        (task) => task.task_status_name !== "CANCELLED"
+      ),
+    [query.data?.tasks]
+  );
+
+  return { ...query, appointments };
 };
