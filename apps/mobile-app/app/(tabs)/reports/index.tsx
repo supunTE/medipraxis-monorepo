@@ -33,6 +33,30 @@ export default function ReportsScreen() {
     activeTab === "completed"
   );
 
+  // Filter reports based on search query
+  const filteredReports = React.useMemo(() => {
+    if (!searchQuery.trim()) {
+      return groupedReports;
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+    
+    return groupedReports.filter((group) => {
+      // Search by client name
+      const clientName = `${group.client_first_name} ${group.client_last_name}`.toLowerCase();
+      if (clientName.includes(query)) {
+        return true;
+      }
+
+      // Search by report titles
+      const hasMatchingReport = group.reports.some((report) =>
+        report.report_title?.toLowerCase().includes(query)
+      );
+      
+      return hasMatchingReport;
+    });
+  }, [groupedReports, searchQuery]);
+
   // Handle view client navigation
   const handleViewClient = (clientId: string) => {
     router.push(`/clients/${clientId}` as any);
@@ -157,7 +181,7 @@ export default function ReportsScreen() {
           <View className="flex-1 justify-center items-center pt-10">
             <ActivityIndicator size="large" color={Color.Green} />
           </View>
-        ) : groupedReports.length === 0 ? (
+        ) : filteredReports.length === 0 ? (
           <View className="flex-1 justify-center items-center pt-10">
             <TextComponent
               variant={TextVariant.Body}
@@ -165,14 +189,16 @@ export default function ReportsScreen() {
               color={Color.Black}
               style={{ opacity: 0.5 }}
             >
-              {activeTab === "completed"
+              {searchQuery.trim()
+                ? "No reports found matching your search"
+                : activeTab === "completed"
                 ? "No completed reports yet"
                 : "No pending reports yet"}
             </TextComponent>
           </View>
         ) : (
           <View className="gap-4">
-            {groupedReports.map((group) => (
+            {filteredReports.map((group) => (
               <ReportTile
                 key={group.group_id}
                 clientId={group.client_id}
