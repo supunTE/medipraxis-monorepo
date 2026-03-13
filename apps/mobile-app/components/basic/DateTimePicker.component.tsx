@@ -216,7 +216,8 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
           isDisabled={isDisabled}
           isInvalid={isInvalid || !!errorText}
           style={{
-            borderColor: errorText || isInvalid ? Color.Danger : Color.LightGrey,
+            borderColor:
+              errorText || isInvalid ? Color.Danger : Color.LightGrey,
             borderWidth: 1,
             borderRadius: 8,
             height: 50,

@@ -125,8 +125,6 @@ export default function TaskForm({ visible, onClose }: Props) {
     [slotWindows]
   );
 
-
-
   const averageMinutesPerSlot = useMemo(() => {
     if (!startDate || !endDate || !totalSlots || totalSlots <= 0) return null;
     const start = new Date(startDate);
