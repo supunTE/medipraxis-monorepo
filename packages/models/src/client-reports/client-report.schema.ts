@@ -66,7 +66,9 @@ export const groupedCompletedReportSchema = z.object({
 
 export type ReportItem = z.infer<typeof reportItemSchema>;
 export type GroupedPendingReport = z.infer<typeof groupedPendingReportSchema>;
-export type GroupedCompletedReport = z.infer<typeof groupedCompletedReportSchema>;
+export type GroupedCompletedReport = z.infer<
+  typeof groupedCompletedReportSchema
+>;
 
 export interface GroupedClientReport {
   group_id: string;

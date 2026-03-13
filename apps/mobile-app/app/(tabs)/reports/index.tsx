@@ -40,10 +40,11 @@ export default function ReportsScreen() {
     }
 
     const query = searchQuery.toLowerCase().trim();
-    
+
     return groupedReports.filter((group) => {
       // Search by client name
-      const clientName = `${group.client_first_name} ${group.client_last_name}`.toLowerCase();
+      const clientName =
+        `${group.client_first_name} ${group.client_last_name}`.toLowerCase();
       if (clientName.includes(query)) {
         return true;
       }
@@ -52,7 +53,7 @@ export default function ReportsScreen() {
       const hasMatchingReport = group.reports.some((report) =>
         report.report_title?.toLowerCase().includes(query)
       );
-      
+
       return hasMatchingReport;
     });
   }, [groupedReports, searchQuery]);
@@ -192,8 +193,8 @@ export default function ReportsScreen() {
               {searchQuery.trim()
                 ? "No reports found matching your search"
                 : activeTab === "completed"
-                ? "No completed reports yet"
-                : "No pending reports yet"}
+                  ? "No completed reports yet"
+                  : "No pending reports yet"}
             </TextComponent>
           </View>
         ) : (
