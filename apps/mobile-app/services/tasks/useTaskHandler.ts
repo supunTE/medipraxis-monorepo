@@ -57,7 +57,6 @@ type FormState = {
   // UI state
   repeatDays: number[];
   slotWindow: string;
-  slotNo: string;
 
   attachToSlot: boolean;
 };
@@ -75,7 +74,6 @@ const DEFAULT_FORM_STATE: FormState = {
   totalSlots: 1,
   location: "",
   slotWindow: "",
-  slotNo: "",
   slotDate: "",
   repeatUntil: "",
   attachToSlot: false,
@@ -95,7 +93,6 @@ const DEFAULT_APPOINTMENT_SLOT_STATE: FormState = {
   client: "",
   alarm: false,
   slotWindow: "",
-  slotNo: "",
   slotDate: "",
   repeatUntil: "",
   attachToSlot: false,
@@ -115,7 +112,6 @@ const DEFAULT_APPOINTMENT_STATE: FormState = {
   repeatDays: [],
   alarm: false,
   slotWindow: "",
-  slotNo: "",
   slotDate: "",
   repeatUntil: "",
   attachToSlot: false,
@@ -277,7 +273,6 @@ export const useTaskHandler = (onClose: () => void) => {
         ...prev,
         attachToSlot: false,
         slotWindow: "",
-        slotNo: "",
       };
     });
   };

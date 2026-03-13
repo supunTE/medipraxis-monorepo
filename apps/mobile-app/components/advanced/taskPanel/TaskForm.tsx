@@ -82,7 +82,6 @@ export default function TaskForm({ visible, onClose }: Props) {
     totalSlots,
     repeatDays = [],
     slotWindow,
-    slotNo,
     attachToSlot,
     slotDate,
     repeatUntil,
@@ -126,30 +125,7 @@ export default function TaskForm({ visible, onClose }: Props) {
     [slotWindows]
   );
 
-  const selectedSlotWindow = useMemo(
-    () => slotWindows.find((sw) => sw.slot_window_id === slotWindow),
-    [slotWindows, slotWindow]
-  );
 
-  const slotNoOptions = useMemo(() => {
-    if (!selectedSlotWindow) return [];
-    const { total_slots, start_date, end_date } = selectedSlotWindow;
-    const startMs = new Date(start_date).getTime();
-    const endMs = new Date(end_date).getTime();
-    const slotDuration = (endMs - startMs) / total_slots;
-
-    return Array.from({ length: total_slots }, (_, i) => {
-      const slotTime = new Date(startMs + i * slotDuration);
-      const time = slotTime.toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
-      return {
-        label: `No. ${String(i + 1).padStart(2, "0")} (${time})`,
-        value: String(i + 1),
-      };
-    });
-  }, [selectedSlotWindow]);
 
   const averageMinutesPerSlot = useMemo(() => {
     if (!startDate || !endDate || !totalSlots || totalSlots <= 0) return null;
@@ -374,26 +350,14 @@ export default function TaskForm({ visible, onClose }: Props) {
                 </>
               ) : (
                 <>
-                  <View className="flex-row gap-4 mb-2">
-                    <View className="flex-1">
-                      <DropdownComponent
-                        label="Slot Window"
-                        value={slotWindow || ""}
-                        onValueChange={(v) => setField("slotWindow", v)}
-                        options={slotWindowOptions}
-                        placeholder="Sat 9-11PM"
-                      />
-                    </View>
-                    <View className="flex-1">
-                      <DropdownComponent
-                        label="Slot No."
-                        value={slotNo || ""}
-                        onValueChange={(v) => setField("slotNo", v)}
-                        options={slotNoOptions}
-                        placeholder="No. 05 (10:15PM)"
-                      />
-                    </View>
-                  </View>
+                  <DropdownComponent
+                    label="Slot Window"
+                    value={slotWindow || ""}
+                    onValueChange={(v) => setField("slotWindow", v)}
+                    options={slotWindowOptions}
+                    placeholder="Sat 9-11PM"
+                    helperText="Recent slot number will be reserved"
+                  />
                   <TouchableOpacity
                     className="my-1.5"
                     onPress={() => toggleAttachToSlot(false)}
