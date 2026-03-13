@@ -140,18 +140,22 @@ export class ClientReportService {
     return reportsWithStatus;
   }
 
-  async getReportFileUrl(reportId: string): Promise<string> {
+  async getReportFileUrl(reportId: string, userId: string): Promise<string> {
     const report = await this.clientReportRepository.findById(reportId);
 
     if (!report) {
       throw new Error("Report not found");
     }
 
+    if (report.user_id !== userId) {
+      throw new Error("Unauthorized");
+    }
+
     if (!report.file_path) {
       throw new Error("Report has no associated file");
     }
 
-    return await this.clientReportRepository.getFileUrl(report.file_path);
+    return await this.clientReportRepository.getFileUrl(report.file_path, 300);
   }
 
   async deleteReport(reportId: string): Promise<boolean> {

@@ -85,23 +85,30 @@ export class ClientReportController {
   }
 
   static async getReportFileUrl(
-    c: APIContext<{ param: { id: string } }, "/:id/file">
+    c: APIContext<{ param: { user_id: string; id: string } }, ":user_id/:id/file">
   ) {
     try {
       const clientReportService = getClientReportService(c);
       const reportId = c.req.param("id");
+      const userId = c.req.param("user_id");
 
-      const fileUrl = await clientReportService.getReportFileUrl(reportId);
+      const fileUrl = await clientReportService.getReportFileUrl(
+        reportId,
+        userId
+      );
 
       return c.json({ fileUrl });
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to get file URL";
-      const status =
-        error instanceof Error && error.message === "Report not found"
-          ? 404
-          : 500;
-      return c.json({ error: message }, status);
+      if (error instanceof Error) {
+        if (error.message === "Report not found") {
+          return c.json({ error: message }, 404);
+        } else if (error.message === "Unauthorized") {
+          return c.json({ error: message }, 403);
+        }
+      }
+      return c.json({ error: message }, 500);
     }
   }
 

@@ -14,7 +14,7 @@ const clientReports = new Hono()
   )
   .get("/:id", ClientReportController.getReportById)
   .get("/clientId/:clientId", ClientReportController.getReportsByClientId)
-  .get("/:id/file", ClientReportController.getReportFileUrl)
+  .get("/:user_id/:id/file", ClientReportController.getReportFileUrl)
   .delete("/:id", ClientReportController.deleteReport);
 
 export default clientReports;

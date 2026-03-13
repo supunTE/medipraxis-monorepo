@@ -195,7 +195,7 @@ export class ClientReportRepository {
    */
   async getFileUrl(
     filePath: string,
-    expiresIn: number = 3600
+    expiresIn: number = 300
   ): Promise<string> {
     const { data, error } = await this.db.storage
       .from(CLIENT_REPORT_QUERIES.STORAGE_BUCKET)
