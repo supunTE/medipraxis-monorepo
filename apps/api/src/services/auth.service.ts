@@ -1,15 +1,12 @@
-import {
-  signAccessToken,
-  signRefreshToken,
-  verifyRefreshToken,
-} from "../lib/jwt";
+import { JwtService } from "../lib/jwt";
 import { hashPassword, verifyPassword } from "../lib/password";
 import type { RefreshTokenRepository, UserRepository } from "../repositories";
 
 export class AuthService {
   constructor(
     private userRepository: UserRepository,
-    private refreshTokenRepository: RefreshTokenRepository
+    private refreshTokenRepository: RefreshTokenRepository,
+    public jwtService: JwtService
   ) {}
 
   async register(
@@ -19,7 +16,7 @@ export class AuthService {
     password: string,
     additionalData: any = {}
   ) {
-    const existingUser = await this.userRepository.findUserByMobile(
+    const existingMobile = await this.userRepository.findUserByMobile(
       mobileNumber,
       countryCode
     );
@@ -42,11 +39,13 @@ export class AuthService {
       ...additionalData,
     });
 
-    const accessToken = await signAccessToken({
+    const accessToken = await this.jwtService.signAccessToken({
       sub: user.user_id,
       mobile_number: user.mobile_number,
     });
-    const refreshToken = await signRefreshToken({ sub: user.user_id });
+    const refreshToken = await this.jwtService.signRefreshToken({
+      sub: user.user_id,
+    });
 
     // Store refresh token
     const tokenHash = await hashPassword(refreshToken); // Hash refresh token before storing
@@ -82,11 +81,13 @@ export class AuthService {
       throw new Error("Invalid credentials");
     }
 
-    const accessToken = await signAccessToken({
+    const accessToken = await this.jwtService.signAccessToken({
       sub: user.user_id,
       mobile_number: user.mobile_number,
     });
-    const refreshToken = await signRefreshToken({ sub: user.user_id });
+    const refreshToken = await this.jwtService.signRefreshToken({
+      sub: user.user_id,
+    });
 
     const tokenHash = await hashPassword(refreshToken);
     const expiresAt = new Date();
@@ -103,7 +104,7 @@ export class AuthService {
 
   async refresh(rawRefreshToken: string) {
     // 1. Verify the JWT signature/validity
-    const payload = await verifyRefreshToken(rawRefreshToken);
+    const payload = await this.jwtService.verifyRefreshToken(rawRefreshToken);
     if (!payload || !payload.sub) {
       throw new Error("Invalid refresh token");
     }
@@ -187,8 +188,12 @@ export class AuthService {
     );
 
     // Issue new
-    const newAccessToken = await signAccessToken({ sub: userId });
-    const newRefreshToken = await signRefreshToken({ sub: userId });
+    const newAccessToken = await this.jwtService.signAccessToken({
+      sub: userId,
+    });
+    const newRefreshToken = await this.jwtService.signRefreshToken({
+      sub: userId,
+    });
 
     const newTokenHash = await hashPassword(newRefreshToken);
     const expiresAt = new Date();

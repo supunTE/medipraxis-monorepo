@@ -29,6 +29,7 @@ import {
 
 import type { Env } from "../types";
 import { createDatabaseClient } from "./database";
+import { JwtService } from "./jwt";
 
 export function getTaskService(c: Context<{ Bindings: Env }>) {
   const db = createDatabaseClient(c.env);
@@ -139,5 +140,9 @@ export function getAuthService(c: Context<{ Bindings: Env }>) {
   const db = createDatabaseClient(c.env);
   const userRepository = new UserRepository(db);
   const refreshTokenRepository = new RefreshTokenRepository(db);
-  return new AuthService(userRepository, refreshTokenRepository);
+  const jwtService = new JwtService(
+    c.env.ACCESS_TOKEN_SECRET,
+    c.env.REFRESH_TOKEN_SECRET
+  );
+  return new AuthService(userRepository, refreshTokenRepository, jwtService);
 }
