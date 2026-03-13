@@ -106,7 +106,7 @@ type TaskSummaryResponse = {
   reminder_count: number;
 };
 
-interface HomeCardProps {
+export interface HomeCardProps {
   onNotificationPress?: () => void;
   onSettingsPress?: () => void;
   notificationCount?: number;
@@ -115,7 +115,7 @@ interface HomeCardProps {
 const BellIcon = Icons.Bell;
 const SettingsIcon = Icons.Gear;
 
-export default function HomeCard({
+export function HomeCard({
   onNotificationPress,
   onSettingsPress,
   notificationCount = 8,
@@ -163,7 +163,6 @@ export default function HomeCard({
       imageStyle={{ borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}
       resizeMode="cover"
     >
-      {/* Date + Icons Row */}
       <View className="flex-row justify-between items-center px-5 pt-5">
         <Text style={{ color: Color.Black, fontSize: 14, fontWeight: "500" }}>
           {getFormattedDate()}
@@ -192,7 +191,6 @@ export default function HomeCard({
         </View>
       </View>
 
-      {/* Greeting + Name */}
       <View className="px-5 pt-3">
         <Text style={{ color: Color.Black, fontSize: 32, fontWeight: "700" }}>
           {getGreeting()}
@@ -226,9 +224,7 @@ export default function HomeCard({
         )}
       </View>
 
-      {/* Stats Cards Row */}
       <View className="flex-row px-5 gap-3 mt-5">
-        {/* Appointments Card */}
         <View
           className="flex-1 rounded-2xl overflow-hidden justify-center items-center py-4"
           style={{ backgroundColor: Color.LightCream, minHeight: 120 }}
@@ -267,7 +263,6 @@ export default function HomeCard({
           </Text>
         </View>
 
-        {/* Tasks Card */}
         <View
           className="flex-1 rounded-2xl overflow-hidden justify-center items-center py-4"
           style={{ backgroundColor: Color.LightCream, minHeight: 120 }}
