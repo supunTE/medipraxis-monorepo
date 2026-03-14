@@ -5,6 +5,7 @@ import {
   getAllTasksQuerySchema,
   getAppointmentsByClientQuerySchema,
   getTaskParamSchema,
+  getTaskSummaryQuerySchema,
   reserveAppointmentByClientSchema,
   updateTaskParamSchema,
   updateTaskSchema,
@@ -18,6 +19,17 @@ const tasks = new Hono()
     "/",
     zValidator("query", getAllTasksQuerySchema),
     TaskController.getAllTasksByUserId
+  )
+
+  .get(
+    "/summary",
+    zValidator("query", getTaskSummaryQuerySchema),
+    TaskController.getTaskSummaryByUserId
+  )
+  .get(
+    "/upcoming",
+    zValidator("query", getTaskSummaryQuerySchema),
+    TaskController.getUpcomingTasksByUserId
   )
   .get(
     "/appointments/client",

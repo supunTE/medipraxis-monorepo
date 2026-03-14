@@ -1,8 +1,14 @@
-import { View } from "@/components/Themed";
+import { Icons } from "@/config";
+import { Color, TextSize, TextVariant, textStyles } from "@repo/config";
 import { useState } from "react";
-import { Button, StyleSheet } from "react-native";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 import TaskForm from "@/components/advanced/taskPanel/TaskForm";
+import { HomeCard } from "./home/HomeCard.component";
+import { UpcomingEventCard } from "./home/UpcomingEventCard.Component";
+
+const PlusIcon = Icons.Plus;
+const FileTextIcon = Icons.FileText;
 import { FormSetupCenter } from "./settings/components/form-setup-center";
 
 export default function TabOneScreen() {
@@ -10,37 +16,78 @@ export default function TabOneScreen() {
   const [showFormSetup, setShowFormSetup] = useState(false);
 
   return (
-    <View style={styles.container}>
-      {/* --- Old demo content (commented out) ---
-      <Text style={styles.title}>Tab One</Text>
-      <TextComponent
-        variant={TextVariant.Title}
-        size={TextSize.ExtraLarge}
-        color={Color.Green}
-      >
-        Welcome to Medipraxis!
-      </TextComponent>
+    <View style={{ flex: 1, backgroundColor: Color.White }}>
+      {/* HomeCard fixed */}
+      <HomeCard />
+
+      {/* Upcoming events header always visible */}
       <View
-        style={styles.separator}
-        lightColor="#eee"
-        darkColor="rgba(255,255,255,0.1)"
-      />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
-      ----------------------------------------- */}
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          paddingHorizontal: 20,
+          paddingTop: 24,
+          paddingBottom: 12,
+          backgroundColor: Color.White,
+        }}
+      >
+        <Text
+          style={{
+            fontFamily: "Lato",
+            fontSize: textStyles[TextVariant.Title][TextSize.Small].fontSize,
+            fontWeight: "700",
+            color: Color.Black,
+          }}
+        >
+          Upcoming events
+        </Text>
 
-      {/* Button to open the appointment window */}
-      <Button title="Open Appointment Form" onPress={() => setShowForm(true)} />
+        <View style={{ flexDirection: "row", gap: 10 }}>
+          <TouchableOpacity
+            onPress={() => setShowForm(true)}
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 8,
+              borderWidth: 1,
+              borderColor: Color.LightGrey,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <PlusIcon size={20} color={Color.DarkGreen} />
+          </TouchableOpacity>
 
-      {/* Button to open Form Setup Center */}
-      <Button
-        title="Form Setup Center"
-        onPress={() => setShowFormSetup(true)}
-      />
+          <TouchableOpacity
+            onPress={() => setShowFormSetup(true)}
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 8,
+              borderWidth: 1,
+              borderColor: Color.LightGrey,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <FileTextIcon size={20} color={Color.DarkGreen} />
+          </TouchableOpacity>
+        </View>
+      </View>
 
-      {/* Appointment modal only shows when state is true */}
+      {/* Scrollable: only the event cards scroll */}
+      <ScrollView
+        contentContainerStyle={{
+          paddingTop: 4,
+          paddingBottom: 120, // space for nav bar
+        }}
+        showsVerticalScrollIndicator={false}
+      >
+        <UpcomingEventCard />
+      </ScrollView>
+
       <TaskForm visible={showForm} onClose={() => setShowForm(false)} />
-
-      {/* Form Setup Center modal */}
       <FormSetupCenter
         visible={showFormSetup}
         onClose={() => setShowFormSetup(false)}
@@ -48,22 +95,3 @@ export default function TabOneScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  // old styles kept for reference
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: "80%",
-  },
-});

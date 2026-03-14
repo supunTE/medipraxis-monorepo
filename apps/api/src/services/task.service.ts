@@ -355,4 +355,62 @@ export class TaskService {
 
     return task;
   }
+
+  async getTaskSummaryForToday(
+    userId: string,
+    date: string
+  ): Promise<{ appointment_count: number; reminder_count: number }> {
+    const [
+      appointmentTypeId,
+      reminderTypeId,
+      cancelledStatusId,
+      completedStatusId,
+    ] = await Promise.all([
+      this.taskRepository.getTaskTypeByName(TaskType.APPOINTMENT),
+      this.taskRepository.getTaskTypeByName(TaskType.REMINDER),
+      this.taskRepository.getTaskStatusByName(TaskStatus.CANCELLED),
+      this.taskRepository.getTaskStatusByName(TaskStatus.COMPLETED),
+    ]);
+
+    if (!appointmentTypeId) {
+      throw new Error('Task type "APPOINTMENT" not found in database');
+    }
+
+    if (!reminderTypeId) {
+      throw new Error('Task type "REMINDER" not found in database');
+    }
+
+    // Only get the in progress appointments and reminders, exclude cancelled and completed tasks
+    const excludeStatusIds = [cancelledStatusId, completedStatusId].filter(
+      Boolean
+    ) as string[];
+
+    const { appointments, reminders } =
+      await this.taskRepository.findTodaySummaryByUserId(userId, date, {
+        appointmentTypeId,
+        reminderTypeId,
+        excludeStatusIds,
+      });
+
+    return {
+      appointment_count: appointments.length,
+      reminder_count: reminders.length,
+    };
+  }
+
+  async getUpcomingTasksForToday(
+    userId: string,
+    date: string
+  ): Promise<TaskDetails[]> {
+    // Fetch both status IDs — if either doesn't exist in DB it returns null
+    const [inProgressStatusId, notStartedStatusId] = await Promise.all([
+      this.taskRepository.getTaskStatusByName(TaskStatus.IN_PROGRESS),
+      this.taskRepository.getTaskStatusByName(TaskStatus.NOT_STARTED),
+    ]);
+
+    return await this.taskRepository.findUpcomingByUserId(userId, date, {
+      inProgressStatusId: inProgressStatusId ?? undefined,
+      notStartedStatusId: notStartedStatusId ?? undefined,
+    });
+  }
 }

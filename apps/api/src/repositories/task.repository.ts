@@ -317,4 +317,114 @@ export class TaskRepository {
       client_last_name: client?.last_name || null,
     } as TaskDetails;
   }
+
+  async findTodaySummaryByUserId(
+    userId: string,
+    date: string,
+    options?: {
+      appointmentTypeId?: string;
+      reminderTypeId?: string;
+      excludeStatusIds?: string[];
+    }
+  ): Promise<{ appointments: TaskDetails[]; reminders: TaskDetails[] }> {
+    const startOfDay = `${date}T00:00:00`;
+    const endOfDay = `${date}T23:59:59`;
+
+    const buildQuery = (taskTypeId: string) => {
+      let query = this.db
+        .from("task")
+        .select(TASK_QUERIES.FIND_ALL)
+        .eq("user_id", userId)
+        .eq("task_type_id", taskTypeId)
+        .is("deleted_date", null)
+        .gte("start_date", startOfDay)
+        .lte("start_date", endOfDay);
+
+      if (options?.excludeStatusIds && options.excludeStatusIds.length > 0) {
+        query = query.not(
+          "task_status_id",
+          "in",
+          `(${options.excludeStatusIds.join(",")})`
+        );
+      }
+
+      return query;
+    };
+
+    const [appointmentsResult, remindersResult] = await Promise.all([
+      options?.appointmentTypeId
+        ? buildQuery(options.appointmentTypeId)
+        : Promise.resolve({ data: [], error: null }),
+      options?.reminderTypeId
+        ? buildQuery(options.reminderTypeId)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+
+    const mapItem = (item: any): TaskDetails => {
+      const { task_type, task_status, client, ...taskData } = item;
+      return {
+        ...taskData,
+        task_type_name: task_type?.task_type_name || "",
+        task_status_name: task_status?.task_status_name || "",
+        client_first_name: client?.first_name || null,
+        client_last_name: client?.last_name || null,
+      } as TaskDetails;
+    };
+
+    return {
+      appointments: (appointmentsResult.data ?? []).map(mapItem),
+      reminders: (remindersResult.data ?? []).map(mapItem),
+    };
+  }
+
+  async findUpcomingByUserId(
+    userId: string,
+    date: string,
+    options?: {
+      inProgressStatusId?: string;
+      notStartedStatusId?: string;
+    }
+  ): Promise<TaskDetails[]> {
+    const startOfDay = `${date} 00:00:00`;
+    const endOfDay = `${date} 23:59:59`;
+
+    const statusIds = [
+      options?.inProgressStatusId,
+      options?.notStartedStatusId,
+    ].filter((id): id is string => !!id);
+
+    let query = this.db
+      .from("task")
+      .select(TASK_QUERIES.FIND_ALL)
+      .eq("user_id", userId)
+      .is("deleted_date", null)
+      .gte("start_date", startOfDay)
+      .lte("start_date", endOfDay);
+
+    if (statusIds.length > 0) {
+      query = query.in("task_status_id", statusIds);
+    }
+
+    const { data, error } = await query.order("start_date", {
+      ascending: true,
+    });
+
+    if (error) {
+      console.error("findUpcomingByUserId error:", error);
+      return [];
+    }
+
+    if (!data) return [];
+
+    return data.map((item) => {
+      const { task_type, task_status, client, ...taskData } = item;
+      return {
+        ...taskData,
+        task_type_name: task_type?.task_type_name || "",
+        task_status_name: task_status?.task_status_name || "",
+        client_first_name: client?.first_name || null,
+        client_last_name: client?.last_name || null,
+      } as TaskDetails;
+    });
+  }
 }
