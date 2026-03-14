@@ -1,4 +1,7 @@
 import { Icons } from "@/config";
+import { useFetchTaskSummary } from "@/services/tasks/useTaskSummary";
+import { useFetchUser } from "@/services/user";
+
 import {
   Color,
   Font,
@@ -8,8 +11,7 @@ import {
   TextVariant,
   textStyles,
 } from "@repo/config";
-import type { User } from "@repo/models";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -17,6 +19,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  type LayoutChangeEvent,
 } from "react-native";
 import {
   Defs,
@@ -27,7 +30,7 @@ import {
 } from "react-native-svg";
 
 const HARDCODED_USER_ID = "2a3c19b8-d352-4b30-a2ac-1cdf993d310c";
-const BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+const IMG_SIZE = 120;
 
 const fontFamilyMap: { [key in Font]: string } = {
   [Font.Lato]: "Lato",
@@ -94,19 +97,7 @@ function getLocalDateString(): string {
   return `${year}-${month}-${day}`;
 }
 
-type UserResponse = {
-  success: boolean;
-  user: User;
-};
-
-type TaskSummaryResponse = {
-  success: boolean;
-  date: string;
-  appointment_count: number;
-  reminder_count: number;
-};
-
-export interface HomeCardProps {
+interface HomeCardProps {
   onNotificationPress?: () => void;
   onSettingsPress?: () => void;
   notificationCount?: number;
@@ -120,40 +111,26 @@ export function HomeCard({
   onSettingsPress,
   notificationCount = 8,
 }: HomeCardProps) {
-  const [user, setUser] = useState<User | null>(null);
-  const [appointmentCount, setAppointmentCount] = useState<number>(0);
-  const [taskCount, setTaskCount] = useState<number>(0);
-  const [loading, setLoading] = useState(true);
+  const today = getLocalDateString();
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const today = getLocalDateString();
+  const { data: user, isLoading: userLoading } =
+    useFetchUser(HARDCODED_USER_ID);
+  const { data: taskSummary, isLoading: summaryLoading } = useFetchTaskSummary(
+    HARDCODED_USER_ID,
+    today
+  );
 
-        const [userRes, summaryRes] = await Promise.all([
-          fetch(`${BASE_URL}/api/users/${HARDCODED_USER_ID}`),
-          fetch(
-            `${BASE_URL}/api/tasks/summary?user_id=${HARDCODED_USER_ID}&date=${today}`
-          ),
-        ]);
+  const loading = userLoading || summaryLoading;
+  const appointmentCount = taskSummary?.appointment_count ?? 0;
+  const taskCount = taskSummary?.reminder_count ?? 0;
 
-        const userData = (await userRes.json()) as UserResponse;
-        const summaryData = (await summaryRes.json()) as TaskSummaryResponse;
+  const [cardHeight, setCardHeight] = useState(0);
+  const imgTop = cardHeight > 0 ? cardHeight / 2 - IMG_SIZE / 2 : 0;
 
-        if (userData.success) setUser(userData.user);
-        if (summaryData.success) {
-          setAppointmentCount(summaryData.appointment_count);
-          setTaskCount(summaryData.reminder_count);
-        }
-      } catch (error) {
-        console.error("HomeCard fetch error:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    void fetchData();
-  }, []);
+  const handleCardLayout = (e: LayoutChangeEvent) => {
+    const { height } = e.nativeEvent.layout;
+    if (height !== cardHeight) setCardHeight(height);
+  };
 
   return (
     <ImageBackground
@@ -224,24 +201,21 @@ export function HomeCard({
         )}
       </View>
 
-      <View className="flex-row px-5 gap-3 mt-5">
+      {/* Stats Cards Row */}
+      <View
+        className="flex-row px-5 gap-3 mt-5"
+        style={{ overflow: "visible" }}
+      >
+        {/* Appointments Card */}
         <View
-          className="flex-1 rounded-2xl overflow-hidden justify-center items-center py-4"
-          style={{ backgroundColor: Color.LightCream, minHeight: 120 }}
+          className="flex-1 rounded-2xl justify-center items-center py-4"
+          style={{
+            backgroundColor: Color.LightCream,
+            minHeight: 120,
+            overflow: "visible",
+          }}
+          onLayout={handleCardLayout}
         >
-          <Image
-            // eslint-disable-next-line @typescript-eslint/no-require-imports
-            source={require("@/assets/images/home/appointment.png") as number}
-            style={{
-              position: "absolute",
-              left: -8,
-              bottom: -8,
-              width: 110,
-              height: 110,
-              opacity: 1,
-            }}
-            resizeMode="contain"
-          />
           <Text
             style={{
               ...applyTextStyle(TextVariant.Title, TextSize.Small),
@@ -261,25 +235,33 @@ export function HomeCard({
           >
             {loading ? "--" : String(appointmentCount).padStart(2, "0")}
           </Text>
+
+          {/* Appointment image — left edge, dynamically vertically centered */}
+          {cardHeight > 0 && (
+            <Image
+              // eslint-disable-next-line @typescript-eslint/no-require-imports
+              source={require("@/assets/images/home/calendar.png") as number}
+              style={{
+                position: "absolute",
+                left: -20,
+                top: imgTop,
+                width: IMG_SIZE,
+                height: IMG_SIZE,
+              }}
+              resizeMode="contain"
+            />
+          )}
         </View>
 
+        {/* Reminders Card */}
         <View
-          className="flex-1 rounded-2xl overflow-hidden justify-center items-center py-4"
-          style={{ backgroundColor: Color.LightCream, minHeight: 120 }}
+          className="flex-1 rounded-2xl justify-center items-center py-4"
+          style={{
+            backgroundColor: Color.LightCream,
+            minHeight: 120,
+            overflow: "visible",
+          }}
         >
-          <Image
-            // eslint-disable-next-line @typescript-eslint/no-require-imports
-            source={require("@/assets/images/home/tasks.png") as number}
-            style={{
-              position: "absolute",
-              right: -8,
-              top: -8,
-              width: 110,
-              height: 110,
-              opacity: 1,
-            }}
-            resizeMode="contain"
-          />
           <Text
             style={{
               ...applyTextStyle(TextVariant.Title, TextSize.Small),
@@ -299,6 +281,22 @@ export function HomeCard({
           >
             {loading ? "--" : String(taskCount).padStart(2, "0")}
           </Text>
+
+          {/* Reminder image — right edge, dynamically vertically centered */}
+          {cardHeight > 0 && (
+            <Image
+              // eslint-disable-next-line @typescript-eslint/no-require-imports
+              source={require("@/assets/images/home/checklist.png") as number}
+              style={{
+                position: "absolute",
+                right: -20,
+                top: imgTop,
+                width: IMG_SIZE,
+                height: IMG_SIZE,
+              }}
+              resizeMode="contain"
+            />
+          )}
         </View>
       </View>
     </ImageBackground>
