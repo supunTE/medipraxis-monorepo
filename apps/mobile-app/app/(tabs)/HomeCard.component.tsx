@@ -2,7 +2,6 @@ import { Icons } from "@/config";
 import { useFetchTaskSummary } from "@/services/tasks/useTaskSummary";
 import { useFetchUser } from "@/services/user";
 
-
 import {
   Color,
   Font,
