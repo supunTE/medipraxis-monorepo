@@ -354,7 +354,7 @@ export default function TaskForm({ visible, onClose }: Props) {
                     onValueChange={(v) => setField("slotWindow", v)}
                     options={slotWindowOptions}
                     placeholder="Sat 9-11PM"
-                    helperText="Recent slot number will be reserved"
+                    helperText="First available slot number will be reserved"
                   />
                   <TouchableOpacity
                     className="my-1.5"
