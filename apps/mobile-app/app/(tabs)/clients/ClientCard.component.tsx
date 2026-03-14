@@ -5,6 +5,7 @@ import { Color, TextSize, TextVariant } from "@repo/config";
 import React, { useRef } from "react";
 import { Animated, TouchableOpacity, type ViewStyle } from "react-native";
 import { SameContactSection } from "./SameContactSection.component";
+import { Client } from "@repo/models";
 
 // Client card props
 interface ClientCardProps {
@@ -15,7 +16,7 @@ interface ClientCardProps {
   onPress?: () => void;
   className?: string;
   index?: number;
-  familyMembers: any[];
+  familyMembers: Client[];
 }
 
 // Client card component
