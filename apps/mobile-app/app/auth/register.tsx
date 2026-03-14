@@ -64,12 +64,10 @@ export default function RegisterScreen() {
 
   return (
     <KeyboardAvoidingView
-      className="flex-1"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={{ backgroundColor: Color.White }}
+      style={{ backgroundColor: Color.White, flex: 1 }}
     >
       <ScrollView
-        className="flex-1"
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
       >
