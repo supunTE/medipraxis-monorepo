@@ -30,7 +30,7 @@ export interface ReportTileProps {
   reportDate: string;
   reports: Report[];
   onViewClient?: (clientId: string) => void;
-  onReportClick?: (reportId: string, filePath: string) => void;
+  onReportClick?: (reportId: string) => void;
 }
 
 export const ReportTile: React.FC<ReportTileProps> = ({
@@ -97,9 +97,7 @@ export const ReportTile: React.FC<ReportTileProps> = ({
               <TouchableOpacity
                 key={report.report_id}
                 className="flex-row items-center gap-3 p-3 rounded-lg bg-white border border-[#E5E5E5] self-start shadow-sm"
-                onPress={() =>
-                  onReportClick?.(report.report_id, report.file_path!)
-                }
+                onPress={() => onReportClick?.(report.report_id)}
                 activeOpacity={0.7}
               >
                 {report.file_type === "PDF" ? (
