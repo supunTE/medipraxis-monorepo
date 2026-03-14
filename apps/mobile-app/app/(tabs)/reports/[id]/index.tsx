@@ -259,7 +259,9 @@ export default function ReportViewerScreen() {
               }}
             >
               <WebView
-                source={{ uri: reportData.fileUrl }}
+                source={{
+                  uri: `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(reportData.fileUrl)}`,
+                }}
                 onLoadStart={() => setDocumentLoading(true)}
                 onLoadEnd={() => setDocumentLoading(false)}
                 onError={() => {
@@ -269,6 +271,7 @@ export default function ReportViewerScreen() {
                 className="flex-1 w-full"
                 startInLoadingState={true}
                 scalesPageToFit={true}
+                javaScriptEnabled={true}
               />
               {documentLoading && (
                 <View className="absolute inset-0 justify-center items-center bg-white/80">
