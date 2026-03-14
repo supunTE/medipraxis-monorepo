@@ -19,6 +19,8 @@ export async function runAgent(
   const text = response.text;
 
   return {
-    message: text || "I couldn't process your general request. Could you provide more details?",
+    message:
+      text ||
+      "I couldn't process your general request. Could you provide more details?",
   };
 }
