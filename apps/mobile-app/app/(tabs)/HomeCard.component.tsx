@@ -1,6 +1,8 @@
 import { Icons } from "@/config";
 import { useFetchTaskSummary } from "@/services/tasks/useTaskSummary";
 import { useFetchUser } from "@/services/user";
+
+
 import {
   Color,
   Font,
@@ -10,6 +12,7 @@ import {
   TextVariant,
   textStyles,
 } from "@repo/config";
+import { useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -17,6 +20,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  type LayoutChangeEvent,
 } from "react-native";
 import {
   Defs,
@@ -27,6 +31,7 @@ import {
 } from "react-native-svg";
 
 const HARDCODED_USER_ID = "2a3c19b8-d352-4b30-a2ac-1cdf993d310c";
+const IMG_SIZE = 120;
 
 const fontFamilyMap: { [key in Font]: string } = {
   [Font.Lato]: "Lato",
@@ -120,6 +125,14 @@ export default function HomeCard({
   const appointmentCount = taskSummary?.appointment_count ?? 0;
   const taskCount = taskSummary?.reminder_count ?? 0;
 
+  const [cardHeight, setCardHeight] = useState(0);
+  const imgTop = cardHeight > 0 ? cardHeight / 2 - IMG_SIZE / 2 : 0;
+
+  const handleCardLayout = (e: LayoutChangeEvent) => {
+    const { height } = e.nativeEvent.layout;
+    if (height !== cardHeight) setCardHeight(height);
+  };
+
   return (
     <ImageBackground
       // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -192,25 +205,20 @@ export default function HomeCard({
       </View>
 
       {/* Stats Cards Row */}
-      <View className="flex-row px-5 gap-3 mt-5">
+      <View
+        className="flex-row px-5 gap-3 mt-5"
+        style={{ overflow: "visible" }}
+      >
         {/* Appointments Card */}
         <View
-          className="flex-1 rounded-2xl overflow-hidden justify-center items-center py-4"
-          style={{ backgroundColor: Color.LightCream, minHeight: 120 }}
+          className="flex-1 rounded-2xl justify-center items-center py-4"
+          style={{
+            backgroundColor: Color.LightCream,
+            minHeight: 120,
+            overflow: "visible",
+          }}
+          onLayout={handleCardLayout}
         >
-          <Image
-            // eslint-disable-next-line @typescript-eslint/no-require-imports
-            source={require("@/assets/images/home/appointment.png") as number}
-            style={{
-              position: "absolute",
-              left: -8,
-              bottom: -8,
-              width: 110,
-              height: 110,
-              opacity: 1,
-            }}
-            resizeMode="contain"
-          />
           <Text
             style={{
               ...applyTextStyle(TextVariant.Title, TextSize.Small),
@@ -230,26 +238,33 @@ export default function HomeCard({
           >
             {loading ? "--" : String(appointmentCount).padStart(2, "0")}
           </Text>
+
+          {/* Appointment image — left edge, dynamically vertically centered */}
+          {cardHeight > 0 && (
+            <Image
+              // eslint-disable-next-line @typescript-eslint/no-require-imports
+              source={require("@/assets/images/home/calendar.png") as number}
+              style={{
+                position: "absolute",
+                left: -20,
+                top: imgTop,
+                width: IMG_SIZE,
+                height: IMG_SIZE,
+              }}
+              resizeMode="contain"
+            />
+          )}
         </View>
 
-        {/* Tasks Card */}
+        {/* Reminders Card */}
         <View
-          className="flex-1 rounded-2xl overflow-hidden justify-center items-center py-4"
-          style={{ backgroundColor: Color.LightCream, minHeight: 120 }}
+          className="flex-1 rounded-2xl justify-center items-center py-4"
+          style={{
+            backgroundColor: Color.LightCream,
+            minHeight: 120,
+            overflow: "visible",
+          }}
         >
-          <Image
-            // eslint-disable-next-line @typescript-eslint/no-require-imports
-            source={require("@/assets/images/home/tasks.png") as number}
-            style={{
-              position: "absolute",
-              right: -8,
-              top: -8,
-              width: 110,
-              height: 110,
-              opacity: 1,
-            }}
-            resizeMode="contain"
-          />
           <Text
             style={{
               ...applyTextStyle(TextVariant.Title, TextSize.Small),
@@ -269,6 +284,22 @@ export default function HomeCard({
           >
             {loading ? "--" : String(taskCount).padStart(2, "0")}
           </Text>
+
+          {/* Reminder image — right edge, dynamically vertically centered */}
+          {cardHeight > 0 && (
+            <Image
+              // eslint-disable-next-line @typescript-eslint/no-require-imports
+              source={require("@/assets/images/home/checklist.png") as number}
+              style={{
+                position: "absolute",
+                right: -20,
+                top: imgTop,
+                width: IMG_SIZE,
+                height: IMG_SIZE,
+              }}
+              resizeMode="contain"
+            />
+          )}
         </View>
       </View>
     </ImageBackground>

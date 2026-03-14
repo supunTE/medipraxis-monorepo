@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Alert } from "react-native";
 import { apiClient } from "@/lib/api-client";
 
-
 // Fetch task summary hook
 export const useFetchTaskSummary = (userId: string, date: string) => {
   return useQuery({
