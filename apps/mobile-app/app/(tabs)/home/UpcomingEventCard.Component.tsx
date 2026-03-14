@@ -1,6 +1,10 @@
 import { Icons } from "@/config";
+import { useFetchUpcomingTasks } from "@/services/tasks/useUpcomingTasks";
 import { Color, TextSize, TextVariant, textStyles } from "@repo/config";
-import { Text, TouchableOpacity, View } from "react-native";
+import type { TaskDetails } from "@repo/models";
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
+
+const HARDCODED_USER_ID = "2a3c19b8-d352-4b30-a2ac-1cdf993d310c";
 
 const CalendarIcon = Icons.CalendarBlank;
 const CalendarCheckIcon = Icons.CalendarCheckIcon;
@@ -17,42 +21,44 @@ export interface UpcomingEvent {
   onOptionsPress?: () => void;
 }
 
-const HARDCODED_EVENTS: UpcomingEvent[] = [
-  {
-    id: "1",
-    title: "Appointment with",
-    tagName: "#Anna",
-    time: "8.00 am",
-    type: "appointment",
-  },
-  {
-    id: "2",
-    title: "Appointment with",
-    tagName: "#Elena",
-    time: "8.00 am",
-    type: "appointment",
-  },
-  {
-    id: "3",
-    title: "Appointment with",
-    tagName: "#Stefan",
-    time: "8.00 am",
-    type: "appointment",
-  },
-  {
-    id: "4",
-    title: "Lunch with Rebeca and Bonny",
-    time: "8.40 am",
-    type: "task",
-  },
-  {
-    id: "5",
-    title: "Appointment with",
-    tagName: "#Jimmy",
-    time: "8.00 am",
-    type: "appointment",
-  },
-];
+// task_type_name, task_status_name, client_first_name, client_last_name are joined columns from the DB query — not nested objects.
+type TaskDetailsWithFlatFields = TaskDetails & {
+  task_type_name?: string | null;
+  task_status_name?: string | null;
+  client_first_name?: string | null;
+  client_last_name?: string | null;
+};
+
+function getLocalDateString(): string {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function formatTime(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
+
+function mapTaskToEvent(task: TaskDetailsWithFlatFields): UpcomingEvent {
+  const isAppointment = task.task_type_name === "APPOINTMENT";
+  const clientFirstName = task.client_first_name ?? null;
+
+  return {
+    id: task.task_id,
+    title: isAppointment ? "Appointment with" : task.task_title,
+    time: task.start_date ? formatTime(task.start_date) : "—",
+    type: isAppointment ? "appointment" : "task",
+    tagName:
+      isAppointment && clientFirstName ? `#${clientFirstName}` : undefined,
+  };
+}
 
 function EventCard({
   title,
@@ -98,7 +104,6 @@ function EventCard({
         )}
       </View>
 
-      {/* Text */}
       <View style={{ flex: 1 }}>
         <Text
           style={{
@@ -136,7 +141,6 @@ function EventCard({
         </Text>
       </View>
 
-      {/* Options */}
       <TouchableOpacity onPress={onOptionsPress} hitSlop={8}>
         <DotsIcon size={18} color={Color.Grey} />
       </TouchableOpacity>
@@ -145,15 +149,41 @@ function EventCard({
 }
 
 export function UpcomingEventCard() {
+  const today = getLocalDateString();
+  const { data, isLoading } = useFetchUpcomingTasks(HARDCODED_USER_ID, today);
+
+  if (isLoading) {
+    return (
+      <View style={{ paddingVertical: 24, alignItems: "center" }}>
+        <ActivityIndicator color={Color.Green} />
+      </View>
+    );
+  }
+
+  const tasks = (data?.tasks ?? []) as TaskDetailsWithFlatFields[];
+
+  if (tasks.length === 0) {
+    return (
+      <View style={{ paddingVertical: 24, alignItems: "center" }}>
+        <Text style={{ fontFamily: "DMSans", fontSize: 14, color: Color.Grey }}>
+          No upcoming events for today
+        </Text>
+      </View>
+    );
+  }
+
   return (
     <View style={{ paddingHorizontal: 20, gap: 10 }}>
-      {HARDCODED_EVENTS.map((event) => (
-        <EventCard
-          key={event.id}
-          {...event}
-          onOptionsPress={() => console.log("Options pressed for", event.id)}
-        />
-      ))}
+      {tasks.map((task) => {
+        const event = mapTaskToEvent(task);
+        return (
+          <EventCard
+            key={event.id}
+            {...event}
+            onOptionsPress={() => console.log("Options pressed for", event.id)}
+          />
+        );
+      })}
     </View>
   );
 }
