@@ -125,8 +125,9 @@ export class TaskController {
   }
 
   // Reserve an appointment from a slot window (creates appointment task)
-  static async reserveAppointmentByClient(
-    c: APIContext<{ json: ReserveAppointmentByClientInput }>
+  private static async reserveAppointment(
+    c: APIContext<{ json: ReserveAppointmentByClientInput }>,
+    by: "client" | "practitioner"
   ) {
     try {
       const slotWindowService = getSlotWindowService(c);
@@ -134,17 +135,19 @@ export class TaskController {
       const body = c.req.valid("json") as ReserveAppointmentByClientInput;
 
       // Check if client is in cooldown period
-      const cooldownCheck = await taskService.isClientInCooldown(
-        body.client_id
-      );
-
-      if (cooldownCheck.inCooldown) {
-        return c.json(
-          {
-            error: `Please wait ${cooldownCheck.remainingMinutes} more minute(s) before reserving another appointment`,
-          },
-          429
+      if (by == "client") {
+        const cooldownCheck = await taskService.isClientInCooldown(
+          body.client_id
         );
+
+        if (cooldownCheck.inCooldown) {
+          return c.json(
+            {
+              error: `Please wait ${cooldownCheck.remainingMinutes} more minute(s) before reserving another appointment`,
+            },
+            429
+          );
+        }
       }
 
       // Check if client already has an appointment in this slot window
@@ -203,6 +206,18 @@ export class TaskController {
             : 500;
       return c.json({ error: message }, status);
     }
+  }
+
+  static async reserveAppointmentByClient(
+    c: APIContext<{ json: ReserveAppointmentByClientInput }>
+  ) {
+    return TaskController.reserveAppointment(c, "client");
+  }
+
+  static async reserveAppointmentByPractitioner(
+    c: APIContext<{ json: ReserveAppointmentByClientInput }>
+  ) {
+    return TaskController.reserveAppointment(c, "practitioner");
   }
 
   // Cancel an appointment (changes status to CANCELLED and releases slot)
