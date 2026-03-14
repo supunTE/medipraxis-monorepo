@@ -22,16 +22,17 @@ import { WebView } from "react-native-webview";
 const TEMP_USER_ID = "2a3c19b8-d352-4b30-a2ac-1cdf993d310c";
 
 const isPDF = (fileType: string | null) => {
-  return (
-    fileType?.toLowerCase() === "pdf" ||
-    fileType?.toLowerCase() === "application/pdf"
-  );
+  if (!fileType) return false;
+  const lowerType = fileType.toLowerCase();
+  return lowerType === "pdf" || lowerType === "application/pdf";
 };
 
 const isImage = (fileType: string | null) => {
+  if (!fileType) return false;
+  const lowerType = fileType.toLowerCase();
   return (
-    fileType?.toLowerCase().includes("image") ||
-    ["jpg", "jpeg", "png"].includes(fileType?.toLowerCase() || "")
+    lowerType.includes("image") ||
+    ["jpg", "jpeg", "png", "JPG", "JPEG", "PNG"].includes(fileType)
   );
 };
 

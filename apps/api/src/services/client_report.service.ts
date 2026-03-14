@@ -178,6 +178,7 @@ export class ClientReportService {
       clientName,
       uploadedOn: report.created_date,
       expiresIn: report.expiry_date,
+      fileType: report.file_type,
     };
   }
 
