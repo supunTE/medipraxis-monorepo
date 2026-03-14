@@ -122,15 +122,19 @@ export const ReportTile: React.FC<ReportTileProps> = ({
             );
           }
 
-          // For pending reports without file_path, show simple text
+          // For pending reports without file_path, show with file icon
           return (
-            <View key={report.report_id} className="flex-row items-center py-1">
+            <View
+              key={report.report_id}
+              className="flex-row items-center gap-3 p-3 rounded-lg bg-[#F5F5F5]"
+            >
+              <FilePdfIcon size={20} color={Color.Grey} weight="regular" />
               <TextComponent
                 variant={TextVariant.Body}
                 size={TextSize.Small}
                 color={Color.Black}
               >
-                • {report.report_title || "Untitled Report"}
+                {report.report_title || "Untitled Report"}
               </TextComponent>
             </View>
           );
