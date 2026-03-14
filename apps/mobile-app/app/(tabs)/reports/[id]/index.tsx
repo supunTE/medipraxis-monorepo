@@ -8,11 +8,13 @@ import {
   FileTextIcon,
   UserIcon,
 } from "phosphor-react-native";
-import React, { useState } from "react";
+import { usePreventScreenCapture } from "expo-screen-capture";
+import React, { useRef, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
   Image,
+  Platform,
   SafeAreaView,
   ScrollView,
   View,
@@ -20,6 +22,30 @@ import {
 import { WebView } from "react-native-webview";
 
 const TEMP_USER_ID = "2a3c19b8-d352-4b30-a2ac-1cdf993d310c";
+
+const HIDE_POPOUT_ICON_JS = `
+(function() {
+  var style = document.createElement('style');
+  style.textContent = [
+    'a[target="_blank"] { display: none !important; }',
+    '.ndfHFb-c4YZDc-GSQQnc-LgbsSe { display: none !important; }',
+    '.ndfHFb-c4YZDc-to915-LgbsSe { display: none !important; }',
+    '#ge_oi { display: none !important; }',
+    '[aria-label="Pop-out"] { display: none !important; }',
+    '[aria-label="Open in new window"] { display: none !important; }'
+  ].join('\\n');
+  document.head.appendChild(style);
+
+  var observer = new MutationObserver(function() {
+    document.querySelectorAll('a[target="_blank"]').forEach(function(el) {
+      el.style.display = 'none';
+      el.removeAttribute('href');
+    });
+  });
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+})();
+true;
+`;
 
 const isPDF = (fileType: string | null) => {
   if (!fileType) return false;
@@ -37,8 +63,11 @@ const isImage = (fileType: string | null) => {
 };
 
 export default function ReportViewerScreen() {
+  usePreventScreenCapture();
+
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const webViewRef = useRef<WebView>(null);
   const [documentLoading, setDocumentLoading] = useState(true);
   const [documentError, setDocumentError] = useState(false);
 
@@ -259,6 +288,7 @@ export default function ReportViewerScreen() {
               }}
             >
               <WebView
+                ref={webViewRef}
                 source={{
                   uri: `https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(reportData.fileUrl)}`,
                 }}
@@ -267,6 +297,16 @@ export default function ReportViewerScreen() {
                 onError={() => {
                   setDocumentError(true);
                   setDocumentLoading(false);
+                }}
+                injectedJavaScript={HIDE_POPOUT_ICON_JS}
+                onShouldStartLoadWithRequest={(request) => {
+                  if (request.url.includes("docs.google.com/gview")) return true;
+                  if (
+                    Platform.OS === "android" &&
+                    request.url === "about:blank"
+                  )
+                    return true;
+                  return false;
                 }}
                 className="flex-1 w-full"
                 startInLoadingState={true}
