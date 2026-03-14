@@ -5,8 +5,8 @@ import {
   useTaskHandler,
   type EventType,
 } from "@/services/tasks/useTaskHandler";
-import React, { useMemo, useState } from "react";
-import { Modal, ScrollView, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useMemo, useState } from "react";
+import { Alert, Modal, ScrollView, TouchableOpacity, View } from "react-native";
 
 import {
   ButtonComponent,
@@ -52,7 +52,15 @@ export default function TaskForm({ visible, onClose }: Props) {
     toggleAttachToSlot,
     toggleRecurring,
     isPending,
+    error,
   } = useTaskHandler(onClose);
+
+  useEffect(() => {
+    if (error) {
+      Alert.alert("Error", error);
+    }
+  }, [error]);
+
   const [showEndDateTime, setShowEndDateTime] = useState(false);
 
   const { data: clients = [] } = useFetchClients(formState.userId);

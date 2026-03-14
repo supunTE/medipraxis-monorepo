@@ -165,15 +165,17 @@ const formatDateOnly = (dateStr: string): string => {
 
 export const useTaskHandler = (onClose: () => void) => {
   const [formState, setFormState] = useState<FormState>(DEFAULT_FORM_STATE);
+  const [error, setError] = useState<string | null>(null);
 
   const { mutate: createTask, isPending: isTaskPending } = useCreateTask({
     onSuccess: () => {
       Alert.alert("Success", "Task created successfully");
       setFormState(DEFAULT_FORM_STATE);
+      setError(null);
       onClose();
     },
     onError: (message) => {
-      Alert.alert("Error", message);
+      setError(message);
     },
   });
 
@@ -181,24 +183,26 @@ export const useTaskHandler = (onClose: () => void) => {
   const { mutate: createAppointment, isPending: isAppointmentPending } =
     useCreateTask({
       onSuccess: () => {
-        Alert.alert("Success", "Appointment created successfully");
-        setFormState(DEFAULT_APPOINTMENT_STATE);
-        onClose();
-      },
-      onError: (message) => {
-        Alert.alert("Error", message);
-      },
-    });
+      Alert.alert("Success", "Appointment created successfully");
+      setFormState(DEFAULT_APPOINTMENT_STATE);
+      setError(null);
+      onClose();
+    },
+    onError: (message) => {
+      setError(message);
+    },
+  });
 
   const { mutate: createAppointmentSlot, isPending: isAppointmentSlotPending } =
     useCreateAppointmentSlot({
       onSuccess: () => {
         Alert.alert("Success", "Appointment slot created successfully");
         setFormState(DEFAULT_APPOINTMENT_SLOT_STATE);
+        setError(null);
         onClose();
       },
       onError: (message) => {
-        Alert.alert("Error", message);
+        setError(message);
       },
     });
 
@@ -207,14 +211,16 @@ export const useTaskHandler = (onClose: () => void) => {
       onSuccess: () => {
         Alert.alert("Success", "Appointment reserved successfully");
         setFormState(DEFAULT_APPOINTMENT_STATE);
+        setError(null);
         onClose();
       },
       onError: (message) => {
-        Alert.alert("Error", message);
+        setError(message);
       },
     });
 
   const setField = (key: string, value: any) => {
+    setError(null);
     setFormState(
       (prev) =>
         ({
@@ -225,10 +231,12 @@ export const useTaskHandler = (onClose: () => void) => {
   };
 
   const resetForm = () => {
+    setError(null);
     setFormState(DEFAULT_FORM_STATE);
   };
 
   const switchEventType = (newType: EventType) => {
+    setError(null);
     setFormState((prev) => {
       const base: FormState = {
         ...DEFAULT_FORM_STATE,
@@ -293,7 +301,7 @@ export const useTaskHandler = (onClose: () => void) => {
     });
   };
 
-  const handleSave = () => {
+    const handleSave = () => {
     if (
       isTaskPending ||
       isAppointmentPending ||
@@ -301,6 +309,8 @@ export const useTaskHandler = (onClose: () => void) => {
       isReservePending
     )
       return;
+
+    setError(null);
 
     if (formState.eventType === EVENT_TYPES.TASK) {
       createTask({
@@ -403,6 +413,7 @@ export const useTaskHandler = (onClose: () => void) => {
     switchEventType,
     toggleAttachToSlot,
     toggleRecurring,
+    error,
     isPending:
       isTaskPending ||
       isAppointmentPending ||
