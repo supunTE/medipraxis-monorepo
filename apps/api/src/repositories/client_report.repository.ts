@@ -1,5 +1,6 @@
 import type { ClientReport } from "@repo/models";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { REQUEST_REPORT_QUERIES } from "./request_report.repository";
 
 export const CLIENT_REPORT_QUERIES = {
   // Table name
@@ -12,6 +13,7 @@ export const CLIENT_REPORT_QUERIES = {
   REPORT_ID: "report_id",
   REPORT_TITLE: "report_title",
   FILE_PATH: "file_path",
+  FILE_TYPE: "file_type",
   CLIENT_ID: "client_id",
   USER_ID: "user_id",
   CREATED_DATE: "created_date",
@@ -228,5 +230,76 @@ export class ClientReportRepository {
         .map((row) => row.request_report_id)
         .filter((id): id is string => id !== null)
     );
+  }
+
+  /**
+   * Find completed reports by user ID, grouped by client ID and date
+   * Filters out expired reports (expiry_date <= today)
+   */
+  async findCompletedReportsGroupedByUserIdAndDate(userId: string) {
+    const today = new Date().toISOString().split("T")[0];
+
+    const { data, error } = await this.db
+      .from(CLIENT_REPORT_QUERIES.CLIENT_REPORT_TABLE)
+      .select(
+        `
+        ${CLIENT_REPORT_QUERIES.REPORT_ID},
+        ${CLIENT_REPORT_QUERIES.REPORT_TITLE},
+        ${CLIENT_REPORT_QUERIES.FILE_PATH},
+        ${CLIENT_REPORT_QUERIES.FILE_TYPE},
+        ${CLIENT_REPORT_QUERIES.CLIENT_ID},
+        ${CLIENT_REPORT_QUERIES.CREATED_DATE},
+        ${CLIENT_REPORT_QUERIES.REQUEST_REPORT_ID},
+        client:client_id!inner (
+          client_id,
+          first_name,
+          last_name
+        )
+      `
+      )
+      .eq(CLIENT_REPORT_QUERIES.USER_ID, userId)
+      .gt("expiry_date", today)
+      .order(CLIENT_REPORT_QUERIES.CREATED_DATE, { ascending: false });
+
+    if (error) {
+      throw new Error(`Failed to fetch grouped reports: ${error.message}`);
+    }
+
+    return data || [];
+  }
+
+  async findPendingReportsByUserId(userId: string) {
+    const { data, error } = await this.db
+      .from(REQUEST_REPORT_QUERIES.REQUEST_REPORT_TABLE)
+      .select(
+        `
+        ${REQUEST_REPORT_QUERIES.REQUEST_REPORT_ID},
+        ${REQUEST_REPORT_QUERIES.CREATED_DATE},
+        ${REQUEST_REPORT_QUERIES.CLIENT_ID},
+        ${REQUEST_REPORT_QUERIES.REQUESTED_REPORTS},
+        client:${REQUEST_REPORT_QUERIES.CLIENT_ID}!inner (
+          client_id,
+          first_name,
+          last_name
+        ),
+        ${CLIENT_REPORT_QUERIES.CLIENT_REPORT_TABLE}!left (
+          ${CLIENT_REPORT_QUERIES.REQUEST_REPORT_ID}
+        )
+      `
+      )
+      .eq(REQUEST_REPORT_QUERIES.USER_ID, userId)
+      .eq(REQUEST_REPORT_QUERIES.DELETED, false)
+      .eq(REQUEST_REPORT_QUERIES.EXPIRED, false)
+      .is(
+        `${CLIENT_REPORT_QUERIES.CLIENT_REPORT_TABLE}.${CLIENT_REPORT_QUERIES.REQUEST_REPORT_ID}`,
+        null
+      )
+      .order(REQUEST_REPORT_QUERIES.CREATED_DATE, { ascending: false });
+
+    if (error) {
+      throw new Error(`Failed to fetch pending reports: ${error.message}`);
+    }
+
+    return data || [];
   }
 }

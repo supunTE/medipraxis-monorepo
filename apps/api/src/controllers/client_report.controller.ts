@@ -168,4 +168,37 @@ export class ClientReportController {
       return c.json({ error: message }, status);
     }
   }
+
+  static async getAllReportsByUserId(
+    c: APIContext<{ query: { user_id: string; completed?: string } }>
+  ) {
+    try {
+      const clientReportService = getClientReportService(c);
+      const userId = c.req.query("user_id");
+      const completedParam = c.req.query("completed");
+
+      if (!userId) {
+        return c.json({ error: "user_id is required" }, 400);
+      }
+
+      let completed: boolean | undefined;
+      if (completedParam !== undefined) {
+        completed = completedParam === "true";
+      }
+
+      const groupedReports =
+        await clientReportService.getGroupedReportsByUserId(userId, completed);
+
+      return c.json({
+        grouped_reports: groupedReports,
+        count: groupedReports.length,
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to get grouped reports";
+      return c.json({ error: message }, 500);
+    }
+  }
 }

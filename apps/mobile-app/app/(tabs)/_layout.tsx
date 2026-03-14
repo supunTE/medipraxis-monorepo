@@ -200,9 +200,9 @@ export default function TabLayout() {
         />
 
         <Tabs.Screen
-          name="two"
+          name="reports/index"
           options={{
-            title: "Tab Two",
+            title: "Reports",
             tabBarIcon: ({ focused }) => (
               <CustomTabIcon name="folder" focused={focused} />
             ),
