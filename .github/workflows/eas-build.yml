@@ -1,0 +1,37 @@
+name: EAS Build
+
+on:
+  # push: # Triggers the workflow when code is pushed to the main branch
+  #   branches:
+  #     - main # Or whichever branch you want to trigger the build
+  workflow_dispatch: # Allows you to trigger the build manually from the GitHub UI
+
+jobs:
+  build:
+    name: Install and build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build APK on EAS
+        # We cd into the app directory because you are in a monorepo
+        working-directory: ./apps/mobile-app
+        env:
+          EAS_BUILD_NO_EXPO_GO_WARNING: "true"
+        run: eas build --platform android --profile production --non-interactive

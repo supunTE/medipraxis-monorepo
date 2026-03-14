@@ -4,6 +4,19 @@ import type {
   UpdateAppointmentRecordInput,
 } from "@repo/models";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import {
+  APPOINTMENT_RECORD_COL_APPOINTMENT_DATA,
+  APPOINTMENT_RECORD_COL_APPOINTMENT_ID,
+  APPOINTMENT_RECORD_COL_CLIENT_ID,
+  APPOINTMENT_RECORD_COL_CREATED_DATE,
+  APPOINTMENT_RECORD_COL_DELETED,
+  APPOINTMENT_RECORD_COL_FORM_ID,
+  APPOINTMENT_RECORD_COL_ID,
+  APPOINTMENT_RECORD_COL_NOTE,
+  APPOINTMENT_RECORD_COL_UPDATED_DATE,
+  APPOINTMENT_RECORD_COL_USER_ID,
+  APPOINTMENT_RECORD_TABLE,
+} from "../constants";
 
 export class AppointmentRecordRepository {
   private db: SupabaseClient;
@@ -16,14 +29,15 @@ export class AppointmentRecordRepository {
     input: CreateAppointmentRecordInput
   ): Promise<AppointmentRecord> {
     const { data, error } = await this.db
-      .from("appointment_record")
+      .from(APPOINTMENT_RECORD_TABLE)
       .insert({
-        user_id: input.user_id,
-        client_id: input.client_id,
-        appointment_id: input.appointment_id,
-        form_id: input.form_id,
-        appointment_data: input.appointment_data || null,
-        note: input.note || null,
+        [APPOINTMENT_RECORD_COL_USER_ID]: input.user_id,
+        [APPOINTMENT_RECORD_COL_CLIENT_ID]: input.client_id,
+        [APPOINTMENT_RECORD_COL_APPOINTMENT_ID]: input.appointment_id,
+        [APPOINTMENT_RECORD_COL_FORM_ID]: input.form_id,
+        [APPOINTMENT_RECORD_COL_APPOINTMENT_DATA]:
+          input.appointment_data || null,
+        [APPOINTMENT_RECORD_COL_NOTE]: input.note || null,
       })
       .select()
       .single();
@@ -37,11 +51,11 @@ export class AppointmentRecordRepository {
 
   async findByClientId(clientId: string): Promise<AppointmentRecord[]> {
     const { data, error } = await this.db
-      .from("appointment_record")
+      .from(APPOINTMENT_RECORD_TABLE)
       .select("*")
-      .eq("client_id", clientId)
-      .eq("deleted", false)
-      .order("created_date", { ascending: false });
+      .eq(APPOINTMENT_RECORD_COL_CLIENT_ID, clientId)
+      .eq(APPOINTMENT_RECORD_COL_DELETED, false)
+      .order(APPOINTMENT_RECORD_COL_CREATED_DATE, { ascending: false });
 
     if (error || !data) return [];
     return data as AppointmentRecord[];
@@ -52,11 +66,11 @@ export class AppointmentRecordRepository {
     appointmentId: string
   ): Promise<AppointmentRecord | null> {
     const { data, error } = await this.db
-      .from("appointment_record")
+      .from(APPOINTMENT_RECORD_TABLE)
       .select("*")
-      .eq("client_id", clientId)
-      .eq("appointment_id", appointmentId)
-      .eq("deleted", false)
+      .eq(APPOINTMENT_RECORD_COL_CLIENT_ID, clientId)
+      .eq(APPOINTMENT_RECORD_COL_APPOINTMENT_ID, appointmentId)
+      .eq(APPOINTMENT_RECORD_COL_DELETED, false)
       .single();
 
     if (error || !data) return null;
@@ -68,16 +82,18 @@ export class AppointmentRecordRepository {
     input: UpdateAppointmentRecordInput
   ): Promise<AppointmentRecord> {
     const { data, error } = await this.db
-      .from("appointment_record")
+      .from(APPOINTMENT_RECORD_TABLE)
       .update({
         ...(input.appointment_data !== undefined && {
-          appointment_data: input.appointment_data,
+          [APPOINTMENT_RECORD_COL_APPOINTMENT_DATA]: input.appointment_data,
         }),
-        ...(input.note !== undefined && { note: input.note }),
-        updated_date: new Date().toISOString(),
+        ...(input.note !== undefined && {
+          [APPOINTMENT_RECORD_COL_NOTE]: input.note,
+        }),
+        [APPOINTMENT_RECORD_COL_UPDATED_DATE]: new Date().toISOString(),
       })
-      .eq("appointment_record_id", recordId)
-      .eq("deleted", false)
+      .eq(APPOINTMENT_RECORD_COL_ID, recordId)
+      .eq(APPOINTMENT_RECORD_COL_DELETED, false)
       .select()
       .single();
 
@@ -90,13 +106,13 @@ export class AppointmentRecordRepository {
 
   async delete(recordId: string): Promise<void> {
     const { error } = await this.db
-      .from("appointment_record")
+      .from(APPOINTMENT_RECORD_TABLE)
       .update({
-        deleted: true,
-        updated_date: new Date().toISOString(),
+        [APPOINTMENT_RECORD_COL_DELETED]: true,
+        [APPOINTMENT_RECORD_COL_UPDATED_DATE]: new Date().toISOString(),
       })
-      .eq("appointment_record_id", recordId)
-      .eq("deleted", false);
+      .eq(APPOINTMENT_RECORD_COL_ID, recordId)
+      .eq(APPOINTMENT_RECORD_COL_DELETED, false);
 
     if (error) {
       throw new Error(error?.message || "Failed to delete appointment record");
