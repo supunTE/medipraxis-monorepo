@@ -43,6 +43,26 @@ export class ClientController {
       return c.json({ error: message }, status);
     }
   }
+  static async getClientByContactId(
+    c: APIContext<{ param: GetClientParam }, "/:id">
+  ) {
+    try {
+      const clientService = getClientService(c);
+      const contactId = c.req.param("id");
+
+      const clients = await clientService.getClientByContactId(contactId);
+
+      return c.json({ clients });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to get clients";
+      const status =
+        error instanceof Error && error.message === "Clients not found"
+          ? 404
+          : 500;
+      return c.json({ error: message }, status);
+    }
+  }
 
   static async getClientByPhone(
     c: APIContext<{ query: GetClientByPhoneQuery }>

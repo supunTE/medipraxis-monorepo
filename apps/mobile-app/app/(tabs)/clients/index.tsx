@@ -3,10 +3,10 @@ import { View } from "@/components/Themed";
 import { Input, InputField, InputSlot } from "@/components/ui/input";
 import { Icons } from "@/config";
 import {
-  fetchClientsByContactNumber,
   groupClientsByLetter,
   useCreateClient,
   useFetchClients,
+  useFetchFirstThreeClientMembers,
   type CreateClientInput,
 } from "@/services/clients";
 import { Color, Font, TextSize, TextVariant, textStyles } from "@repo/config";
@@ -67,47 +67,22 @@ export default function ClientsScreen({
     return groupClient;
   }, [clients, searchQuery]);
 
-  const { mutateAsync: checkPhone } = fetchClientsByContactNumber();
-
   const [familyMembersMap, setFamilyMembersMap] = useState<
     Record<string, any[]>
   >({});
 
-  // TODO: add useDEBounce for the sort fn
+  // Fetch first three clients' family members
+  const { data: firstThreeMembers } = useFetchFirstThreeClientMembers(
+    groupedClients,
+    searchQuery
+  );
+
+  // Update familyMembersMap when firstThreeMembers data arrives
   useEffect(() => {
-    let globalIndex = 0;
-
-    const fetchFirstThree = async () => {
-      const letters = Object.keys(groupedClients).sort();
-      const members: Record<string, any[]> = {};
-      for (const letter of letters) {
-        const clientGroup = groupedClients[letter];
-        if (!clientGroup) continue;
-
-        for (const client of clientGroup) {
-          const currentIndex = globalIndex++;
-          if (currentIndex >= 3) return;
-          if (familyMembersMap[client.id]) continue;
-
-          try {
-            const res = await checkPhone({
-              countryCode: "+94",
-              contactNumber: "771245786",
-            });
-
-            members[client.id] = res.clients ?? [];
-          } catch (err) {
-            console.log("Family fetch failed", err);
-          }
-        }
-        setFamilyMembersMap(members);
-      }
-    };
-
-    if (Object.keys(groupedClients).length > 0 && searchQuery) {
-      fetchFirstThree();
+    if (firstThreeMembers) {
+      setFamilyMembersMap(firstThreeMembers);
     }
-  }, [groupedClients, searchQuery]);
+  }, [firstThreeMembers]);
 
   const handleClientPress = (clientId: string) => {
     router.push(`/clients/${clientId}` as any);

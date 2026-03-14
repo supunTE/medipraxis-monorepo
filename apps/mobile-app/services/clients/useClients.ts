@@ -8,6 +8,7 @@ import { Alert } from "react-native";
 // Client type for UI display
 export interface ClientDisplay {
   id: string;
+  contact_id: string;
   name: string;
   initial: string;
   color: string;
@@ -218,6 +219,78 @@ export const useFetchClientById = (clientId: string) => {
       return data.client;
     },
     enabled: !!clientId,
+  });
+};
+
+export const useFetchClientsByContactId = (contactId: string) => {
+  return useQuery({
+    queryKey: ["id", contactId],
+    queryFn: async () => {
+      console.log("Fetching clients by contact ID:", contactId);
+      const response = await apiClient.api.clients["contact-id"][":id"].$get({
+        param: {
+          id: contactId,
+        },
+      });
+
+      if (!response.ok) {
+        Alert.alert(
+          "Error",
+          "Failed to load client details. Please try again."
+        );
+        return null;
+      }
+
+      const data = await response.json();
+      return data.clients;
+    },
+    enabled: !!contactId,
+  });
+};
+
+// Fetch first three clients' family members
+export const useFetchFirstThreeClientMembers = (
+  groupedClients: Record<string, ClientDisplay[]>,
+  searchQuery: string
+) => {
+  return useQuery({
+    queryKey: ["firstThreeClientMembers", groupedClients, searchQuery],
+    queryFn: async () => {
+      const letters = Object.keys(groupedClients).sort();
+      const members: Record<string, any[]> = {};
+      let globalIndex = 0;
+
+      for (const letter of letters) {
+        const clientGroup = groupedClients[letter];
+        if (!clientGroup) continue;
+
+        for (const client of clientGroup) {
+          if (globalIndex >= 3) break;
+          globalIndex++;
+
+          try {
+            const response = await apiClient.api.clients["contact-id"][
+              ":id"
+            ].$get({
+              param: {
+                id: client.contact_id,
+              },
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              members[client.id] = data.clients || [];
+            }
+          } catch (err) {
+            console.log("Family fetch failed", err);
+          }
+        }
+        if (globalIndex >= 3) break;
+      }
+
+      return members;
+    },
+    enabled: Object.keys(groupedClients).length > 0 && !!searchQuery,
   });
 };
 

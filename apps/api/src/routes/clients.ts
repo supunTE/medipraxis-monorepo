@@ -32,6 +32,11 @@ const clients = new Hono()
     zValidator("param", getClientParamSchema),
     ClientController.getClientById
   )
+  .get(
+    "/contact-id/:id",
+    zValidator("param", getClientParamSchema),
+    ClientController.getClientByContactId
+  )
   .put(
     "/:id",
     zValidator("param", updateClientParamSchema),
