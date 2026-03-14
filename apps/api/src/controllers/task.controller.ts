@@ -4,6 +4,7 @@ import type {
   GetAllTaskQuery,
   GetAppointmentsByClientQuery,
   GetTaskParam,
+  GetTaskSummaryQuery,
   ReserveAppointmentByClientInput,
   TaskType,
   UpdateTaskInput,
@@ -124,7 +125,6 @@ export class TaskController {
     }
   }
 
-  // Reserve an appointment from a slot window (creates appointment task)
   static async reserveAppointmentByClient(
     c: APIContext<{ json: ReserveAppointmentByClientInput }>
   ) {
@@ -133,7 +133,6 @@ export class TaskController {
       const taskService = getTaskService(c);
       const body = c.req.valid("json") as ReserveAppointmentByClientInput;
 
-      // Check if client is in cooldown period
       const cooldownCheck = await taskService.isClientInCooldown(
         body.client_id
       );
@@ -147,7 +146,6 @@ export class TaskController {
         );
       }
 
-      // Check if client already has an appointment in this slot window
       const hasExisting = await taskService.hasExistingAppointmentInSlotWindow(
         body.client_id,
         body.slot_window_id
@@ -160,17 +158,14 @@ export class TaskController {
         );
       }
 
-      // Get slot window details
       const slotWindow = await slotWindowService.getSlotWindowById(
         body.slot_window_id
       );
 
-      // Reserve a slot and get position
       const position = await slotWindowService.reserveSlotFromSlotWindow(
         body.slot_window_id
       );
 
-      // Create appointment task with calculated time slot
       const task = await taskService.reserveAppointmentFromSlotWindow(
         body.slot_window_id,
         slotWindow.start_date,
@@ -205,7 +200,6 @@ export class TaskController {
     }
   }
 
-  // Cancel an appointment (changes status to CANCELLED and releases slot)
   static async cancelAppointmentByClient(
     c: APIContext<{ json: CancelAppointmentByClientInput }>
   ) {
@@ -214,26 +208,22 @@ export class TaskController {
       const taskService = getTaskService(c);
       const body = c.req.valid("json") as CancelAppointmentByClientInput;
 
-      // Get task details
       const task = await taskService.getTaskById(body.task_id);
 
       if (!task.slot_window_id || task.appointment_number === null) {
         throw new Error("Task is not an appointment");
       }
 
-      // Check if appointment is already cancelled
       const isCancelled = await taskService.isTaskCancelled(body.task_id);
       if (isCancelled) {
         return c.json({ error: "Appointment is already cancelled" }, 400);
       }
 
-      // Release the slot back to slot window
       await slotWindowService.releaseSlotToSlotWindow(
         task.slot_window_id,
         task.appointment_number
       );
 
-      // Update task status to CANCELLED
       await taskService.updateTaskStatus(body.task_id, TaskStatus.CANCELLED);
 
       return c.json({
@@ -255,6 +245,33 @@ export class TaskController {
               ? 400
               : 500;
       return c.json({ error: message }, status);
+    }
+  }
+
+  // Get user's task summary for today
+  static async getTaskSummaryByUserId(
+    c: APIContext<{ query: GetTaskSummaryQuery }>
+  ) {
+    try {
+      const taskService = getTaskService(c);
+      const userId = c.req.query("user_id") as string;
+      const dateParam = c.req.query("date");
+      const date: string =
+        dateParam !== undefined
+          ? dateParam
+          : (new Date().toISOString().split("T")[0] as string);
+
+      const summary = await taskService.getTaskSummaryForToday(userId, date);
+
+      return c.json({
+        success: true,
+        date,
+        ...summary,
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to get task summary";
+      return c.json({ error: message }, 500);
     }
   }
 }
