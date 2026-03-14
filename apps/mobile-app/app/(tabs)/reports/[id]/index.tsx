@@ -73,7 +73,7 @@ export default function ReportViewerScreen() {
       return () => {
         allowScreenCaptureAsync();
       };
-    }, []),
+    }, [])
   );
 
   const router = useRouter();
@@ -311,7 +311,8 @@ export default function ReportViewerScreen() {
                 }}
                 injectedJavaScript={HIDE_POPOUT_ICON_JS}
                 onShouldStartLoadWithRequest={(request) => {
-                  if (request.url.includes("docs.google.com/gview")) return true;
+                  if (request.url.includes("docs.google.com/gview"))
+                    return true;
                   if (
                     Platform.OS === "android" &&
                     request.url === "about:blank"

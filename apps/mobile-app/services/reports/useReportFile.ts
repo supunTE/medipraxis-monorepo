@@ -7,9 +7,9 @@ export const useFetchReportFile = (userId: string, reportId: string) => {
   return useQuery({
     queryKey: ["report-file", userId, reportId],
     queryFn: async () => {
-      const response = await apiClient.api["client-reports"][":user_id"][
-        ":id"
-      ]["file"].$get({
+      const response = await apiClient.api["client-reports"][":user_id"][":id"][
+        "file"
+      ].$get({
         param: { user_id: userId, id: reportId },
       });
 

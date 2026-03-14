@@ -85,7 +85,10 @@ export class ClientReportController {
   }
 
   static async getReportFileUrl(
-    c: APIContext<{ param: { user_id: string; id: string } }, ":user_id/:id/file">
+    c: APIContext<
+      { param: { user_id: string; id: string } },
+      ":user_id/:id/file"
+    >
   ) {
     try {
       const clientReportService = getClientReportService(c);
