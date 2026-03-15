@@ -27,6 +27,7 @@ export interface AgendaReminderData {
   content: AgendaReminderContent;
   startTime: string;
   endTime?: string;
+  isCompleted: boolean;
 }
 
 export interface AgendaData {

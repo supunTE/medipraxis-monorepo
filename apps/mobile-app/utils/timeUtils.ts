@@ -256,6 +256,22 @@ export function groupReminders<
   return groups;
 }
 /**
+ * Formats an ISO 8601 datetime string to 12-hour time (e.g., "2:00 pm")
+ * @param isoDate - ISO 8601 datetime string (e.g., "2026-01-15T14:00:00")
+ * @returns Formatted 12-hour time string (e.g., "2:00 pm")
+ */
+export function formatISOToTime(isoDate: string): string {
+  const date = new Date(isoDate);
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? "pm" : "am";
+  const displayHours = hours % 12 || 12;
+  const displayMinutes =
+    minutes === 0 ? "00" : String(minutes).padStart(2, "0");
+  return `${displayHours}:${displayMinutes} ${ampm}`;
+}
+
+/**
  * Formats ISO 8601 datetime string to readable format with date and 12-hour time
  * @param isoString - ISO 8601 datetime string (e.g., "2026-01-15T14:00:00")
  * @returns Formatted string (e.g., "2026-01-15 2:00pm")

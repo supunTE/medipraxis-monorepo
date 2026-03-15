@@ -370,6 +370,27 @@ export class SlotWindowRepository {
     return data as SlotWindow;
   }
 
+  // Only for debugging don't use this in production, this might cause side effects if the slot windows are linked to appointments
+  async deleteByIds(slotWindowIds: string[]): Promise<string[]> {
+    if (slotWindowIds.length === 0) {
+      return [];
+    }
+
+    const { data, error } = await this.db
+      .from(SLOT_WINDOW_QUERIES.SLOT_WINDOW_TABLE)
+      .delete()
+      .in("slot_window_id", slotWindowIds)
+      .select("slot_window_id");
+
+    if (error) {
+      throw new Error(`Failed to delete slot windows: ${error.message}`);
+    }
+
+    return (data ?? []).map(
+      (slotWindow) => slotWindow.slot_window_id as string
+    );
+  }
+
   // find all slot windows for clients
   async findSlotWindowsByUserId(
     query: FindAvailableSlotWindowsQuery
@@ -445,12 +466,29 @@ export class SlotWindowRepository {
     return data as SlotWindow[];
   }
 
-  async findAllSlotWindowsByUserId(userId: string): Promise<SlotWindow[]> {
-    const { data, error } = await this.db
+  async findAllSlotWindowsByUserId(
+    userId: string,
+    date?: string
+  ): Promise<SlotWindow[]> {
+    let query = this.db
       .from(SLOT_WINDOW_QUERIES.SLOT_WINDOW_TABLE)
       .select(SLOT_WINDOW_QUERIES.SLOT_WINDOW_BASE)
-      .eq("user_id", userId)
-      .order("start_date", { ascending: true });
+      .eq("user_id", userId);
+
+    if (date) {
+      const startOfDayUtc = new Date(`${date}T00:00:00Z`);
+      const nextDayUtc = new Date(startOfDayUtc);
+      nextDayUtc.setUTCDate(nextDayUtc.getUTCDate() + 1);
+      const nextDayDatePart = nextDayUtc.toISOString().slice(0, 10);
+      const nextDayStart = `${nextDayDatePart}T00:00:00Z`;
+      query = query
+        .gte("start_date", startOfDayUtc.toISOString())
+        .lt("start_date", nextDayStart);
+    }
+
+    const { data, error } = await query.order("start_date", {
+      ascending: true,
+    });
 
     if (error || !data) {
       return [];

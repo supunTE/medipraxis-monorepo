@@ -2,6 +2,7 @@ import type {
   CreateTaskInput,
   Task,
   TaskDetails,
+  UpdateTaskData,
   UpdateTaskInput,
 } from "@repo/models";
 import { TaskStatus, TaskType } from "@repo/models";
@@ -19,7 +20,8 @@ export class TaskService {
     userId: string,
     taskType?: keyof typeof TaskType,
     taskStatus?: keyof typeof TaskStatus,
-    slotWindowId?: string
+    slotWindowId?: string,
+    date?: string
   ): Promise<TaskDetails[]> {
     // Get task type ID if task type name is provided
     let taskTypeId: string | undefined;
@@ -49,6 +51,7 @@ export class TaskService {
       taskTypeId,
       taskStatusId,
       slotWindowId,
+      date,
     });
   }
 
@@ -93,6 +96,28 @@ export class TaskService {
     }
 
     return task;
+  }
+
+  // Only for debugging don't use this in production, this might cause side effects if the slot windows are linked to appointments
+  async debugCreateCustomAppointment(
+    input: Omit<CreateTaskInput, "task_type_id">
+  ): Promise<Task> {
+    const appointmentTypeId = await this.taskRepository.getTaskTypeByName(
+      TaskType.APPOINTMENT
+    );
+
+    if (!appointmentTypeId) {
+      throw new Error('Default task type "APPOINTMENT" not found in database');
+    }
+
+    return await this.createTask({
+      ...input,
+      task_type_id: appointmentTypeId,
+    });
+  }
+
+  async debugDeleteTasksByIds(taskIds: string[]): Promise<string[]> {
+    return await this.taskRepository.deleteByIds(taskIds);
   }
 
   async createTask(input: CreateTaskInput): Promise<Task> {
@@ -155,7 +180,33 @@ export class TaskService {
   }
 
   async updateTask(taskId: string, input: UpdateTaskInput): Promise<Task> {
-    const updatedTask = await this.taskRepository.update(taskId, input);
+    const { task_type, task_status, ...rest } = input;
+
+    const updateData: UpdateTaskData = { ...rest };
+
+    // Resolve task type enum to ID
+    if (task_type) {
+      const taskTypeId = await this.taskRepository.getTaskTypeByName(
+        TaskType[task_type]
+      );
+      if (!taskTypeId) {
+        throw new Error(`Task type "${task_type}" not found in database`);
+      }
+      updateData.task_type_id = taskTypeId;
+    }
+
+    // Resolve task status enum to ID
+    if (task_status) {
+      const taskStatusId = await this.taskRepository.getTaskStatusByName(
+        TaskStatus[task_status]
+      );
+      if (!taskStatusId) {
+        throw new Error(`Task status "${task_status}" not found in database`);
+      }
+      updateData.task_status_id = taskStatusId;
+    }
+
+    const updatedTask = await this.taskRepository.update(taskId, updateData);
 
     if (!updatedTask) {
       throw new Error("Task not found or could not be updated");

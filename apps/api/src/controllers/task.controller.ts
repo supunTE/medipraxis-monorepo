@@ -24,12 +24,14 @@ export class TaskController {
         | keyof typeof TaskStatus
         | undefined;
       const slotWindowId = c.req.query("slot_window_id");
+      const date = c.req.query("date");
 
       const tasks = await taskService.getAllTasks(
         userId,
         taskType,
         taskStatus,
-        slotWindowId
+        slotWindowId,
+        date
       );
 
       return c.json({ tasks, count: tasks.length });

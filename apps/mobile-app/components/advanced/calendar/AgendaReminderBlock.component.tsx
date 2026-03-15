@@ -11,6 +11,7 @@ interface AgendaReminderBlockProps {
   startTime: string;
   endTime?: string;
   isMerged?: boolean;
+  isCompleted: boolean;
   onPress?: (reminder: AgendaReminderContent) => void;
 }
 
@@ -19,6 +20,7 @@ export function AgendaReminderBlock({
   startTime,
   endTime,
   isMerged = false,
+  isCompleted,
   onPress,
 }: AgendaReminderBlockProps): React.JSX.Element {
   const { width: screenWidth } = useWindowDimensions();
@@ -90,6 +92,9 @@ export function AgendaReminderBlock({
           size={isMerged ? TextSize.Medium : TextSize.Small}
           variant={TextVariant.Body}
           numberOfLines={2}
+          style={
+            isCompleted ? { textDecorationLine: "line-through" } : undefined
+          }
         >
           {content.title}
         </TextComponent>

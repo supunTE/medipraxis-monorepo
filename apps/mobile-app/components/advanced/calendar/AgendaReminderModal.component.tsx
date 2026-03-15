@@ -58,7 +58,15 @@ function ReminderItem({ reminder, onPress }: ReminderItemProps) {
           {reminder.startTime}
           {reminder.endTime && ` - ${reminder.endTime}`}
         </TextComponent>
-        <TextComponent size={TextSize.Small} variant={TextVariant.Title}>
+        <TextComponent
+          size={TextSize.Small}
+          variant={TextVariant.Title}
+          style={
+            reminder.isCompleted
+              ? { textDecorationLine: "line-through" }
+              : undefined
+          }
+        >
           {reminder.content.title}
         </TextComponent>
       </Animated.View>

@@ -2,7 +2,8 @@ import { zValidator } from "@hono/zod-validator";
 import {
   createSlotWindowSchema,
   createSlotWindowTemplateSchema,
-  getAllTasksQuerySchema,
+  getAllSlotWindowsQuerySchema,
+  getAllSlotWindowTemplatesQuerySchema,
   updateSlotWindowTemplateSchema,
 } from "@repo/models";
 import { Hono } from "hono";
@@ -22,7 +23,7 @@ const slotWindows = new Hono()
   // Get all slot window templates for a user
   .get(
     "/templates",
-    zValidator("query", getAllTasksQuerySchema),
+    zValidator("query", getAllSlotWindowTemplatesQuerySchema),
     SlotWindowController.getAllSlotWindowTemplates
   )
   // Create slot window template (recurring)
@@ -53,7 +54,7 @@ const slotWindows = new Hono()
   // Get all slot windows for a user
   .get(
     "/",
-    zValidator("query", getAllTasksQuerySchema),
+    zValidator("query", getAllSlotWindowsQuerySchema),
     SlotWindowController.getAllSlotWindows
   )
   // Create slot window (non-recurring)

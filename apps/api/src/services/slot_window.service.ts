@@ -562,6 +562,13 @@ export class SlotWindowService {
     };
   }
 
+  // Only for debugging don't use this in production, this might cause side effects if the slot windows are linked to appointments
+  async debugDeleteSlotWindowsByIds(
+    slotWindowIds: string[]
+  ): Promise<string[]> {
+    return await this.slotWindowRepository.deleteByIds(slotWindowIds);
+  }
+
   // Soft delete a template (does not remove existing slot windows)
   async deleteAppointmentSlotWindowTemplate(
     templateId: string
@@ -602,8 +609,14 @@ export class SlotWindowService {
     return slotWindow;
   }
 
-  async getAllSlotWindowsByUserId(userId: string): Promise<SlotWindow[]> {
-    return await this.slotWindowRepository.findAllSlotWindowsByUserId(userId);
+  async getAllSlotWindowsByUserId(
+    userId: string,
+    date?: string
+  ): Promise<SlotWindow[]> {
+    return await this.slotWindowRepository.findAllSlotWindowsByUserId(
+      userId,
+      date
+    );
   }
 
   async getAllSlotWindowTemplatesByUserId(

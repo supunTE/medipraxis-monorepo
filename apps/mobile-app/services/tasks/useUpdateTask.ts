@@ -1,6 +1,6 @@
 import { apiClient } from "@/lib/api-client";
 import type { UpdateTaskInput } from "@repo/models";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export type UpdateTaskPayload = {
   task_id: string;
@@ -17,6 +17,8 @@ export type UseUpdateTaskReturn = ReturnType<typeof useMutation> & {
 };
 
 export const useUpdateTask = (options?: UseUpdateTaskOptions) => {
+  const queryClient = useQueryClient();
+
   const mutation = useMutation({
     mutationFn: async (payload: UpdateTaskPayload) => {
       const res = await apiClient.api.tasks[":id"].$put({
@@ -27,16 +29,20 @@ export const useUpdateTask = (options?: UseUpdateTaskOptions) => {
       });
 
       if (!res.ok) {
-        const error = await res.json();
+        const error = (await res.json()) as {
+          error?: string;
+          message?: string;
+        };
         throw new Error(
-          error instanceof Error ? error.message : "Failed to update task"
+          error?.error ?? error?.message ?? "Failed to update task"
         );
       }
 
       return res.json();
     },
 
-    onSuccess: () => {
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["reminders"] });
       options?.onSuccess?.();
     },
 

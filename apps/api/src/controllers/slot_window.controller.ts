@@ -1,7 +1,8 @@
 import type {
   CreateSlotWindowInput,
   CreateSlotWindowTemplateInput,
-  GetAllTaskQuery,
+  GetAllSlotWindowsQuery,
+  GetAllSlotWindowTemplatesQuery,
   UpdateSlotWindowTemplateInput,
 } from "@repo/models";
 import { getSlotWindowService } from "../lib";
@@ -12,7 +13,9 @@ type SlotWindowParam = { id: string };
 
 export class SlotWindowController {
   // Get all slot windows for a user
-  static async getAllSlotWindows(c: APIContext<{ query: GetAllTaskQuery }>) {
+  static async getAllSlotWindows(
+    c: APIContext<{ query: GetAllSlotWindowsQuery }>
+  ) {
     try {
       const slotWindowService = getSlotWindowService(c);
       const userId = c.req.query("user_id");
@@ -21,8 +24,12 @@ export class SlotWindowController {
         return c.json({ error: "user_id is required" }, 400);
       }
 
-      const slotWindows =
-        await slotWindowService.getAllSlotWindowsByUserId(userId);
+      const date = c.req.query("date");
+
+      const slotWindows = await slotWindowService.getAllSlotWindowsByUserId(
+        userId,
+        date
+      );
 
       return c.json({ slotWindows, count: slotWindows.length });
     } catch (error) {
@@ -34,7 +41,7 @@ export class SlotWindowController {
 
   // Get all slot window templates for a user
   static async getAllSlotWindowTemplates(
-    c: APIContext<{ query: GetAllTaskQuery }>
+    c: APIContext<{ query: GetAllSlotWindowTemplatesQuery }>
   ) {
     try {
       const slotWindowService = getSlotWindowService(c);

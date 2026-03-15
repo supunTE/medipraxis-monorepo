@@ -153,6 +153,11 @@ export function AgendaComponent({
               startTime={group.startTime}
               endTime={group.endTime}
               isMerged={group.count > 1}
+              isCompleted={
+                group.count > 1
+                  ? false
+                  : (group.reminders[0]?.isCompleted ?? false)
+              }
               onPress={
                 group.count > 1
                   ? () => {

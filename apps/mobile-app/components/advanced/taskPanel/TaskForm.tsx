@@ -7,7 +7,6 @@ import {
 } from "@/services/tasks/useTaskHandler";
 import React, { useEffect, useMemo, useState } from "react";
 import { Alert, Modal, ScrollView, TouchableOpacity, View } from "react-native";
-
 import {
   ButtonComponent,
   ButtonSize,

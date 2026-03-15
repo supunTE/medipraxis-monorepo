@@ -99,6 +99,18 @@ export const updateSlotWindowSchema = z
   })
   .strict();
 
+export const getAllSlotWindowsQuerySchema = z.object({
+  user_id: z.string(),
+  date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "date must be in YYYY-MM-DD format")
+    .optional(), // YYYY-MM-DD to filter slot windows for a specific day
+});
+
+export const getAllSlotWindowTemplatesQuerySchema = z.object({
+  user_id: z.string(),
+});
+
 export const findAvailableSlotWindowsQuerySchema = z.object({
   user_id: z.string().optional(),
   start_date: z.string(),
@@ -122,6 +134,12 @@ export type UpdateSlotWindowTemplateInput = z.infer<
 >;
 export type CreateSlotWindowInput = z.infer<typeof createSlotWindowSchema>;
 export type UpdateSlotWindowInput = z.infer<typeof updateSlotWindowSchema>;
+export type GetAllSlotWindowsQuery = z.infer<
+  typeof getAllSlotWindowsQuerySchema
+>;
+export type GetAllSlotWindowTemplatesQuery = z.infer<
+  typeof getAllSlotWindowTemplatesQuerySchema
+>;
 export type FindAvailableSlotWindowsQuery = z.infer<
   typeof findAvailableSlotWindowsQuerySchema
 >;

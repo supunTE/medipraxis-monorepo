@@ -2,7 +2,7 @@ import type {
   CreateTaskInput,
   Task,
   TaskDetails,
-  UpdateTaskInput,
+  UpdateTaskData,
 } from "@repo/models";
 import { TaskType, type TaskStatus } from "@repo/models";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -114,11 +114,8 @@ export class TaskRepository {
     return task as Task;
   }
 
-  async update(
-    taskId: string,
-    taskData: UpdateTaskInput
-  ): Promise<Task | null> {
-    const updateData: any = {
+  async update(taskId: string, taskData: UpdateTaskData): Promise<Task | null> {
+    const updateData: UpdateTaskData & { modified_date: string } = {
       ...taskData,
       modified_date: new Date().toISOString(),
     };
@@ -136,6 +133,25 @@ export class TaskRepository {
     }
 
     return data as Task;
+  }
+
+  // Only for debugging don't use this in production, this might cause side effects if the slot windows are linked to appointments
+  async deleteByIds(taskIds: string[]): Promise<string[]> {
+    if (taskIds.length === 0) {
+      return [];
+    }
+
+    const { data, error } = await this.db
+      .from("task")
+      .delete()
+      .in("task_id", taskIds)
+      .select("task_id");
+
+    if (error) {
+      throw new Error(`Failed to delete tasks: ${error.message}`);
+    }
+
+    return (data ?? []).map((task) => task.task_id as string);
   }
 
   async getAppointmentCountForDate(
@@ -249,6 +265,7 @@ export class TaskRepository {
       taskTypeId?: string;
       taskStatusId?: string;
       slotWindowId?: string;
+      date?: string;
     }
   ): Promise<TaskDetails[]> {
     let query = this.db
@@ -267,6 +284,16 @@ export class TaskRepository {
 
     if (options?.slotWindowId) {
       query = query.eq("slot_window_id", options.slotWindowId);
+    }
+
+    if (options?.date) {
+      const startOfDay = `${options.date}T00:00:00Z`;
+      const dateObj = new Date(startOfDay);
+      dateObj.setUTCDate(dateObj.getUTCDate() + 1);
+      const nextDayStart = dateObj.toISOString().slice(0, 10) + "T00:00:00Z";
+      query = query
+        .gte("start_date", startOfDay)
+        .lt("start_date", nextDayStart);
     }
 
     const { data, error } = await query.order("start_date", {

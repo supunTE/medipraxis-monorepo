@@ -2,7 +2,7 @@ import { TextInputComponent } from "@/components/basic";
 import { Text } from "@/components/Themed";
 import { Icons } from "@/config";
 import { formatISOToSimple } from "@/utils/timeUtils";
-import { TaskDetails } from "@repo/models";
+import { type TaskDetails } from "@repo/models";
 import {
   Modal,
   Pressable,
@@ -78,7 +78,7 @@ export const ViewAppointmentModal = ({
                     label="Slot No."
                     inputField={{
                       placeholder: "Slot No.",
-                      value: data?.appointment_number!.toString() ?? "",
+                      value: data?.appointment_number?.toString() ?? "",
                       onChangeText: () => {},
                     }}
                     inputWrapper={{
