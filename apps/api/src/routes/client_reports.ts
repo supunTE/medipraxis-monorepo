@@ -6,6 +6,7 @@ import { ClientReportController } from "../controllers";
 const clientReports = new Hono()
   .post("/", ClientReportController.createReport)
   .get("/", ClientReportController.getAllReports)
+  .get("/grouped", ClientReportController.getAllReportsByUserId)
   .get(
     "/pending/:contact_id",
     zValidator("param", getPendingReportsParamSchema),
