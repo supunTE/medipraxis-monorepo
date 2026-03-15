@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import ai from "./ai";
 import appointmentRecords from "./appointment_record";
+import auth from "./auth";
 import clientReports from "./client_reports";
 import clients from "./clients";
 import forms from "./forms";
@@ -12,6 +13,7 @@ import tasks from "./tasks";
 import users from "./user";
 
 const routes = new Hono()
+  .route("/auth", auth)
   .route("/tasks", tasks)
   .route("/ai", ai)
   .route("/slot-windows", slotWindows)

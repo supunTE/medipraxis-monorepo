@@ -6,5 +6,9 @@ export const API_BASE_URL =
 export const apiClient = createApiClient(API_BASE_URL);
 
 export function updateApiClientToken(token: string) {
-  return createApiClient(API_BASE_URL, token);
+  return createApiClient(API_BASE_URL, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 }

@@ -8,8 +8,17 @@ export class AIController {
       const aiService = getAIService(c);
       const body = c.req.valid("json") as AIQueryInput;
 
-      // TODO: replace hardcoded userId with actual authenticated user ID
-      const userId = "2a3c19b8-d352-4b30-a2ac-1cdf993d310c";
+      const user = c.get("user" as any) as { sub?: string };
+      const userId = user?.sub;
+      // const userId = "2a3c19b8-d352-4b30-a2ac-1cdf993d310c";
+
+      if (!userId) {
+        return c.json(
+          ControllerResponse.failure("Unauthorized user context"),
+          401
+        );
+      }
+
       const response = await aiService.query(
         body.query,
         body.history ?? [],

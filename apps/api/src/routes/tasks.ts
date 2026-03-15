@@ -11,8 +11,10 @@ import {
 } from "@repo/models";
 import { Hono } from "hono";
 import { TaskController } from "../controllers";
+import { authMiddleware } from "../middleware/auth";
 
 const tasks = new Hono()
+  .use("*", authMiddleware)
   .post("/", zValidator("json", createTaskSchema), TaskController.createTask)
   .get(
     "/",

@@ -15,6 +15,7 @@ import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { Color } from "@repo/config";
+import { useAuth } from "../../auth/AuthContext";
 import { AIAssistantButton } from "./ai/AIAssistantButton";
 import AIAssistantModal from "./ai/index";
 
@@ -138,6 +139,7 @@ function CustomTabBar({
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const [isAIAssistantVisible, setIsAIAssistantVisible] = useState(false);
+  const { signOut } = useAuth();
 
   return (
     <View className="flex-1 h-full">
@@ -163,18 +165,30 @@ export default function TabLayout() {
               <CustomTabIcon name="home" focused={focused} />
             ),
             headerRight: () => (
-              <Link href="/modal" asChild>
-                <Pressable className="mr-[15px]">
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Link href="/modal" asChild>
+                  <Pressable className="mr-[15px]">
+                    {({ pressed }) => (
+                      <FontAwesome
+                        name="info-circle"
+                        size={25}
+                        color={Colors[colorScheme ?? "light"].text}
+                        style={{ opacity: pressed ? 0.5 : 1 }}
+                      />
+                    )}
+                  </Pressable>
+                </Link>
+                <Pressable onPress={signOut} className="mr-[15px]">
                   {({ pressed }) => (
                     <FontAwesome
-                      name="info-circle"
+                      name="sign-out"
                       size={25}
                       color={Colors[colorScheme ?? "light"].text}
                       style={{ opacity: pressed ? 0.5 : 1 }}
                     />
                   )}
                 </Pressable>
-              </Link>
+              </View>
             ),
           }}
         />

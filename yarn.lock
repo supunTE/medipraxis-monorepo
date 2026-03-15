@@ -9155,6 +9155,11 @@ expo-router@~6.0.17:
     use-latest-callback "^0.2.1"
     vaul "^1.1.2"
 
+expo-secure-store@~15.0.8:
+  version "15.0.8"
+  resolved "https://registry.yarnpkg.com/expo-secure-store/-/expo-secure-store-15.0.8.tgz#678065599bb76061b5a85b15b9426bf7a11089ae"
+  integrity sha512-lHnzvRajBu4u+P99+0GEMijQMFCOYpWRO4dWsXSuMt77+THPIGjzNvVKrGSl6mMrLsfVaKL8BpwYZLGlgA+zAw==
+
 expo-screen-capture@~8.0.9:
   version "8.0.9"
   resolved "https://registry.yarnpkg.com/expo-screen-capture/-/expo-screen-capture-8.0.9.tgz#31e982c5e01a9582bdc942cd7a0295e9c42a4fdb"
@@ -11276,6 +11281,11 @@ jws@^4.0.0:
   dependencies:
     jwa "^2.0.1"
     safe-buffer "^5.0.1"
+
+jwt-decode@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/jwt-decode/-/jwt-decode-4.0.0.tgz#2270352425fd413785b2faf11f6e755c5151bd4b"
+  integrity sha512-+KJGIyHgkGuIq3IEBNftfhW/LfWhXUIY6OmyVWjliu5KH1y0fw7VQ8YndE2O4qZdMSd9SqbnC8GOcZEy0Om7sA==
 
 keyv@^4.5.4:
   version "4.5.4"

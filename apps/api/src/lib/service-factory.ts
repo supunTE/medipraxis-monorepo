@@ -5,6 +5,7 @@ import {
   ClientRepository,
   FormRepository,
   OtpRepository,
+  RefreshTokenRepository,
   RequestReportRepository,
   ShareableCalendarLinkRepository,
   ShareableUserLinkRepository,
@@ -15,6 +16,7 @@ import {
 import {
   AIService,
   AppointmentRecordService,
+  AuthService,
   ClientReportService,
   ClientService,
   FormService,
@@ -29,6 +31,7 @@ import {
 
 import type { Env } from "../types";
 import { createDatabaseClient } from "./database";
+import { JwtService } from "./jwt";
 
 export function getTaskService(c: Context<{ Bindings: Env }>) {
   const db = createDatabaseClient(c.env);
@@ -139,4 +142,15 @@ export function getAppointmentRecordService(c: Context<{ Bindings: Env }>) {
   const db = createDatabaseClient(c.env);
   const appointmentRecordRepository = new AppointmentRecordRepository(db);
   return new AppointmentRecordService(appointmentRecordRepository);
+}
+
+export function getAuthService(c: Context<{ Bindings: Env }>) {
+  const db = createDatabaseClient(c.env);
+  const userRepository = new UserRepository(db);
+  const refreshTokenRepository = new RefreshTokenRepository(db);
+  const jwtService = new JwtService(
+    c.env.ACCESS_TOKEN_SECRET,
+    c.env.REFRESH_TOKEN_SECRET
+  );
+  return new AuthService(userRepository, refreshTokenRepository, jwtService);
 }

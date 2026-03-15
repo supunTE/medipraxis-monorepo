@@ -14,8 +14,8 @@ import "../global.css";
 import { useColorScheme } from "@/components/useColorScheme";
 
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { AuthProvider } from "../auth/AuthContext";
 
 const queryClient = new QueryClient();
 
@@ -60,14 +60,26 @@ function RootLayoutNav() {
 
   return (
     <GluestackUIProvider mode="light">
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <QueryClientProvider client={queryClient}>
-          <Stack>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen name="modal" options={{ presentation: "modal" }} />
-          </Stack>
-        </QueryClientProvider>
-      </ThemeProvider>
+      <AuthProvider>
+        <ThemeProvider
+          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+        >
+          <QueryClientProvider client={queryClient}>
+            <Stack>
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="modal" options={{ presentation: "modal" }} />
+              <Stack.Screen
+                name="auth/login"
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="auth/register"
+                options={{ headerShown: false }}
+              />
+            </Stack>
+          </QueryClientProvider>
+        </ThemeProvider>
+      </AuthProvider>
     </GluestackUIProvider>
   );
 }
