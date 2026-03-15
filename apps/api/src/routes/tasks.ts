@@ -42,6 +42,11 @@ const tasks = new Hono()
     TaskController.reserveAppointmentByClient
   )
   .post(
+    "/appointments/reserve/practitioner",
+    zValidator("json", reserveAppointmentByClientSchema),
+    TaskController.reserveAppointmentByPractitioner
+  )
+  .post(
     "/appointments/cancel",
     zValidator("json", cancelAppointmentByClientSchema),
     TaskController.cancelAppointmentByClient
