@@ -6,11 +6,12 @@ import {
   groupClientsByLetter,
   useCreateClient,
   useFetchClients,
+  useFetchFirstThreeClientMembers,
   type CreateClientInput,
 } from "@/services/clients";
 import { Color, Font, TextSize, TextVariant, textStyles } from "@repo/config";
 import { useRouter } from "expo-router";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Platform,
@@ -51,17 +52,37 @@ export default function ClientsScreen({
   const router = useRouter();
 
   // Fetch clients using React Query
-  const { data: clients = [], isLoading } = useFetchClients(userId);
+  const { data: clients, isLoading } = useFetchClients(userId);
 
   // Create client mutation
   const createClientMutation = useCreateClient(userId);
 
   // Filter clients based on search
-  const filteredClients = clients.filter((client) =>
-    client.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const groupedClients = useMemo(() => {
+    const filteredClients = (clients ?? []).filter((client) =>
+      client.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const groupClient = groupClientsByLetter(filteredClients);
+    return groupClient;
+  }, [clients, searchQuery]);
+
+  const [familyMembersMap, setFamilyMembersMap] = useState<
+    Record<string, any[]>
+  >({});
+
+  // Fetch first three clients' family members
+  const { data: firstThreeMembers } = useFetchFirstThreeClientMembers(
+    groupedClients,
+    searchQuery
   );
 
-  const groupedClients = groupClientsByLetter(filteredClients);
+  // Update familyMembersMap when firstThreeMembers data arrives
+  useEffect(() => {
+    if (firstThreeMembers) {
+      setFamilyMembersMap(firstThreeMembers);
+    }
+  }, [firstThreeMembers]);
 
   const handleClientPress = (clientId: string) => {
     router.push(`/clients/${clientId}` as any);
@@ -139,7 +160,7 @@ export default function ClientsScreen({
   }
 
   // Empty state - no clients loaded
-  if (clients.length === 0) {
+  if (clients?.length === 0) {
     return (
       <View className="flex-1 pt-5">
         {/* Header */}
@@ -233,6 +254,8 @@ export default function ClientsScreen({
     );
   }
 
+  let globalIndex = 0;
+
   return (
     <View className="flex-1 pt-5">
       {/* Header */}
@@ -323,16 +346,21 @@ export default function ClientsScreen({
                   >
                     {letter}
                   </TextComponent>
-                  {clientGroup.map((client) => (
-                    <ClientCardComponent
-                      key={client.id}
-                      id={client.id}
-                      name={client.name}
-                      color={client.color}
-                      icon={client.icon}
-                      onPress={() => handleClientPress(client.id)}
-                    />
-                  ))}
+                  {clientGroup.map((client) => {
+                    const currentIndex = globalIndex++;
+                    return (
+                      <ClientCardComponent
+                        key={client.id}
+                        id={client.id}
+                        name={client.name}
+                        color={client.color}
+                        icon={client.icon}
+                        onPress={() => handleClientPress(client.id)}
+                        index={currentIndex}
+                        familyMembers={familyMembersMap[client.id] || []}
+                      />
+                    );
+                  })}
                 </View>
               );
             })}

@@ -26,6 +26,16 @@ export class ClientService {
     return client;
   }
 
+  async getClientByContactId(contactId: string): Promise<Client[]> {
+    const clients = await this.clientRepository.findByContactId(contactId);
+
+    if (!clients) {
+      throw new Error("Client not found");
+    }
+
+    return clients;
+  }
+
   async getClientByPhone(
     countryCode: string,
     contactNumber: string

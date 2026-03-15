@@ -8,6 +8,7 @@ import { Alert } from "react-native";
 // Client type for UI display
 export interface ClientDisplay {
   id: string;
+  contact_id: string;
   name: string;
   initial: string;
   color: string;
@@ -15,7 +16,7 @@ export interface ClientDisplay {
 }
 
 // Helper function to get random color
-const getRandomColor = (): string => {
+export const getRandomColor = (): string => {
   const colors = [
     "#F4D03F",
     "#85C1E9",
@@ -32,7 +33,7 @@ const getRandomColor = (): string => {
 };
 
 // Helper function to get random icon
-const getRandomIcon = (): IconName => {
+export const getRandomIcon = (): IconName => {
   const icons: IconName[] = ["Heart", "Star", "Check", "Plus"];
   return icons[Math.floor(Math.random() * icons.length)] || "Heart";
 };
@@ -42,6 +43,7 @@ const mapClientToDisplay = (client: Client): ClientDisplay => {
   const fullName = `${client.first_name} ${client.last_name || ""}`.trim();
 
   return {
+    ...client,
     id: client.client_id,
     name: fullName,
     initial: client.first_name.charAt(0).toUpperCase(),
@@ -220,8 +222,80 @@ export const useFetchClientById = (clientId: string) => {
   });
 };
 
-// Check phone exists hook
-export const useCheckPhoneExists = () => {
+export const useFetchClientsByContactId = (contactId: string) => {
+  return useQuery({
+    queryKey: ["id", contactId],
+    queryFn: async () => {
+      console.log("Fetching clients by contact ID:", contactId);
+      const response = await apiClient.api.clients["contact-id"][":id"].$get({
+        param: {
+          id: contactId,
+        },
+      });
+
+      if (!response.ok) {
+        Alert.alert(
+          "Error",
+          "Failed to load client details. Please try again."
+        );
+        return null;
+      }
+
+      const data = await response.json();
+      return data.clients;
+    },
+    enabled: !!contactId,
+  });
+};
+
+// Fetch first three clients' family members
+export const useFetchFirstThreeClientMembers = (
+  groupedClients: Record<string, ClientDisplay[]>,
+  searchQuery: string
+) => {
+  return useQuery({
+    queryKey: ["firstThreeClientMembers", groupedClients, searchQuery],
+    queryFn: async () => {
+      const letters = Object.keys(groupedClients).sort();
+      const members: Record<string, any[]> = {};
+      let globalIndex = 0;
+
+      for (const letter of letters) {
+        const clientGroup = groupedClients[letter];
+        if (!clientGroup) continue;
+
+        for (const client of clientGroup) {
+          if (globalIndex >= 3) break;
+          globalIndex++;
+
+          try {
+            const response = await apiClient.api.clients["contact-id"][
+              ":id"
+            ].$get({
+              param: {
+                id: client.contact_id,
+              },
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              members[client.id] = data.clients || [];
+            }
+          } catch (err) {
+            console.log("Family fetch failed", err);
+          }
+        }
+        if (globalIndex >= 3) break;
+      }
+
+      return members;
+    },
+    enabled: Object.keys(groupedClients).length > 0 && !!searchQuery,
+  });
+};
+
+// fetch clients by contact number(country code + phone number)
+export const fetchClientsByContactNumber = () => {
   return useMutation({
     mutationFn: async ({
       countryCode,
@@ -246,4 +320,5 @@ export const useCheckPhoneExists = () => {
       return data;
     },
   });
+  //TODO: cache by contact number.
 };
