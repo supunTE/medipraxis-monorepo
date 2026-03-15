@@ -1,5 +1,6 @@
 export * from "./ai.controller";
 export * from "./debug.controller";
+export * from "./appointment_record.controller";
 export * from "./client.controller";
 export * from "./client_report.controller";
 export * from "./form.controller";

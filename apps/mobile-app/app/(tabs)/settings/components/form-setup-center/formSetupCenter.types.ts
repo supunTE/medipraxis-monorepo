@@ -6,6 +6,6 @@ export interface FormTile {
 }
 
 export type FormSetupCenterProps = {
-  visible: boolean;
-  onClose: () => void;
+  visible?: boolean;
+  onClose?: () => void;
 };

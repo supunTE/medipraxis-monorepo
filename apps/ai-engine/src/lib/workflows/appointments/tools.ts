@@ -35,9 +35,14 @@ export const getAllAppointments = ai.defineTool(
       userId,
     });
 
-    const res = await apiClient.api.tasks.$get({
-      query: { user_id: userId, task_type: "APPOINTMENT" },
-    });
+    const res = await apiClient.api.tasks.$get(
+      {
+        query: { user_id: userId, task_type: "APPOINTMENT" },
+      },
+      {
+        headers: { "x-ai-engine-api-key": process.env.AI_ENGINE_API_KEY || "" },
+      }
+    );
 
     if (!res.ok) {
       console.error("[TOOL] Failed to fetch appointments:", res.status);

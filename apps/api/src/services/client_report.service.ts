@@ -2,6 +2,8 @@ import type {
   ClientReport,
   CreateClientReportInput,
   PendingReport,
+  GroupedPendingReport,
+  GroupedCompletedReport,
 } from "@repo/models";
 import { ClientReportRepository, UserRepository } from "../repositories";
 import type { ClientRepository } from "../repositories/client.repository";
@@ -244,5 +246,136 @@ export class ClientReportService {
       });
 
     return pendingReports;
+  }
+
+  async getGroupedReportsByUserId(
+    userId: string,
+    completed?: boolean
+  ): Promise<GroupedPendingReport[] | GroupedCompletedReport[]> {
+    // Fetch either completed or pending reports based on the flag
+    if (completed === false) {
+      // Get pending reports (from request_report table)
+      const rawReports =
+        await this.clientReportRepository.findPendingReportsByUserId(userId);
+
+      const groupedMap = new Map<
+        string,
+        {
+          group_id: string;
+          client_id: string;
+          client_first_name: string;
+          client_last_name: string;
+          report_date: string;
+          request_report_id: string;
+          reports: Array<{
+            report_id: string;
+            report_title: string | null;
+            file_path: string | null;
+            file_type: string | null;
+          }>;
+        }
+      >();
+
+      for (const requestReport of rawReports) {
+        const client = Array.isArray(requestReport.client)
+          ? requestReport.client[0]
+          : requestReport.client;
+        if (!client) continue;
+
+        const reportDate = requestReport.created_date.split("T")[0];
+        const groupId = `${requestReport.request_report_id}_${reportDate}`;
+        const key = `${requestReport.client_id}_${reportDate}_${requestReport.request_report_id}`;
+
+        if (!groupedMap.has(key)) {
+          groupedMap.set(key, {
+            group_id: groupId,
+            client_id: requestReport.client_id,
+            client_first_name: client.first_name,
+            client_last_name: client.last_name,
+            report_date: reportDate,
+            request_report_id: requestReport.request_report_id,
+            reports: [],
+          });
+        }
+
+        const group = groupedMap.get(key)!;
+
+        // For pending reports, extract display_label from requested_reports array
+        const requestedReports = requestReport.requested_reports || [];
+
+        // Add each requested report as a separate entry with unique ID
+        if (Array.isArray(requestedReports) && requestedReports.length > 0) {
+          for (let i = 0; i < requestedReports.length; i++) {
+            const report = requestedReports[i];
+            group.reports.push({
+              report_id: `${requestReport.request_report_id}_report_${i}`,
+              report_title: report.display_label || "Report",
+              file_path: null,
+              file_type: null,
+            });
+          }
+        }
+      }
+
+      return Array.from(groupedMap.values());
+    }
+
+    // Get completed reports (from client_report table)
+    const rawReports =
+      await this.clientReportRepository.findCompletedReportsGroupedByUserIdAndDate(
+        userId
+      );
+
+    const groupedMap = new Map<
+      string,
+      {
+        group_id: string;
+        client_id: string;
+        client_first_name: string;
+        client_last_name: string;
+        report_date: string;
+        request_report_id: string | null;
+        reports: Array<{
+          report_id: string;
+          report_title: string | null;
+          file_path: string | null;
+          file_type: string | null;
+        }>;
+      }
+    >();
+
+    for (const report of rawReports) {
+      const client = Array.isArray(report.client)
+        ? report.client[0]
+        : report.client;
+      if (!client) continue;
+
+      const reportDate = report.created_date.split("T")[0];
+      const requestReportId = report.request_report_id || "no_request";
+      const groupId = `${requestReportId}_${reportDate}_${report.client_id}`;
+      const key = `${report.client_id}_${reportDate}_${requestReportId}`;
+
+      if (!groupedMap.has(key)) {
+        groupedMap.set(key, {
+          group_id: groupId,
+          client_id: report.client_id,
+          client_first_name: client.first_name,
+          client_last_name: client.last_name,
+          report_date: reportDate,
+          request_report_id: report.request_report_id,
+          reports: [],
+        });
+      }
+
+      const group = groupedMap.get(key)!;
+      group.reports.push({
+        report_id: report.report_id,
+        report_title: report.report_title,
+        file_path: report.file_path,
+        file_type: report.file_type,
+      });
+    }
+
+    return Array.from(groupedMap.values());
   }
 }

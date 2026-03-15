@@ -1,5 +1,7 @@
 import { Hono } from "hono";
 import ai from "./ai";
+import appointmentRecords from "./appointment_record";
+import auth from "./auth";
 import clientReports from "./client_reports";
 import clients from "./clients";
 import debug from "./debug";
@@ -12,6 +14,7 @@ import tasks from "./tasks";
 import users from "./user";
 
 const routes = new Hono()
+  .route("/auth", auth)
   .route("/tasks", tasks)
   .route("/ai", ai)
   .route("/slot-windows", slotWindows)
@@ -21,6 +24,7 @@ const routes = new Hono()
   .route("/shareable-calendar-links", shareableCalendarLinks)
   .route("/otp", otp)
   .route("/forms", forms)
+  .route("/appointment-records", appointmentRecords)
   .route("/request-reports", requestReports)
   .route("/debug", debug);
 

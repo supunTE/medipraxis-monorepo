@@ -1,7 +1,8 @@
 import { useFocusEffect } from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
+import { Tabs } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { Alert, StyleSheet } from "react-native";
+import { Alert, Pressable, StyleSheet, Text } from "react-native";
 
 import { View } from "@/components/Themed";
 import {
@@ -13,6 +14,7 @@ import {
   ViewAppointmentModal,
   ViewReminderModal,
 } from "@/components/advanced/schedule";
+import TaskForm from "@/components/advanced/taskPanel/TaskForm";
 import Loader from "@/components/basic/Loader.component";
 import { useGetSlotWindows } from "@/services/slotWindows";
 import {
@@ -22,6 +24,7 @@ import {
 } from "@/services/tasks";
 import { formatISOToTime } from "@/utils";
 import { type TaskDetails } from "@repo/models";
+import { PlusIcon } from "phosphor-react-native";
 
 const USER_ID = "2a3c19b8-d352-4b30-a2ac-1cdf993d310c";
 
@@ -40,6 +43,7 @@ export default function ScheduleScreen() {
   const [selectedAppointmentId, setSelectedAppointmentId] = useState<
     string | null
   >(null);
+  const [showForm, setShowForm] = useState(false);
   const [viewApptModalVisible, setViewApptModalVisible] = useState(false);
   const [viewApptReadOnly, setViewApptReadOnly] = useState(true);
   const [viewReminderModalVisible, setViewReminderModalVisible] =
@@ -174,6 +178,19 @@ export default function ScheduleScreen() {
 
   return (
     <View style={styles.container}>
+      <Tabs.Screen
+        options={{
+          headerRight: () => (
+            <Pressable
+              onPress={() => setShowForm(true)}
+              className="flex-row items-center bg-mp-green px-4 py-2 rounded-full mr-4 gap-1"
+            >
+              <PlusIcon size={14} color="white" weight="bold" />
+              <Text className="text-white font-bold text-lg">Create</Text>
+            </Pressable>
+          ),
+        }}
+      />
       <CalendarComponent
         agendaData={agendaData}
         selectedDate={selectedDate}
@@ -217,6 +234,8 @@ export default function ScheduleScreen() {
         remindersQuery.isLoading ||
         appointmentTaskQuery.isLoading ||
         reminderTaskQuery.isLoading) && <Loader />}
+
+      <TaskForm visible={showForm} onClose={() => setShowForm(false)} />
     </View>
   );
 }

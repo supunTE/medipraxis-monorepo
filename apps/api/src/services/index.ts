@@ -1,4 +1,6 @@
 export * from "./ai.service";
+export * from "./appointment_record.service";
+export * from "./auth.service";
 export * from "./client.service";
 export * from "./client_report.service";
 export * from "./form.service";
