@@ -414,3 +414,60 @@ const validateDropdowns = (): boolean => {
 ```ts
 <Loader />
 ```
+
+# Checkbox Component
+
+```ts
+const [agree, setAgree] = useState(false);
+
+<CheckboxComponent
+    value="terms"
+    label="I agree to the terms and conditions"
+    isChecked={agree}
+    onChange={setAgree}
+/>
+```
+
+# RadioButton Component
+
+```ts
+const [selectedOption, setSelectedOption] = useState("option1");
+
+<RadioGroupComponent
+    value={selectedOption}
+    onChange={setSelectedOption}
+    options={[
+        { label: "Option 1", value: "option1" },
+        { label: "Option 2", value: "option2" },
+    ]}
+/>
+```
+
+# TextArea Component
+
+```ts
+const [notes, setNotes] = useState("");
+
+<TextAreaComponent
+    label="Notes"
+    inputField={{
+        value: notes,
+        onChangeText: setNotes,
+        placeholder: "Enter additional notes...",
+    }}
+/>
+```
+
+# DateTimePicker Component
+
+```ts
+const [dateTime, setDateTime] = useState("");
+
+<DateTimePickerComponent
+    label="Select Appointment Date & Time"
+    value={dateTime}
+    onChange={setDateTime}
+    mode="datetime"
+    placeholder="Select Date & Time"
+/>
+```

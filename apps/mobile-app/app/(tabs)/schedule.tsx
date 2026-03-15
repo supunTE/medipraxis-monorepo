@@ -1,4 +1,4 @@
-import { View } from "@/components/Themed";
+import { Tabs } from "expo-router";
 import {
   type AgendaData,
   type AgendaSelection,
@@ -12,13 +12,17 @@ import {
 import Loader from "@/components/basic/Loader.component";
 import { useGetTaskById } from "@/services/tasks/useGetTaskById";
 import { useEffect, useState } from "react";
-import { Alert, StyleSheet } from "react-native";
+import { Alert, Pressable, StyleSheet, Text } from "react-native";
+import TaskForm from "@/components/advanced/taskPanel/TaskForm";
+import { View } from "@/components/Themed";
+import { PlusIcon } from "phosphor-react-native";
 
 export default function ScheduleScreen() {
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTask, setSelectedTask] = useState<AgendaSelection | null>(
     null
   );
+  const [showForm, setShowForm] = useState(false);
   const [viewApptModalVisible, setViewApptModalVisible] = useState(false);
   const [viewApptReadOnly, setViewApptReadOnly] = useState(true);
 
@@ -180,6 +184,19 @@ export default function ScheduleScreen() {
 
   return (
     <View style={styles.container}>
+      <Tabs.Screen
+        options={{
+          headerRight: () => (
+            <Pressable
+              onPress={() => setShowForm(true)}
+              className="flex-row items-center bg-mp-green px-4 py-2 rounded-full mr-4 gap-1"
+            >
+              <PlusIcon size={14} color="white" weight="bold" />
+              <Text className="text-white font-bold text-lg">Create</Text>
+            </Pressable>
+          ),
+        }}
+      />
       <CalendarComponent
         agendaData={sampleAgendaData}
         selectedDate={selectedDate}
@@ -224,6 +241,8 @@ export default function ScheduleScreen() {
       />
 
       {isLoading && <Loader />}
+
+      <TaskForm visible={showForm} onClose={() => setShowForm(false)} />
     </View>
   );
 }
