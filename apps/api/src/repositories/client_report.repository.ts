@@ -193,10 +193,7 @@ export class ClientReportRepository {
   /**
    * Get signed URL for file download
    */
-  async getFileUrl(
-    filePath: string,
-    expiresIn: number = 3600
-  ): Promise<string> {
+  async getFileUrl(filePath: string, expiresIn: number = 300): Promise<string> {
     const { data, error } = await this.db.storage
       .from(CLIENT_REPORT_QUERIES.STORAGE_BUCKET)
       .createSignedUrl(filePath, expiresIn);

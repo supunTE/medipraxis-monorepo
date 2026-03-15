@@ -3,6 +3,7 @@ export * from "./Checkbox.component";
 export * from "./Chip.component";
 export * from "./DateTimePicker.component";
 export * from "./Dropdown.component";
+export * from "./InlineDropdown.component";
 export * from "./RadioButton.component";
 export * from "./Text.component";
 export * from "./TextArea.component";
