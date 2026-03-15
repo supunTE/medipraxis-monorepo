@@ -50,9 +50,11 @@ export const useCreateAppointmentSlot = (
           },
         });
         if (!res.ok) {
-          const error = await res.json();
+          const errorData = (await res.json().catch(() => ({}))) as any;
           throw new Error(
-            error?.error ?? "Failed to create appointment template"
+            errorData?.error ??
+              errorData?.message ??
+              "Failed to create appointment template"
           );
         }
         return res.json();
@@ -60,20 +62,20 @@ export const useCreateAppointmentSlot = (
         const res = await apiClient.api["slot-windows"].$post({
           json: {
             user_id: payload.user_id,
-            start_date: payload.date,
-            end_date: payload.date,
-            // start, end date should remove after api update and date, start_time, end_time should be added
-            // date: payload.date,
-            // start_time: payload.start_time,
-            // end_time: payload.end_time,
+            start_date: payload.start_time,
+            end_date: payload.end_time,
             total_slots: payload.total_slots,
             note: payload.note,
             location: payload.location,
           },
         });
         if (!res.ok) {
-          const error = await res.json();
-          throw new Error(error?.error ?? "Failed to create appointment slot");
+          const errorData = (await res.json().catch(() => ({}))) as any;
+          throw new Error(
+            errorData?.error ??
+              errorData?.message ??
+              "Failed to create appointment slot"
+          );
         }
         return res.json();
       }
