@@ -30,7 +30,7 @@ export interface ReportTileProps {
   reportDate: string;
   reports: Report[];
   onViewClient?: (clientId: string) => void;
-  onReportClick?: (reportId: string, filePath: string) => void;
+  onReportClick?: (reportId: string) => void;
 }
 
 export const ReportTile: React.FC<ReportTileProps> = ({
@@ -97,9 +97,7 @@ export const ReportTile: React.FC<ReportTileProps> = ({
               <TouchableOpacity
                 key={report.report_id}
                 className="flex-row items-center gap-3 p-3 rounded-lg bg-white border border-[#E5E5E5] self-start shadow-sm"
-                onPress={() =>
-                  onReportClick?.(report.report_id, report.file_path!)
-                }
+                onPress={() => onReportClick?.(report.report_id)}
                 activeOpacity={0.7}
               >
                 {report.file_type === "PDF" ? (
@@ -122,15 +120,19 @@ export const ReportTile: React.FC<ReportTileProps> = ({
             );
           }
 
-          // For pending reports without file_path, show simple text
+          // For pending reports without file_path, show with file icon
           return (
-            <View key={report.report_id} className="flex-row items-center py-1">
+            <View
+              key={report.report_id}
+              className="flex-row items-center gap-3 p-3 rounded-lg bg-[#F5F5F5]"
+            >
+              <FilePdfIcon size={20} color={Color.Grey} weight="regular" />
               <TextComponent
                 variant={TextVariant.Body}
                 size={TextSize.Small}
                 color={Color.Black}
               >
-                • {report.report_title || "Untitled Report"}
+                {report.report_title || "Untitled Report"}
               </TextComponent>
             </View>
           );
