@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/checkbox";
 import { Icons, type Icon } from "@/config";
 import { useFetchClients } from "@/services/clients";
+import { useFetchRequestForm, type FormField } from "@/services/forms";
 import { Color, Font, TextSize, TextVariant, textStyles } from "@repo/config";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
@@ -16,8 +17,9 @@ import {
   CheckIcon,
   WhatsappLogoIcon,
 } from "phosphor-react-native";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Modal,
   Pressable,
   SafeAreaView,
@@ -31,42 +33,6 @@ import {
 
 const TEMP_USER_ID = "2a3c19b8-d352-4b30-a2ac-1cdf993d310c";
 
-const REQUEST_REPORT_FORM = {
-  description: "",
-  form_structure: [
-    {
-      field_type: "upload-attachment",
-      display_label: "ECG Report",
-      description: "",
-      help_text: "",
-      active: false,
-      required: true,
-      shareable: false,
-      sequence: 1,
-    },
-    {
-      field_type: "upload-attachment",
-      display_label: "X-Ray of Arm",
-      description: "",
-      help_text: "",
-      active: false,
-      required: true,
-      shareable: false,
-      sequence: 2,
-    },
-    {
-      field_type: "upload-attachment",
-      display_label: "Vitamin D Report",
-      description: "",
-      help_text: "",
-      active: false,
-      required: true,
-      shareable: false,
-      sequence: 3,
-    },
-  ],
-};
-
 type SendThroughOption = "whatsapp" | "message" | "email";
 
 const SEND_THROUGH_OPTIONS: {
@@ -79,16 +45,14 @@ const SEND_THROUGH_OPTIONS: {
   { key: "email", label: "Email", Icon: AtIcon },
 ];
 
-type RequestReportForm = typeof REQUEST_REPORT_FORM;
-
 const textBodyMediumStyle = textStyles[TextVariant.Body][TextSize.Medium];
 
 export default function RequestReportScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: clients = [] } = useFetchClients(TEMP_USER_ID);
-  const [requestReportForm, setRequestReportForm] =
-    useState<RequestReportForm>(REQUEST_REPORT_FORM);
+  const { data: requestForm, isLoading: isFormLoading } = useFetchRequestForm(TEMP_USER_ID);
+  const [formFields, setFormFields] = useState<FormField[]>([]);
   const [selectedSendThrough, setSelectedSendThrough] = useState<
     SendThroughOption[]
   >([]);
@@ -105,7 +69,13 @@ export default function RequestReportScreen() {
     height: number;
   } | null>(null);
 
-  const sortedFormFields = [...requestReportForm.form_structure].sort(
+  useEffect(() => {
+    if (requestForm?.form_configuration) {
+      setFormFields(requestForm.form_configuration as unknown as FormField[]);
+    }
+  }, [requestForm]);
+
+  const sortedFormFields = [...formFields].sort(
     (a, b) => a.sequence - b.sequence
   );
 
@@ -131,14 +101,13 @@ export default function RequestReportScreen() {
   };
 
   const toggleReport = (reportType: string) => {
-    setRequestReportForm((previous) => ({
-      ...previous,
-      form_structure: previous.form_structure.map((field) =>
+    setFormFields((previous) =>
+      previous.map((field) =>
         field.display_label === reportType
           ? { ...field, active: !field.active }
           : field
-      ),
-    }));
+      )
+    );
   };
 
   const toggleSendThrough = (option: SendThroughOption) => {
@@ -151,9 +120,10 @@ export default function RequestReportScreen() {
 
   const handleRequest = () => {
     const requestPayload = {
-      ...requestReportForm,
+      form_configuration: formFields,
       additional_notes: additionalNotes,
       send_through: selectedSendThrough,
+      client_id: selectedClientId,
     };
 
     console.log(
@@ -161,6 +131,24 @@ export default function RequestReportScreen() {
       JSON.stringify(requestPayload, null, 2)
     );
   };
+
+  if (isFormLoading) {
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color={Color.Green} />
+          <TextComponent
+            variant={TextVariant.Body}
+            size={TextSize.Medium}
+            color={Color.Grey}
+            className="mt-4"
+          >
+            Loading form...
+          </TextComponent>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white">
