@@ -112,57 +112,11 @@ export class AuthService {
     const userId = payload.sub as string;
 
     // 2. We need to find the token in the DB.
-    // Since we hash it, we have to iterate? No, that's bad.
-    // Wait, if we hash the refresh token, we can't look it up by hash unless we have the clear text.
-    // We have the clear text `rawRefreshToken`.
-    // But `hashPassword` generates a random salt. So we can't reproduce the hash!
-    // We need a deterministic hash OR we store the salt with the token?
-    // `hashPassword` returns `salt:hash`.
-    // To verify, we need to find the row.
-    // If we use `hashPassword` (PBKDF2 with random salt), we cannot look up the token in the DB efficiently.
-    // We would need to fetch ALL tokens for the user and verify each one. That's slow.
-    // ALTERNATIVE: Use a fast hash (SHA-256) without salt (or constant salt) for the "lookup key" part of the token,
-    // OR just store the JWT ID (jti) and hash the rest?
-    // OR just use the JWT signature as the key?
-    //
-    // EASIER APPROACH FOR NOW:
-    // Store the refresh token AS IS (if SecureStorage on client is safe).
-    // BUT the plan said "Store hashed refresh tokens".
-    // AND "Safe on Cloudflare Workers".
-    //
-    // If we want to look up by token, we should use a hash that is deterministic or just use the token itself if it's high entropy.
-    // JWTs are high entropy (signature).
-    //
-    // Let's perform a "lookup" optimization:
-    // When the client sends the refresh token, we verify it (JWT).
-    // Ideally the JWT has a `jti` (unique ID). We can store that `jti` in the DB.
-    // Then we look up by `jti`.
-    // Then verify the token hash if we want to be extra secure against DB leaks.
-
-    // Let's modify `signRefreshToken` to include a `jti` (UUID).
-    // And store `jti` in `refresh_tokens` table instead of (or in addition to) `token_hash`.
-    //
-    // However, I can't change the DB schema easily now (I already wrote the SQL).
-    // `token_hash` is indexed.
-    //
-    // If I stick to `token_hash` with random salt, I can't lookup.
-    // I MUST use a deterministic hash for lookup, OR matching the plan's `Rotated on every refresh` with `One per device` maybe implies we traverse?
-    // No, lookup should be O(1).
-    //
-    // I will implementation a `hashToken` function (SHA-256, no salt or fixed salt) for the purpose of the DB lookup key.
-    // Wait, the `password.ts` has `verifyPassword` which takes `storedHash` (containing salt).
-    // That works for login callback where we have the user ID (email -> user).
-    // For refresh token, we generally verify the JWT first -> get user ID -> get user's tokens -> verify?
-    // Yes, `verifyRefreshToken` gives us `sub` (user_id).
-    // So we CAN fetch all active refresh tokens for the `user_id` and check if `rawRefreshToken` matches any of them.
-    // Since `refresh_tokens` table has `user_id` text/uuid.
-    // This is acceptable if users don't have thousands of devices.
-
-    // So algorithm:
-    // 1. Verify JWT -> get `userId`.
-    // 2. Fetch all non-revoked tokens for `userId`.
-    // 3. For each, check `verifyPassword(rawRefreshToken, dbToken.token_hash)`.
-    // 4. If match -> rotate.
+    // CHALLENGE: Deterministic lookup is impossible because tokens are hashed with a random salt.
+    // OPTIMIZATION: Instead of a full table scan, we:
+    // 1. Verify the JWT to get the `userId` from the payload.
+    // 2. Fetch only that user's non-revoked refresh tokens.
+    // 3. Match the provided token using `verifyPassword` (PBKDF2).
 
     const userTokens =
       await this.refreshTokenRepository.findTokensByUserId(userId);
