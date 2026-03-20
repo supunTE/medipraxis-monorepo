@@ -15,10 +15,15 @@ import {
 } from "react-native";
 import { ReportTile } from "./ReportTile.component";
 
-// Text styles
-const textLargeStyle = textStyles[TextVariant.Body][TextSize.Large];
+const SEARCH_ICON_SIZE = 20;
+const INPUT_HEIGHT = 56;
+const INPUT_BORDER_WIDTH = 1.5;
+const INPUT_BORDER_RADIUS = 12;
+const BOTTOM_PADDING = 100;
 
 type TabType = "completed" | "pending";
+
+const textLargeStyle = textStyles[TextVariant.Body][TextSize.Large];
 
 export default function ReportsScreen() {
   const { user } = useAuth();
@@ -68,6 +73,18 @@ export default function ReportsScreen() {
     router.push(`/reports/${reportId}` as any);
   };
 
+  const handleRequestReport = () => {
+    const firstGroup = filteredReports[0];
+    const clientId = firstGroup?.client_id || "unknown-client";
+    const clientName = firstGroup
+      ? `${firstGroup.client_first_name} ${firstGroup.client_last_name}`.trim()
+      : "Unknown Client";
+
+    router.push(
+      `/reports/request-report/${clientId}?clientName=${encodeURIComponent(clientName)}` as any
+    );
+  };
+
   return (
     <View className="flex-1 bg-white px-5 pt-5">
       {/* Header with Title and Button */}
@@ -84,10 +101,7 @@ export default function ReportsScreen() {
           size={ButtonSize.Small}
           buttonColor={Color.Black}
           textColor={Color.White}
-          onPress={() => {
-            // TODO: Implement request report functionality
-            console.log("Request Report pressed");
-          }}
+          onPress={handleRequestReport}
         >
           + Request Report
         </ButtonComponent>
@@ -100,10 +114,10 @@ export default function ReportsScreen() {
           size="md"
           style={{
             borderColor: Color.LightGrey,
-            borderWidth: 1.5,
-            borderRadius: 12,
+            borderWidth: INPUT_BORDER_WIDTH,
+            borderRadius: INPUT_BORDER_RADIUS,
             width: "100%",
-            height: 56,
+            height: INPUT_HEIGHT,
             backgroundColor: Color.White,
           }}
         >
@@ -127,7 +141,11 @@ export default function ReportsScreen() {
             }}
           />
           <InputSlot className="pr-4">
-            <Icons.Search size={20} color={Color.Grey} weight="regular" />
+            <Icons.Search
+              size={SEARCH_ICON_SIZE}
+              color={Color.Grey}
+              weight="regular"
+            />
           </InputSlot>
         </Input>
       </View>
@@ -174,7 +192,7 @@ export default function ReportsScreen() {
         className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingBottom: 100,
+          paddingBottom: BOTTOM_PADDING,
         }}
       >
         {isLoading ? (

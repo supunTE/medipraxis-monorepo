@@ -132,7 +132,7 @@ export default function ClientDetailScreen() {
         console.log("Schedule appointment for:", client?.client_id);
         break;
       case "request_report":
-        console.log("Request report for:", client?.client_id);
+        router.push(`/reports/request-report/${client?.client_id}` as any);
         break;
       case "direct_upload_report":
         console.log("Direct upload report for:", client?.client_id);
