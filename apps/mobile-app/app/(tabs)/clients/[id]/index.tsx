@@ -425,7 +425,7 @@ export default function ClientDetailScreen() {
                               fontFamily:
                                 textButtonMediumStyle.fontFamily === Font.DMsans
                                   ? "DMSans_400Regular"
-                                  : "Lato_400Regular",
+                                  : "Inter_400Regular",
                               fontSize: textButtonMediumStyle.fontSize,
                               fontWeight: String(
                                 textButtonMediumStyle.fontWeight
@@ -468,7 +468,7 @@ export default function ClientDetailScreen() {
                     fontFamily:
                       textLargeStyle.fontFamily === Font.DMsans
                         ? "DMSans_400Regular"
-                        : "Lato_400Regular",
+                        : "Inter_400Regular",
                     fontSize: textLargeStyle.fontSize,
                     fontWeight: "400" as RNTextStyle["fontWeight"],
                     textAlign: "left",

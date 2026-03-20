@@ -1652,10 +1652,10 @@
   resolved "https://registry.yarnpkg.com/@expo-google-fonts/dm-sans/-/dm-sans-0.4.2.tgz#76b73ba806c24f5b4188127485162603fb67de62"
   integrity sha512-e/fLH5aCJzkEenz7axvEn8N7IJAKhUwNjIxS75h9j+Ip1M9S7d22M19gJN3A7QW4egVkBJRyQh1hQFhngQn9yA==
 
-"@expo-google-fonts/lato@^0.4.1":
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/@expo-google-fonts/lato/-/lato-0.4.1.tgz#48d91da47ef265795ec6f6418da502df69f2292d"
-  integrity sha512-U2g1sOBFSNgmxhh/Ywgyi7Hx6T3UielX2nmZuP55wqndrIEyNX3HeUQIhhQDe2vZ+nvZI0Z2vTcVjmOn/BM9ow==
+"@expo-google-fonts/inter@^0.4.2":
+  version "0.4.2"
+  resolved "https://registry.yarnpkg.com/@expo-google-fonts/inter/-/inter-0.4.2.tgz#2d37ffb1cb16600cff616b6c4c0efee9b6c47c28"
+  integrity sha512-syfiImMaDmq7cFi0of+waE2M4uSCyd16zgyWxdPOY7fN2VBmSLKEzkfbZgeOjJq61kSqPBNNtXjggiQiSD6gMQ==
 
 "@expo-google-fonts/noto-color-emoji@^0.4.3":
   version "0.4.3"

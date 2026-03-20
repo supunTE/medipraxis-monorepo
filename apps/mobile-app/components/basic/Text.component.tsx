@@ -19,7 +19,11 @@ import {
   DMSans_500Medium,
   DMSans_600SemiBold,
 } from "@expo-google-fonts/dm-sans";
-import { Lato_400Regular, Lato_700Bold } from "@expo-google-fonts/lato";
+import {
+  Inter_400Regular,
+  Inter_600SemiBold,
+  Inter_700Bold,
+} from "@expo-google-fonts/inter";
 import { useFonts } from "expo-font";
 
 // Props type
@@ -35,11 +39,11 @@ type TextComponentProps<T extends TextVariant = TextVariant> = {
 } & Omit<RNTextProps, "style" | "children">;
 
 // Font mapping
-const LATO_FONT_MAP: Record<number, string> = {
-  [FontWeight.Regular]: "Lato_400Regular",
-  [FontWeight.SemiBold]: "Lato_400Bold",
-  [FontWeight.Bold]: "Lato_700Bold",
-  [FontWeight.ExtraBold]: "Lato_700Bold",
+const INTER_FONT_MAP: Record<number, string> = {
+  [FontWeight.Regular]: "Inter_400Regular",
+  [FontWeight.SemiBold]: "Inter_600SemiBold",
+  [FontWeight.Bold]: "Inter_700Bold",
+  [FontWeight.ExtraBold]: "Inter_700Bold",
 };
 const DMSANS_FONT_MAP: Record<number, string> = {
   [FontWeight.Regular]: "DMSans_400Regular",
@@ -53,9 +57,9 @@ const getFontFamily = (
   fontWeight: FontWeight | number
 ): string => {
   const weightKey = Number(fontWeight);
-  if (fontFamily === Font.Lato) {
+  if (fontFamily === Font.Inter) {
     // @ts-expect-error "font always exists in map"
-    return LATO_FONT_MAP[weightKey] ?? LATO_FONT_MAP[FontWeight.Regular];
+    return INTER_FONT_MAP[weightKey] ?? INTER_FONT_MAP[FontWeight.Regular];
   }
   if (fontFamily === Font.DMsans) {
     // @ts-expect-error "font always exists in map"
@@ -63,7 +67,7 @@ const getFontFamily = (
   }
   // Default
   // @ts-expect-error "font always exists in map"
-  return LATO_FONT_MAP[FontWeight.Regular];
+  return INTER_FONT_MAP[FontWeight.Regular];
 };
 
 // Main TextComponent
@@ -77,8 +81,9 @@ export function TextComponent<T extends TextVariant = TextVariant>({
 }: TextComponentProps<T>) {
   // Load fonts
   const [fontsLoaded] = useFonts({
-    Lato_400Regular,
-    Lato_700Bold,
+    Inter_400Regular,
+    Inter_600SemiBold,
+    Inter_700Bold,
     DMSans_400Regular,
     DMSans_500Medium,
     DMSans_600SemiBold,

@@ -1,7 +1,7 @@
 // Enums
 
 export enum Font {
-  Lato = "lato",
+  Inter = "inter",
   DMsans = "dm_sans",
 }
 
@@ -75,7 +75,7 @@ const originalTextStyles: TextMapping = {
   [TextVariant.Title]: {
     // Title – Small
     [TextSize.Small]: {
-      fontFamily: Font.Lato,
+      fontFamily: Font.Inter,
       fontSize: 16,
       fontWeight: FontWeight.Bold,
       fontStyle: FontStyle.Normal,
@@ -83,7 +83,7 @@ const originalTextStyles: TextMapping = {
 
     // Title – Medium
     [TextSize.Medium]: {
-      fontFamily: Font.Lato,
+      fontFamily: Font.Inter,
       fontSize: 20,
       fontWeight: FontWeight.Bold,
       fontStyle: FontStyle.Normal,
@@ -91,7 +91,7 @@ const originalTextStyles: TextMapping = {
 
     // Title – Large
     [TextSize.Large]: {
-      fontFamily: Font.Lato,
+      fontFamily: Font.Inter,
       fontSize: 24,
       fontWeight: FontWeight.ExtraBold,
       fontStyle: FontStyle.Normal,
@@ -99,7 +99,7 @@ const originalTextStyles: TextMapping = {
 
     // Title - Extra Large (Page Title)
     [TextSize.ExtraLarge]: {
-      fontFamily: Font.Lato,
+      fontFamily: Font.Inter,
       fontSize: 36,
       fontWeight: FontWeight.SemiBold,
       fontStyle: FontStyle.Normal,
@@ -110,7 +110,7 @@ const originalTextStyles: TextMapping = {
     // Text – Small (tags)
     [TextSize.Small]: {
       fontFamily: Font.DMsans,
-      fontSize: 11,
+      fontSize: 13,
       fontWeight: FontWeight.Regular,
       fontStyle: FontStyle.Normal,
     },
@@ -118,7 +118,7 @@ const originalTextStyles: TextMapping = {
     // Text – Medium (tags)
     [TextSize.Medium]: {
       fontFamily: Font.DMsans,
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: FontWeight.SemiBold,
       fontStyle: FontStyle.Normal,
     },
@@ -127,7 +127,7 @@ const originalTextStyles: TextMapping = {
     [TextSize.Large]: {
       fontFamily: Font.DMsans,
       fontSize: 14,
-      fontWeight: FontWeight.Regular,
+      fontWeight: FontWeight.SemiBold,
       fontStyle: FontStyle.Normal,
     },
   },
@@ -135,7 +135,7 @@ const originalTextStyles: TextMapping = {
   [TextVariant.Button]: {
     // Button – Small
     [TextSize.Small]: {
-      fontFamily: Font.Lato,
+      fontFamily: Font.Inter,
       fontSize: 14,
       fontWeight: FontWeight.Bold,
       fontStyle: FontStyle.Normal,
@@ -167,7 +167,7 @@ export const textStyles = Object.entries(originalTextStyles).reduce(
       (sizeAcc, [size, style]) => {
         sizeAcc[size as TextSize] = {
           ...style,
-          fontSize: Math.round(style.fontSize * 1.2),
+          fontSize: Math.round(style.fontSize * 1),
         };
         return sizeAcc;
       },

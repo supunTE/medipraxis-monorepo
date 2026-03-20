@@ -196,12 +196,10 @@ const DropdownComponent = ({
             color: Color.Black,
             fontFamily:
               textBodyLargeStyle.fontFamily === Font.DMsans
-                ? "DMSans_400Regular"
-                : "Lato_400Regular",
+                ? "DMSans_600SemiBold"
+                : "Inter_600SemiBold",
             fontSize: textBodyLargeStyle.fontSize,
-            fontWeight: String(
-              textBodyLargeStyle.fontWeight
-            ) as RNTextStyle["fontWeight"],
+            fontWeight: "600" as RNTextStyle["fontWeight"],
           }}
         >
           {label}
@@ -211,7 +209,7 @@ const DropdownComponent = ({
       <Pressable
         ref={triggerRef}
         onPress={() => setIsOpen(!isOpen)}
-        className="border rounded-lg w-full h-[50px] flex-row items-center justify-between px-4"
+        className="border rounded-lg w-full h-[42px] flex-row items-center justify-between px-4"
         style={{
           borderColor: getBorderColor(),
           backgroundColor: readOnly ? Color.LightGrey : Color.White,
@@ -226,7 +224,7 @@ const DropdownComponent = ({
             fontFamily:
               textBodyLargeStyle.fontFamily === Font.DMsans
                 ? "DMSans_400Regular"
-                : "Lato_400Regular",
+                : "Inter_400Regular",
             fontSize: textBodyLargeStyle.fontSize,
             fontWeight: String(
               textBodyLargeStyle.fontWeight
@@ -258,7 +256,7 @@ const DropdownComponent = ({
                   fontFamily:
                     textBodyLargeStyle.fontFamily === Font.DMsans
                       ? "DMSans_400Regular"
-                      : "Lato_400Regular",
+                      : "Inter_400Regular",
                   fontSize: textBodyLargeStyle.fontSize,
                 }}
               >
@@ -284,7 +282,7 @@ const DropdownComponent = ({
                     fontFamily:
                       textBodyLargeStyle.fontFamily === Font.DMsans
                         ? "DMSans_400Regular"
-                        : "Lato_400Regular",
+                        : "Inter_400Regular",
                     fontSize: textBodyLargeStyle.fontSize,
                   }}
                 >
@@ -304,7 +302,7 @@ const DropdownComponent = ({
             fontFamily:
               textBodySmallStyle.fontFamily === Font.DMsans
                 ? "DMSans_400Regular"
-                : "Lato_400Regular",
+                : "Inter_400Regular",
             fontSize: textBodySmallStyle.fontSize,
             fontWeight: String(
               textBodySmallStyle.fontWeight
