@@ -1,11 +1,10 @@
 import { useAuth } from "@/auth/AuthContext";
 import { useFocusEffect } from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
-import { Tabs } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { Alert, Pressable, StyleSheet, Text } from "react-native";
+import { Alert, StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { View } from "@/components/Themed";
 import {
   type AgendaBlockContent,
   type AgendaData,
@@ -16,7 +15,9 @@ import {
   ViewReminderModal,
 } from "@/components/advanced/schedule";
 import TaskForm from "@/components/advanced/taskPanel/TaskForm";
+import { ButtonComponent, ButtonSize } from "@/components/basic";
 import Loader from "@/components/basic/Loader.component";
+import { Icons } from "@/config";
 import { useGetSlotWindows } from "@/services/slotWindows";
 import {
   useGetAppointments,
@@ -24,10 +25,11 @@ import {
   useGetTaskById,
 } from "@/services/tasks";
 import { formatISOToTime } from "@/utils";
+import { Color } from "@repo/config";
 import { type TaskDetails } from "@repo/models";
-import { PlusIcon } from "phosphor-react-native";
 
 export default function ScheduleScreen() {
+  const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const userId = user?.user_id ?? "";
   const queryClient = useQueryClient();
@@ -66,7 +68,7 @@ export default function ScheduleScreen() {
         queryClient.invalidateQueries({ queryKey: ["appointments", userId] }),
         queryClient.invalidateQueries({ queryKey: ["reminders", userId] }),
       ]);
-    }, [queryClient])
+    }, [queryClient, userId])
   );
 
   const appointmentTaskQuery = useGetTaskById({
@@ -179,34 +181,39 @@ export default function ScheduleScreen() {
 
   return (
     <View style={styles.container}>
-      <Tabs.Screen
-        options={{
-          headerRight: () => (
-            <Pressable
+      <View
+        pointerEvents="none"
+        style={[styles.topEdgeBackground, { height: insets.top + 16 }]}
+      />
+      <View style={{ flex: 1, paddingTop: insets.top }}>
+        <CalendarComponent
+          agendaData={agendaData}
+          selectedDate={selectedDate}
+          onDateChange={setSelectedDate}
+          agendaHeaderRightAction={
+            <ButtonComponent
               onPress={() => setShowForm(true)}
-              className="flex-row items-center bg-mp-green px-4 py-2 rounded-full mr-4 gap-1"
+              size={ButtonSize.Small}
+              leftIcon={Icons.Plus}
+              buttonColor={Color.Black}
+              textColor={Color.White}
+              iconColor={Color.White}
             >
-              <PlusIcon size={14} color="white" weight="bold" />
-              <Text className="text-white font-bold text-lg">Create</Text>
-            </Pressable>
-          ),
-        }}
-      />
-      <CalendarComponent
-        agendaData={agendaData}
-        selectedDate={selectedDate}
-        onDateChange={setSelectedDate}
-        onAppointmentPress={(appointment) =>
-          handleAppointmentPress(appointment.id)
-        }
-        onEmptySlotPress={(groupId, slotNumber) =>
-          Alert.alert(
-            "Available Slot",
-            `Window ID: ${groupId}\nSlot Number: ${slotNumber + 1}`
-          )
-        }
-        onReminderPress={(reminder) => handleReminderPress(reminder.id)}
-      />
+              Create
+            </ButtonComponent>
+          }
+          onAppointmentPress={(appointment) =>
+            handleAppointmentPress(appointment.id)
+          }
+          onEmptySlotPress={(groupId, slotNumber) =>
+            Alert.alert(
+              "Available Slot",
+              `Window ID: ${groupId}\nSlot Number: ${slotNumber + 1}`
+            )
+          }
+          onReminderPress={(reminder) => handleReminderPress(reminder.id)}
+        />
+      </View>
 
       {appointmentTaskQuery.data?.task && selectedAppointmentId && (
         <ViewAppointmentModal
@@ -244,5 +251,14 @@ export default function ScheduleScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: Color.White,
+  },
+  topEdgeBackground: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: Color.LightGreen,
+    zIndex: 0,
   },
 });

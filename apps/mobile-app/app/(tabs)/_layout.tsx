@@ -188,6 +188,7 @@ export default function TabLayout() {
           name="schedule"
           options={{
             title: "Schedule",
+            headerShown: false,
             tabBarIcon: ({ focused }) => (
               <CustomTabIcon name="calendar" focused={focused} />
             ),
