@@ -196,12 +196,10 @@ const DropdownComponent = ({
             color: Color.Black,
             fontFamily:
               textBodyLargeStyle.fontFamily === Font.DMsans
-                ? "DMSans_400Regular"
-                : "Lato_400Regular",
+                ? "DMSans_600SemiBold"
+                : "Inter_600SemiBold",
             fontSize: textBodyLargeStyle.fontSize,
-            fontWeight: String(
-              textBodyLargeStyle.fontWeight
-            ) as RNTextStyle["fontWeight"],
+            fontWeight: "600" as RNTextStyle["fontWeight"],
           }}
         >
           {label}
@@ -226,7 +224,7 @@ const DropdownComponent = ({
             fontFamily:
               textBodyLargeStyle.fontFamily === Font.DMsans
                 ? "DMSans_400Regular"
-                : "Lato_400Regular",
+                : "Inter_400Regular",
             fontSize: textBodyLargeStyle.fontSize,
             fontWeight: String(
               textBodyLargeStyle.fontWeight
@@ -258,7 +256,7 @@ const DropdownComponent = ({
                   fontFamily:
                     textBodyLargeStyle.fontFamily === Font.DMsans
                       ? "DMSans_400Regular"
-                      : "Lato_400Regular",
+                      : "Inter_400Regular",
                   fontSize: textBodyLargeStyle.fontSize,
                 }}
               >
@@ -284,7 +282,7 @@ const DropdownComponent = ({
                     fontFamily:
                       textBodyLargeStyle.fontFamily === Font.DMsans
                         ? "DMSans_400Regular"
-                        : "Lato_400Regular",
+                        : "Inter_400Regular",
                     fontSize: textBodyLargeStyle.fontSize,
                   }}
                 >
@@ -304,7 +302,7 @@ const DropdownComponent = ({
             fontFamily:
               textBodySmallStyle.fontFamily === Font.DMsans
                 ? "DMSans_400Regular"
-                : "Lato_400Regular",
+                : "Inter_400Regular",
             fontSize: textBodySmallStyle.fontSize,
             fontWeight: String(
               textBodySmallStyle.fontWeight

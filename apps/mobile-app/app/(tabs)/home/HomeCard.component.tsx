@@ -33,7 +33,7 @@ import {
 const IMG_SIZE = 120;
 
 const fontFamilyMap: { [key in Font]: string } = {
-  [Font.Lato]: "Lato",
+  [Font.Inter]: "Inter",
   [Font.DMsans]: "DMSans",
 };
 

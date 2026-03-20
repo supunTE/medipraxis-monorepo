@@ -193,12 +193,10 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
             color: Color.Black,
             fontFamily:
               textLargeStyle.fontFamily === Font.DMsans
-                ? "DMSans_400Regular"
-                : "Lato_400Regular",
+                ? "DMSans_600SemiBold"
+                : "Inter_600SemiBold",
             fontSize: textLargeStyle.fontSize,
-            fontWeight: String(
-              textLargeStyle.fontWeight
-            ) as RNTextStyle["fontWeight"],
+            fontWeight: "600" as RNTextStyle["fontWeight"],
           }}
         >
           {label}
@@ -232,7 +230,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
               fontFamily:
                 textLargeStyle.fontFamily === Font.DMsans
                   ? "DMSans_400Regular"
-                  : "Lato_400Regular",
+                  : "Inter_400Regular",
               fontSize: textLargeStyle.fontSize,
               color: value ? Color.Black : Color.Grey,
             }}
@@ -251,7 +249,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
             fontFamily:
               textSmallStyle.fontFamily === Font.DMsans
                 ? "DMSans_400Regular"
-                : "Lato_400Regular",
+                : "Inter_400Regular",
             fontSize: textSmallStyle.fontSize,
             fontWeight: String(
               textSmallStyle.fontWeight
@@ -294,7 +292,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
                 >
                   <Text
                     className="text-xl text-[#333]"
-                    style={{ fontFamily: "Lato_700Bold" }}
+                    style={{ fontFamily: "Inter_700Bold" }}
                   >
                     {monthNamesFull[tempDate.getMonth()]}{" "}
                     {tempDate.getFullYear()}
@@ -358,8 +356,8 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
                         calendarBackground: "#f8f9fa",
                         selectedDayBackgroundColor: Color.Green,
                         todayTextColor: Color.Green,
-                        textDayFontFamily: "Lato_400Regular",
-                        textDayHeaderFontFamily: "Lato_700Bold",
+                        textDayFontFamily: "Inter_400Regular",
+                        textDayHeaderFontFamily: "Inter_700Bold",
                         textDayFontSize: 16,
                         "stylesheet.calendar.header": {
                           dayHeader: {
@@ -368,7 +366,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
                             width: 32,
                             textAlign: "center",
                             fontSize: 13,
-                            fontFamily: "Lato_400Regular",
+                            fontFamily: "Inter_400Regular",
                             color: "#999",
                           },
                         },
@@ -471,7 +469,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
                     >
                       <Text
                         style={{
-                          fontFamily: "Lato_700Bold",
+                          fontFamily: "Inter_700Bold",
                           color: Color.Green,
                           fontSize: 14,
                         }}
@@ -491,7 +489,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
                   <>
                     <Text
                       className="text-[#333] text-base"
-                      style={{ fontFamily: "Lato_400Regular" }}
+                      style={{ fontFamily: "Inter_400Regular" }}
                     >
                       Time
                     </Text>
@@ -506,7 +504,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
                         className="font-bold text-base tracking-wide"
                         style={{
                           color: showTimePicker ? Color.Green : "#333",
-                          fontFamily: "Lato_700Bold",
+                          fontFamily: "Inter_700Bold",
                         }}
                       >
                         {tempHours}:{padZero(tempMinutes)}{" "}
@@ -545,7 +543,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
                 {mode === "time" && (
                   <Text
                     className="text-xl font-bold mb-4 text-[#333] text-center"
-                    style={{ fontFamily: "Lato_700Bold" }}
+                    style={{ fontFamily: "Inter_700Bold" }}
                   >
                     Select Time
                   </Text>
@@ -632,7 +630,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
                   >
                     <Text
                       style={{
-                        fontFamily: "Lato_700Bold",
+                        fontFamily: "Inter_700Bold",
                         color: Color.Green,
                         fontSize: 14,
                       }}
@@ -649,7 +647,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
               <TouchableOpacity onPress={() => setShowModal(false)}>
                 <Text
                   style={{
-                    fontFamily: "Lato_700Bold",
+                    fontFamily: "Inter_700Bold",
                     color: "#666",
                     fontSize: 16,
                   }}
@@ -660,7 +658,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
               <TouchableOpacity onPress={handleConfirm}>
                 <Text
                   style={{
-                    fontFamily: "Lato_700Bold",
+                    fontFamily: "Inter_700Bold",
                     color: Color.Green,
                     fontSize: 16,
                   }}

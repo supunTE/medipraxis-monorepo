@@ -1,7 +1,7 @@
 // Enums
 
 export enum Font {
-  Lato = "lato",
+  Inter = "inter",
   DMsans = "dm_sans",
 }
 
@@ -75,7 +75,7 @@ const originalTextStyles: TextMapping = {
   [TextVariant.Title]: {
     // Title – Small
     [TextSize.Small]: {
-      fontFamily: Font.Lato,
+      fontFamily: Font.Inter,
       fontSize: 16,
       fontWeight: FontWeight.Bold,
       fontStyle: FontStyle.Normal,
@@ -83,7 +83,7 @@ const originalTextStyles: TextMapping = {
 
     // Title – Medium
     [TextSize.Medium]: {
-      fontFamily: Font.Lato,
+      fontFamily: Font.Inter,
       fontSize: 20,
       fontWeight: FontWeight.Bold,
       fontStyle: FontStyle.Normal,
@@ -91,7 +91,7 @@ const originalTextStyles: TextMapping = {
 
     // Title – Large
     [TextSize.Large]: {
-      fontFamily: Font.Lato,
+      fontFamily: Font.Inter,
       fontSize: 24,
       fontWeight: FontWeight.ExtraBold,
       fontStyle: FontStyle.Normal,
@@ -99,7 +99,7 @@ const originalTextStyles: TextMapping = {
 
     // Title - Extra Large (Page Title)
     [TextSize.ExtraLarge]: {
-      fontFamily: Font.Lato,
+      fontFamily: Font.Inter,
       fontSize: 36,
       fontWeight: FontWeight.SemiBold,
       fontStyle: FontStyle.Normal,
@@ -135,7 +135,7 @@ const originalTextStyles: TextMapping = {
   [TextVariant.Button]: {
     // Button – Small
     [TextSize.Small]: {
-      fontFamily: Font.Lato,
+      fontFamily: Font.Inter,
       fontSize: 14,
       fontWeight: FontWeight.Bold,
       fontStyle: FontStyle.Normal,

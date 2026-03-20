@@ -3,7 +3,7 @@ import {
   DMSans_500Medium,
   DMSans_600SemiBold,
 } from "@expo-google-fonts/dm-sans";
-import { Lato_400Regular, Lato_700Bold } from "@expo-google-fonts/lato";
+import { Inter_400Regular, Inter_700Bold } from "@expo-google-fonts/inter";
 import { Color } from "@repo/config";
 import { useFonts } from "expo-font";
 import { CaretDownIcon } from "phosphor-react-native";
@@ -23,8 +23,8 @@ export function FieldTypePicker({
     DMSans_400Regular,
     DMSans_500Medium,
     DMSans_600SemiBold,
-    Lato_400Regular,
-    Lato_700Bold,
+    Inter_400Regular,
+    Inter_700Bold,
   });
 
   const [isOpen, setIsOpen] = useState(false);

@@ -49,7 +49,7 @@ export default function TabOneScreen() {
       >
         <Text
           style={{
-            fontFamily: "Lato",
+            fontFamily: "Inter",
             fontSize: textStyles[TextVariant.Title][TextSize.Small].fontSize,
             fontWeight: "700",
             color: Color.Black,
