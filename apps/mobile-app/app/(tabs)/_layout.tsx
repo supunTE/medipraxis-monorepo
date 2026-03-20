@@ -20,8 +20,8 @@ import { encryptionKeyStorage } from "../../utils/storage";
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
-import { useQueryClient } from "@tanstack/react-query";
 import { Color } from "@repo/config";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../../auth/AuthContext";
 import { AIAssistantButton } from "./ai/AIAssistantButton";
 import AIAssistantModal from "./ai/index";
@@ -266,6 +266,20 @@ export default function TabLayout() {
         />
         <Tabs.Screen
           name="reports/[id]"
+          options={{
+            href: null,
+            headerShown: false,
+          }}
+        />
+        <Tabs.Screen
+          name="settings/index"
+          options={{
+            href: null,
+            headerShown: false,
+          }}
+        />
+        <Tabs.Screen
+          name="settings/form-setup-center/index"
           options={{
             href: null,
             headerShown: false,
