@@ -1,3 +1,4 @@
+import { useAuth } from "@/auth/AuthContext";
 import {
   ButtonComponent,
   ButtonSize,
@@ -12,9 +13,10 @@ import {
 } from "@/components/ui/checkbox";
 import { Icons, type Icon } from "@/config";
 import { useFetchClients } from "@/services/clients";
-import { useFetchRequestForm, type FormField } from "@/services/forms";
+import { useFetchActiveForm } from "@/services/forms";
 import { useCreateRequestReport } from "@/services/reports";
 import { Color, TextSize, TextVariant } from "@repo/config";
+import { FormType, type FormField } from "@repo/models";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   AtIcon,
@@ -32,8 +34,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-const TEMP_USER_ID = "2a3c19b8-d352-4b30-a2ac-1cdf993d310c";
 
 const CLIENT_ICON_SIZE = 14;
 const SEND_THROUGH_ICON_SIZE = 18;
@@ -55,9 +55,13 @@ const SEND_THROUGH_OPTIONS: {
 export default function RequestReportScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { data: clients = [] } = useFetchClients(TEMP_USER_ID);
-  const { data: requestForm, isLoading: isFormLoading } =
-    useFetchRequestForm(TEMP_USER_ID);
+  const { user } = useAuth();
+  const userId = user?.user_id ?? "";
+  const { data: clients = [] } = useFetchClients(userId);
+  const { data: requestForm, isLoading: isFormLoading } = useFetchActiveForm(
+    userId,
+    FormType.REQUEST_FORM
+  );
   const createRequestReportMutation = useCreateRequestReport();
   const [formFields, setFormFields] = useState<FormField[]>([]);
   const [selectedSendThrough, setSelectedSendThrough] = useState<
@@ -124,7 +128,7 @@ export default function RequestReportScreen() {
     }
 
     const requestPayload = {
-      user_id: TEMP_USER_ID,
+      user_id: userId,
       client_id: selectedClientId,
       form_id: requestForm.form_id,
       note: additionalNotes,

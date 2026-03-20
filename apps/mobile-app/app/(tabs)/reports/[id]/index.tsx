@@ -27,8 +27,6 @@ import {
 } from "react-native";
 import { WebView } from "react-native-webview";
 
-const TEMP_USER_ID = "2a3c19b8-d352-4b30-a2ac-1cdf993d310c";
-
 const ICON_SIZE = 18;
 const DOCUMENT_HEIGHT_RATIO = 0.6;
 const IMAGE_HEIGHT_RATIO = 0.5;

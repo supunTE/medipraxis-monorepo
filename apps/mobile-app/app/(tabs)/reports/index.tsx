@@ -15,8 +15,6 @@ import {
 } from "react-native";
 import { ReportTile } from "./ReportTile.component";
 
-const TEMP_USER_ID = "2a3c19b8-d352-4b30-a2ac-1cdf993d310c";
-
 const SEARCH_ICON_SIZE = 20;
 const INPUT_HEIGHT = 56;
 const INPUT_BORDER_WIDTH = 1.5;

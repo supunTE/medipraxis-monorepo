@@ -52,3 +52,4 @@ export const getFormParamSchema = z.object({
 export type CreateFormInput = z.infer<typeof createFormSchema>;
 export type GetFormQuery = z.infer<typeof getFormQuerySchema>;
 export type GetFormParam = z.infer<typeof getFormParamSchema>;
+export type FormField = z.infer<typeof formFieldSchema>;
