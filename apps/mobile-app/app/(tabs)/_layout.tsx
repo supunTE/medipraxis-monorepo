@@ -1,12 +1,10 @@
-import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { type BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { LinearGradient } from "expo-linear-gradient";
-import { Link, Tabs } from "expo-router";
+import { Tabs } from "expo-router";
 import {
   CalendarIcon,
   FoldersIcon,
   HouseLineIcon,
-  KeyIcon,
   UsersIcon,
 } from "phosphor-react-native";
 import React, { useEffect, useState } from "react";
@@ -22,7 +20,6 @@ import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { Color } from "@repo/config";
 import { useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "../../auth/AuthContext";
 import { AIAssistantButton } from "./ai/AIAssistantButton";
 import AIAssistantModal from "./ai/index";
 
@@ -117,8 +114,8 @@ function CustomTabBar({
                   key={route.key}
                   accessibilityRole="button"
                   accessibilityState={isFocused ? { selected: true } : {}}
-                  accessibilityLabel={(options as any).tabBarAccessibilityLabel}
-                  testID={(options as any).tabBarTestID}
+                  accessibilityLabel={options.tabBarAccessibilityLabel}
+                  testID={options.tabBarButtonTestID}
                   onPress={onPress}
                   onLongPress={onLongPress}
                   className="items-center justify-center h-[50px] px-1"
@@ -148,7 +145,6 @@ export default function TabLayout() {
   const [isAIAssistantVisible, setIsAIAssistantVisible] = useState(false);
   const [isKeyModalVisible, setIsKeyModalVisible] = useState(false);
   const [isKeyEntryVisible, setIsKeyEntryVisible] = useState(false);
-  const { signOut } = useAuth();
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -181,46 +177,9 @@ export default function TabLayout() {
           name="index"
           options={{
             title: "Home",
+            headerShown: false,
             tabBarIcon: ({ focused }) => (
               <CustomTabIcon name="home" focused={focused} />
-            ),
-            headerRight: () => (
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Pressable
-                  onPress={() => setIsKeyModalVisible(true)}
-                  className="mr-[15px]"
-                >
-                  {({ pressed }) => (
-                    <KeyIcon
-                      size={25}
-                      color={Colors[colorScheme ?? "light"].text}
-                      style={{ opacity: pressed ? 0.5 : 1 }}
-                    />
-                  )}
-                </Pressable>
-                <Link href="/modal" asChild>
-                  <Pressable className="mr-[15px]">
-                    {({ pressed }) => (
-                      <FontAwesome
-                        name="info-circle"
-                        size={25}
-                        color={Colors[colorScheme ?? "light"].text}
-                        style={{ opacity: pressed ? 0.5 : 1 }}
-                      />
-                    )}
-                  </Pressable>
-                </Link>
-                <Pressable onPress={signOut} className="mr-[15px]">
-                  {({ pressed }) => (
-                    <FontAwesome
-                      name="sign-out"
-                      size={25}
-                      color={Colors[colorScheme ?? "light"].text}
-                      style={{ opacity: pressed ? 0.5 : 1 }}
-                    />
-                  )}
-                </Pressable>
-              </View>
             ),
           }}
         />

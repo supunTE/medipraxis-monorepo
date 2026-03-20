@@ -10,10 +10,8 @@ import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import TaskForm from "@/components/advanced/taskPanel/TaskForm";
 import { HomeCard } from "./home/HomeCard.component";
 import { UpcomingEventCard } from "./home/UpcomingEventCard.Component";
-import { FormSetupCenter } from "./settings/components/form-setup-center";
 
 const PlusIcon = Icons.Plus;
-const FileTextIcon = Icons.FileText;
 
 export default function TabOneScreen() {
   const { user } = useAuth();
@@ -21,7 +19,6 @@ export default function TabOneScreen() {
   const queryClient = useQueryClient();
   const router = useRouter();
   const [showForm, setShowForm] = useState(false);
-  const [showFormSetup, setShowFormSetup] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -60,37 +57,20 @@ export default function TabOneScreen() {
           Upcoming events
         </Text>
 
-        <View style={{ flexDirection: "row", gap: 10 }}>
-          <TouchableOpacity
-            onPress={() => setShowForm(true)}
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 8,
-              borderWidth: 1,
-              borderColor: Color.LightGrey,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <PlusIcon size={20} color={Color.DarkGreen} />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => setShowFormSetup(true)}
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 8,
-              borderWidth: 1,
-              borderColor: Color.LightGrey,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <FileTextIcon size={20} color={Color.DarkGreen} />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          onPress={() => setShowForm(true)}
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: Color.LightGrey,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <PlusIcon size={20} color={Color.DarkGreen} />
+        </TouchableOpacity>
       </View>
 
       {/* Scrollable: only the event cards scroll */}
@@ -106,10 +86,6 @@ export default function TabOneScreen() {
 
       {/* Task Form modal */}
       <TaskForm visible={showForm} onClose={() => setShowForm(false)} />
-      <FormSetupCenter
-        visible={showFormSetup}
-        onClose={() => setShowFormSetup(false)}
-      />
     </View>
   );
 }
