@@ -220,7 +220,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
               errorText || isInvalid ? Color.Danger : Color.LightGrey,
             borderWidth: 1,
             borderRadius: 8,
-            height: 50,
+            height: 42,
           }}
           pointerEvents="none"
         >

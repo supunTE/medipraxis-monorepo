@@ -73,7 +73,7 @@ export const ClientCardComponent: React.FC<ClientCardProps> = ({
         >
           <IconComponent size={20} color={Color.White} />
         </View>
-        <TextComponent variant={TextVariant.Body} size={TextSize.Medium}>
+        <TextComponent variant={TextVariant.Body} size={TextSize.Large}>
           {name}
         </TextComponent>
       </TouchableOpacity>

@@ -155,7 +155,7 @@ export const TextInput: React.FC<TextInputProps> = ({
           borderWidth: 1,
           borderRadius: 8,
           width: "100%",
-          height: 50,
+          height: 42,
           backgroundColor: inputWrapper.isDisabled
             ? Color.LightGrey
             : Color.White,

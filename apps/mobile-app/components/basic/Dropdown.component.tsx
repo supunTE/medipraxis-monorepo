@@ -211,7 +211,7 @@ const DropdownComponent = ({
       <Pressable
         ref={triggerRef}
         onPress={() => setIsOpen(!isOpen)}
-        className="border rounded-lg w-full h-[50px] flex-row items-center justify-between px-4"
+        className="border rounded-lg w-full h-[42px] flex-row items-center justify-between px-4"
         style={{
           borderColor: getBorderColor(),
           backgroundColor: readOnly ? Color.LightGrey : Color.White,

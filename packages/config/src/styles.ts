@@ -110,7 +110,7 @@ const originalTextStyles: TextMapping = {
     // Text – Small (tags)
     [TextSize.Small]: {
       fontFamily: Font.DMsans,
-      fontSize: 11,
+      fontSize: 13,
       fontWeight: FontWeight.Regular,
       fontStyle: FontStyle.Normal,
     },
@@ -118,7 +118,7 @@ const originalTextStyles: TextMapping = {
     // Text – Medium (tags)
     [TextSize.Medium]: {
       fontFamily: Font.DMsans,
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: FontWeight.SemiBold,
       fontStyle: FontStyle.Normal,
     },
@@ -167,7 +167,7 @@ export const textStyles = Object.entries(originalTextStyles).reduce(
       (sizeAcc, [size, style]) => {
         sizeAcc[size as TextSize] = {
           ...style,
-          fontSize: Math.round(style.fontSize * 1.2),
+          fontSize: Math.round(style.fontSize * 1),
         };
         return sizeAcc;
       },
