@@ -15,6 +15,8 @@ export const CLIENT_QUERIES = {
   USER_ID: "user_id",
   COUNTRY_CODE: "country_code",
   CONTACT_NUMBER: "contact_number",
+  F_NAME: "first_name",
+  L_NAME: "last_name",
   DELETED_DATE: "deleted_date",
   CREATED_DATE: "created_date",
   MODIFIED_DATE: "modified_date",
@@ -156,6 +158,38 @@ export class ClientRepository {
     }
 
     return data as Client[];
+  }
+
+  async findByName(name: string): Promise<Client[]> {
+    const parts = name.trim().split(/\s+/);
+
+    let query = this.db
+      .from(CLIENT_QUERIES.CLIENT_TABLE)
+      .select(CLIENT_QUERIES.FIND_ALL)
+      .is(CLIENT_QUERIES.DELETED_DATE, null);
+
+    if (parts.length === 1) {
+      // Single word → search both fields
+      const search = parts[0];
+      query = query.or(
+        `first_name.ilike.%${search}%,last_name.ilike.%${search}%`
+      );
+    } else {
+      // Full name → match both
+      const [fname, lname] = parts;
+
+      query = query
+        .ilike(CLIENT_QUERIES.F_NAME, `%${fname}%`)
+        .ilike(CLIENT_QUERIES.L_NAME, `%${lname}%`);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      throw new Error(`Failed to fetch clients: ${error.message}`);
+    }
+
+    return (data as Client[]) || [];
   }
 
   async create(clientData: CreateClientInput): Promise<Client> {

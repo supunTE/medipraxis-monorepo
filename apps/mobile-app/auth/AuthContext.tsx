@@ -31,11 +31,13 @@ export function useAuth() {
   return context;
 }
 
-function useProtectedRoute(user: User | null) {
+function useProtectedRoute(user: User | null, isLoading: boolean) {
   const segments = useSegments();
   const router = useRouter();
 
   useEffect(() => {
+    if (isLoading) return;
+
     const inAuthGroup = (segments[0] as string) === "auth";
 
     if (
@@ -49,7 +51,7 @@ function useProtectedRoute(user: User | null) {
       // Redirect away from the sign-in page.
       router.replace("/");
     }
-  }, [user, segments]);
+  }, [user, segments, isLoading]);
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -90,7 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     checkAuth();
   }, []);
 
-  useProtectedRoute(user);
+  useProtectedRoute(user, isLoading);
 
   const signIn = async (
     phoneNumber: string,

@@ -1,3 +1,4 @@
+import { useAuth } from "@/auth/AuthContext";
 import { ButtonComponent, ButtonSize, TextComponent } from "@/components/basic";
 import { Input, InputField, InputSlot } from "@/components/ui/input";
 import { Icons } from "@/config";
@@ -27,13 +28,15 @@ type TabType = "completed" | "pending";
 const textLargeStyle = textStyles[TextVariant.Body][TextSize.Large];
 
 export default function ReportsScreen() {
+  const { user } = useAuth();
+  const userId = user?.user_id ?? "";
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<TabType>("completed");
   const router = useRouter();
 
   // Fetch reports based on active tab
   const { data: groupedReports = [], isLoading } = useFetchGroupedReports(
-    TEMP_USER_ID,
+    userId,
     activeTab === "completed"
   );
 

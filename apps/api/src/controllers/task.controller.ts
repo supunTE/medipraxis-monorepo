@@ -127,25 +127,30 @@ export class TaskController {
     }
   }
 
-  static async reserveAppointmentByClient(
-    c: APIContext<{ json: ReserveAppointmentByClientInput }>
+  // Reserve an appointment from a slot window (creates appointment task)
+  private static async reserveAppointment(
+    c: APIContext<{ json: ReserveAppointmentByClientInput }>,
+    by: "client" | "practitioner"
   ) {
     try {
       const slotWindowService = getSlotWindowService(c);
       const taskService = getTaskService(c);
       const body = c.req.valid("json") as ReserveAppointmentByClientInput;
 
-      const cooldownCheck = await taskService.isClientInCooldown(
-        body.client_id
-      );
-
-      if (cooldownCheck.inCooldown) {
-        return c.json(
-          {
-            error: `Please wait ${cooldownCheck.remainingMinutes} more minute(s) before reserving another appointment`,
-          },
-          429
+      // Check if client is in cooldown period
+      if (by == "client") {
+        const cooldownCheck = await taskService.isClientInCooldown(
+          body.client_id
         );
+
+        if (cooldownCheck.inCooldown) {
+          return c.json(
+            {
+              error: `Please wait ${cooldownCheck.remainingMinutes} more minute(s) before reserving another appointment`,
+            },
+            429
+          );
+        }
       }
 
       const hasExisting = await taskService.hasExistingAppointmentInSlotWindow(
@@ -202,6 +207,19 @@ export class TaskController {
     }
   }
 
+  static async reserveAppointmentByClient(
+    c: APIContext<{ json: ReserveAppointmentByClientInput }>
+  ) {
+    return TaskController.reserveAppointment(c, "client");
+  }
+
+  static async reserveAppointmentByPractitioner(
+    c: APIContext<{ json: ReserveAppointmentByClientInput }>
+  ) {
+    return TaskController.reserveAppointment(c, "practitioner");
+  }
+
+  // Cancel an appointment (changes status to CANCELLED and releases slot)
   static async cancelAppointmentByClient(
     c: APIContext<{ json: CancelAppointmentByClientInput }>
   ) {
@@ -273,6 +291,33 @@ export class TaskController {
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to get task summary";
+      return c.json({ error: message }, 500);
+    }
+  }
+
+  static async getUpcomingTasksByUserId(
+    c: APIContext<{ query: GetTaskSummaryQuery }>
+  ) {
+    try {
+      const taskService = getTaskService(c);
+      const userId = c.req.query("user_id") as string;
+      const dateParam = c.req.query("date");
+      const date: string =
+        dateParam !== undefined
+          ? dateParam
+          : (new Date().toISOString().split("T")[0] as string);
+
+      const tasks = await taskService.getUpcomingTasksForToday(userId, date);
+
+      return c.json({
+        success: true,
+        date,
+        tasks,
+        count: tasks.length,
+      });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to get upcoming tasks";
       return c.json({ error: message }, 500);
     }
   }

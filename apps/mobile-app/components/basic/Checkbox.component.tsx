@@ -1,13 +1,6 @@
-import {
-  CheckboxIcon,
-  CheckboxIndicator,
-  CheckboxLabel,
-  Checkbox as GluestackCheckbox,
-} from "@/components/ui/checkbox";
-import { CheckIcon } from "@/components/ui/icon";
 import { Color, TextSize, TextVariant } from "@repo/config";
 import React from "react";
-import { View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 import { TextComponent } from "./Text.component";
 
 export enum CheckboxSize {
@@ -17,7 +10,6 @@ export enum CheckboxSize {
 }
 
 interface CheckboxComponentProps {
-  value: string;
   label?: string;
   isChecked?: boolean;
   onChange?: (isChecked: boolean) => void;
@@ -29,49 +21,61 @@ interface CheckboxComponentProps {
   labelColor?: Color;
   className?: string;
   containerClassName?: string;
+  shrinkLabel?: boolean;
 }
 
 export const CheckboxComponent: React.FC<CheckboxComponentProps> = ({
-  value,
   label,
   isChecked = false,
   onChange,
-  size = CheckboxSize.Medium,
   isDisabled = false,
   isInvalid = false,
   labelVariant = TextVariant.Body,
   labelSize = TextSize.Medium,
   labelColor = Color.Black,
-  className,
   containerClassName,
+  shrinkLabel = true,
 }) => {
-  return (
-    <View className={containerClassName}>
-      <GluestackCheckbox
-        value={value}
-        isChecked={isChecked}
-        onChange={onChange}
-        size={size}
-        isDisabled={isDisabled}
-        isInvalid={isInvalid}
-        className={className}
-      >
-        <CheckboxIndicator>
-          <CheckboxIcon as={CheckIcon} />
-        </CheckboxIndicator>
+  const color = isInvalid ? Color.Danger : Color.Black;
 
-        {label && (
-          <CheckboxLabel className="ml-2">
-            <TextComponent
-              variant={labelVariant}
-              size={labelSize}
-              color={labelColor}
-            >
-              {label}
-            </TextComponent>
-          </CheckboxLabel>
+  return (
+    <TouchableOpacity
+      onPress={() => !isDisabled && onChange?.(!isChecked)}
+      className={`flex-row ${shrinkLabel ? "items-center" : "items-start"} gap-2.5 ${!shrinkLabel ? "w-full" : ""} ${containerClassName ?? ""}`}
+      activeOpacity={0.7}
+      disabled={isDisabled}
+    >
+      <View
+        className="w-[22px] h-[22px] rounded-md border-2 justify-center items-center"
+        style={{
+          borderColor: isChecked ? color : Color.Grey,
+          backgroundColor: isChecked ? color : "transparent",
+        }}
+      >
+        {isChecked && (
+          <View
+            style={{
+              width: 12,
+              height: 6,
+              borderLeftWidth: 2,
+              borderBottomWidth: 2,
+              borderColor: Color.White,
+              transform: [{ rotate: "-45deg" }, { translateY: -1 }],
+            }}
+          />
         )}
-      </GluestackCheckbox>
-    </View>
+      </View>
+      {label !== undefined && (
+        <View style={shrinkLabel ? undefined : { flex: 1 }}>
+          <TextComponent
+            variant={labelVariant}
+            size={labelSize}
+            color={labelColor}
+          >
+            {label}
+          </TextComponent>
+        </View>
+      )}
+    </TouchableOpacity>
   );
 };

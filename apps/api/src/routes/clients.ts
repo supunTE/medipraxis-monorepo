@@ -5,6 +5,7 @@ import {
   getAllClientsQuerySchema,
   getClientByPhoneQuerySchema,
   getClientParamSchema,
+  getClientsByNameQuerySchema,
   updateClientParamSchema,
   updateClientSchema,
 } from "@repo/models";
@@ -28,9 +29,19 @@ const clients = new Hono()
     ClientController.getClientByPhone
   )
   .get(
+    "/name",
+    zValidator("query", getClientsByNameQuerySchema),
+    ClientController.getClientsByName
+  )
+  .get(
     "/:id",
     zValidator("param", getClientParamSchema),
     ClientController.getClientById
+  )
+  .get(
+    "/contact-id/:id",
+    zValidator("param", getClientParamSchema),
+    ClientController.getClientByContactId
   )
   .put(
     "/:id",

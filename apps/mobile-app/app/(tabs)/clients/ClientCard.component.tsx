@@ -4,6 +4,8 @@ import { Icons, type IconName } from "@/config";
 import { Color, TextSize, TextVariant } from "@repo/config";
 import React, { useRef } from "react";
 import { Animated, TouchableOpacity, type ViewStyle } from "react-native";
+import { SameContactSection } from "./SameContactSection.component";
+import { Client } from "@repo/models";
 
 // Client card props
 interface ClientCardProps {
@@ -13,6 +15,8 @@ interface ClientCardProps {
   icon: IconName;
   onPress?: () => void;
   className?: string;
+  index?: number;
+  familyMembers: Client[];
 }
 
 // Client card component
@@ -22,6 +26,8 @@ export const ClientCardComponent: React.FC<ClientCardProps> = ({
   icon,
   onPress,
   className,
+  index,
+  familyMembers = [],
 }) => {
   // Set up press animation
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -71,6 +77,10 @@ export const ClientCardComponent: React.FC<ClientCardProps> = ({
           {name}
         </TextComponent>
       </TouchableOpacity>
+
+      {index !== undefined && index <= 3 && familyMembers.length > 0 && (
+        <SameContactSection clients={familyMembers} />
+      )}
     </Animated.View>
   );
 };

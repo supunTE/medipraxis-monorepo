@@ -30,6 +30,14 @@ import type {
   AgendaReminderContent,
 } from "./calendar.types";
 
+function getWeekRowCount(year: number, month: number, firstDay = 1): number {
+  const first = new Date(year, month - 1, 1);
+  const daysInMonth = new Date(year, month, 0).getDate();
+  let offset = first.getDay() - firstDay;
+  if (offset < 0) offset += 7;
+  return Math.ceil((offset + daysInMonth) / 7);
+}
+
 interface CalendarComponentProps {
   agendaData?: AgendaData;
   selectedDate?: string;
@@ -137,6 +145,11 @@ export function CalendarComponent({
   const today = new Date().toISOString().split("T")[0] || "";
   const selected = selectedDate || today;
 
+  const initialDate = new Date(selected);
+  const [weekRows, setWeekRows] = useState(() =>
+    getWeekRowCount(initialDate.getFullYear(), initialDate.getMonth() + 1)
+  );
+
   const [fontsLoaded] = useFonts({
     DMSans_400Regular,
     DMSans_500Medium,
@@ -150,8 +163,11 @@ export function CalendarComponent({
   const animatedOpacity = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    // When expanding, show full calendar immediately
+    // When expanding, show full calendar immediately and sync weekRows
+    // to the selected date's month (Calendar remounts on that month)
     if (isExpanded) {
+      const d = new Date(selected);
+      setWeekRows(getWeekRowCount(d.getFullYear(), d.getMonth() + 1));
       setShowFullCalendar(true);
     }
 
@@ -174,11 +190,15 @@ export function CalendarComponent({
         setShowFullCalendar(false);
       }
     });
-  }, [isExpanded]);
+  }, [isExpanded, selected, animatedHeight, animatedOpacity]);
 
   const toggleCalendar = useCallback(() => {
     setIsExpanded(!isExpanded);
   }, [isExpanded]);
+
+  const onMonthChange = useCallback((date: DateData) => {
+    setWeekRows(getWeekRowCount(date.year, date.month));
+  }, []);
 
   const renderArrow = useCallback((direction: "left" | "right") => {
     return direction === "left" ? (
@@ -244,9 +264,10 @@ export function CalendarComponent({
   };
 
   // Interpolate height for smooth animation
+  const expandedHeight = weekRows === 6 ? 480 : 425;
   const calendarHeight = animatedHeight.interpolate({
     inputRange: [0, 1],
-    outputRange: [140, 425],
+    outputRange: [140, expandedHeight],
   });
 
   return (
@@ -266,6 +287,8 @@ export function CalendarComponent({
             {showFullCalendar && (
               <View className="bg-mp-secondary rounded-b-3xl overflow-hidden z-[2]">
                 <Calendar
+                  current={selected}
+                  key={selected}
                   firstDay={1}
                   theme={calendarTheme}
                   style={{
@@ -275,6 +298,7 @@ export function CalendarComponent({
                   }}
                   renderArrow={renderArrow}
                   dayComponent={renderDay}
+                  onMonthChange={onMonthChange}
                 />
               </View>
             )}

@@ -4,6 +4,7 @@ import { Platform } from "react-native";
 const ACCESS_TOKEN_KEY = "auth.access_token";
 const REFRESH_TOKEN_KEY = "auth.refresh_token";
 const USER_KEY = "auth.user";
+const ENCRYPTION_KEY_KEY = "auth.encryption_key";
 
 // Helper to check if running on web (SecureStore doesn't work on web)
 const isWeb = Platform.OS === "web";
@@ -52,5 +53,12 @@ export const authStorage = {
     await deleteToken(ACCESS_TOKEN_KEY);
     await deleteToken(REFRESH_TOKEN_KEY);
     await deleteToken(USER_KEY);
+    await deleteToken(ENCRYPTION_KEY_KEY);
   },
+};
+
+export const encryptionKeyStorage = {
+  set: (key: string) => saveToken(ENCRYPTION_KEY_KEY, key),
+  get: () => getToken(ENCRYPTION_KEY_KEY),
+  delete: () => deleteToken(ENCRYPTION_KEY_KEY),
 };

@@ -448,4 +448,20 @@ export class TaskService {
       reminder_count: reminders.length,
     };
   }
+
+  async getUpcomingTasksForToday(
+    userId: string,
+    date: string
+  ): Promise<TaskDetails[]> {
+    // Fetch both status IDs — if either doesn't exist in DB it returns null
+    const [inProgressStatusId, notStartedStatusId] = await Promise.all([
+      this.taskRepository.getTaskStatusByName(TaskStatus.IN_PROGRESS),
+      this.taskRepository.getTaskStatusByName(TaskStatus.NOT_STARTED),
+    ]);
+
+    return await this.taskRepository.findUpcomingByUserId(userId, date, {
+      inProgressStatusId: inProgressStatusId ?? undefined,
+      notStartedStatusId: notStartedStatusId ?? undefined,
+    });
+  }
 }

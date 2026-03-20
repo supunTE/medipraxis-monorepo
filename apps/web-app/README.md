@@ -71,3 +71,24 @@ export default defineConfig([
   },
 ]);
 ```
+
+## End-to-End Testing
+
+This project uses [Playwright](https://playwright.dev/) for E2E testing.
+
+### Running Tests
+
+To run the tests in headless mode:
+
+```bash
+yarn test:e2e
+```
+
+To run the tests with the Interactive UI:
+
+```bash
+yarn test:e2e:ui
+```
+
+> [!NOTE]
+> The tests are configured to automatically start the development server if it's not already running.

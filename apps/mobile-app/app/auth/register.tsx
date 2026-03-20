@@ -1,7 +1,8 @@
 import { Color, TextSize, TextVariant } from "@repo/config";
 import { LinearGradient } from "expo-linear-gradient";
-import { useRouter, Link } from "expo-router";
+import { Link, useRouter } from "expo-router";
 import React from "react";
+import { Controller } from "react-hook-form";
 import {
   Alert,
   Image,
@@ -11,8 +12,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useAuthHandler } from "../../services/auth";
-import { Controller } from "react-hook-form";
 import {
   ButtonComponent,
   ButtonSize,
@@ -21,6 +20,7 @@ import {
   TextInputComponent,
   TextInputType,
 } from "../../components/basic";
+import { useAuthHandler } from "../../services/auth";
 
 export default function RegisterScreen() {
   const { register, isLoading } = useAuthHandler();
@@ -35,20 +35,10 @@ export default function RegisterScreen() {
       const success = await register.submit();
       if (success) {
         const { phoneNumber, countryCode } = register.form.getValues();
-        Alert.alert(
-          "Registration Successful",
-          "Your account has been created. Please log in to continue.",
-          [
-            {
-              text: "OK",
-              onPress: () =>
-                router.replace({
-                  pathname: "/auth/login",
-                  params: { phoneNumber, countryCode },
-                }),
-            },
-          ]
-        );
+        router.replace({
+          pathname: "/auth/key-reveal",
+          params: { phoneNumber, countryCode },
+        });
       }
     } catch (e: any) {
       console.error("Register Error:", e);
@@ -220,19 +210,18 @@ export default function RegisterScreen() {
               />
             </View>
 
-            <View className="flex-row items-start mb-6 pr-6">
+            <View className="mb-6">
               <Controller
                 control={control}
                 name="agreed"
                 render={({ field: { onChange, value } }) => (
                   <CheckboxComponent
-                    value="agree"
                     isChecked={value}
                     onChange={onChange}
                     label="I agree with MediPraxis Public Agreement, Terms & Policy"
                     labelSize={TextSize.Small}
                     labelColor={Color.Grey}
-                    className="flex-1"
+                    shrinkLabel={false}
                     isInvalid={!!errors.agreed}
                   />
                 )}

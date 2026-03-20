@@ -29,6 +29,11 @@ const tasks = new Hono()
     TaskController.getTaskSummaryByUserId
   )
   .get(
+    "/upcoming",
+    zValidator("query", getTaskSummaryQuerySchema),
+    TaskController.getUpcomingTasksByUserId
+  )
+  .get(
     "/appointments/client",
     zValidator("query", getAppointmentsByClientQuerySchema),
     TaskController.getAppointmentsByClientId
@@ -49,6 +54,11 @@ const tasks = new Hono()
     "/appointments/reserve",
     zValidator("json", reserveAppointmentByClientSchema),
     TaskController.reserveAppointmentByClient
+  )
+  .post(
+    "/appointments/reserve/practitioner",
+    zValidator("json", reserveAppointmentByClientSchema),
+    TaskController.reserveAppointmentByPractitioner
   )
   .post(
     "/appointments/cancel",

@@ -6,32 +6,82 @@ on:
   #     - main # Or whichever branch you want to trigger the build
   workflow_dispatch: # Allows you to trigger the build manually from the GitHub UI
 
+
 jobs:
   build:
-    name: Install and build
     runs-on: ubuntu-latest
+
     steps:
-      - name: Setup repo
+      # Checkout
+      - name: Checkout repo
         uses: actions/checkout@v4
 
+      # Node setup
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: yarn
 
+      # Install jq (for parsing JSON)
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      # Setup EAS CLI + login
       - name: Setup EAS
         uses: expo/expo-github-action@v8
         with:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Install dependencies
-        run: yarn install
+      # Install dependencies (root)
+      - name: Install root dependencies
+        run: yarn install --frozen-lockfile
 
-      - name: Build APK on EAS
-        # We cd into the app directory because you are in a monorepo
+      # Install mobile app dependencies
+      - name: Install mobile dependencies
+        run: yarn install --frozen-lockfile
+        working-directory: ./apps/mobile-app
+
+      # Verify login
+      - name: Verify Expo login
+        run: npx expo whoami
+
+      # Run EAS Build and capture output
+      - name: Run EAS Build
+        id: eas_build
         working-directory: ./apps/mobile-app
         env:
           EAS_BUILD_NO_EXPO_GO_WARNING: "true"
-        run: eas build --platform android --profile production --non-interactive
+        run: |
+          echo "Starting EAS Build..."
+
+          BUILD_OUTPUT=$(eas build \
+            --platform ${{ github.event.inputs.platform }} \
+            --profile ${{ github.event.inputs.profile }} \
+            --non-interactive \
+            --wait \
+            --json)
+
+          echo "$BUILD_OUTPUT"
+
+          # Extract URLs
+          BUILD_URL=$(echo $BUILD_OUTPUT | jq -r '.[0].artifacts.buildUrl')
+          DETAILS_URL=$(echo $BUILD_OUTPUT | jq -r '.[0].buildDetailsPageUrl')
+
+          echo "BUILD_URL=$BUILD_URL" >> $GITHUB_ENV
+          echo "DETAILS_URL=$DETAILS_URL" >> $GITHUB_ENV
+
+      # Print links in logs
+      - name: Show Build Links
+        run: |
+          echo "APK Download URL: $BUILD_URL"
+          echo "Build Details Page: $DETAILS_URL"
+
+      # Add to GitHub Summary (nice UI)
+      - name: Add Build Links to Summary
+        run: |
+          echo "## EAS Build Completed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- [Download APK]($BUILD_URL)" >> $GITHUB_STEP_SUMMARY
+          echo "- [View Build Details]($DETAILS_URL)" >> $GITHUB_STEP_SUMMARY

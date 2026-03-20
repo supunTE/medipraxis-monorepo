@@ -11,6 +11,7 @@ import {
   ShareableUserLinkRepository,
   SlotWindowRepository,
   TaskRepository,
+  UserKeysRepository,
   UserRepository,
 } from "../repositories";
 import {
@@ -26,6 +27,7 @@ import {
   SlotWindowService,
   SmsService,
   TaskService,
+  UserKeysService,
   UserService,
 } from "../services";
 
@@ -142,6 +144,12 @@ export function getAppointmentRecordService(c: Context<{ Bindings: Env }>) {
   const db = createDatabaseClient(c.env);
   const appointmentRecordRepository = new AppointmentRecordRepository(db);
   return new AppointmentRecordService(appointmentRecordRepository);
+}
+
+export function getUserKeysService(c: Context<{ Bindings: Env }>) {
+  const db = createDatabaseClient(c.env);
+  const userKeysRepository = new UserKeysRepository(db);
+  return new UserKeysService(userKeysRepository);
 }
 
 export function getAuthService(c: Context<{ Bindings: Env }>) {

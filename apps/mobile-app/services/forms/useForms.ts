@@ -1,66 +1,117 @@
 import { apiClient } from "@/lib/api-client";
-import { FormType, type Form } from "@repo/models";
-import { useQuery } from "@tanstack/react-query";
-import { Alert } from "react-native";
+import type { FormType } from "@repo/models";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-export interface FormField {
-  active: boolean;
-  required: boolean;
-  sequence: number;
-  help_text: string;
-  shareable: boolean;
-  field_type: string;
+// Save form input type
+export interface SaveFormInput {
+  title: string;
   description: string;
-  display_label: string;
+  user_id: string;
+  form_type: FormType;
+  form_configuration: Array<{
+    field_type: string;
+    display_label: string;
+    description: string;
+    help_text: string;
+    active: boolean;
+    required: boolean;
+    shareable: boolean;
+    sequence: number;
+  }>;
 }
 
-export const useFetchForms = (userId: string, formType?: FormType) => {
+// Form response from API
+export interface FormResponse {
+  form: {
+    form_id: string;
+    title: string;
+    description: string | null;
+    version: number;
+    is_active: boolean;
+    created_date: string;
+    updated_date: string;
+    form_configuration: Array<{
+      field_type: string;
+      display_label: string;
+      description: string;
+      help_text: string;
+      active: boolean;
+      required: boolean;
+      shareable: boolean;
+      sequence: number;
+    }>;
+    user_id: string;
+    form_type: string;
+  };
+}
+
+// Fetch active form hook
+export const useFetchActiveForm = (userId: string, formType: FormType) => {
   return useQuery({
-    queryKey: ["forms", userId, formType],
+    queryKey: ["activeForm", userId, formType],
     queryFn: async () => {
-      const response = await apiClient.api.forms.$get({
+      const response = await apiClient.api.forms.active.$get({
         query: {
           user_id: userId,
-          ...(formType && { form_type: formType }),
+          form_type: formType,
         },
       });
 
       if (!response.ok) {
-        Alert.alert("Error", "Failed to load forms. Please try again.");
-        return [];
+        // If 404, no active form exists yet - return null
+        if (response.status === 404) {
+          return null;
+        }
+        throw new Error("Failed to fetch active form");
       }
 
-      const data = await response.json();
-      return data.forms as Form[];
+      const data = (await response.json()) as FormResponse;
+      return data.form;
     },
+    enabled: !!userId && !!formType,
   });
 };
 
-export const useFetchRequestForm = (userId: string) => {
-  return useQuery({
-    queryKey: ["forms", userId, FormType.REQUEST_FORM],
-    queryFn: async () => {
-      const response = await apiClient.api.forms.$get({
-        query: {
-          user_id: userId,
-          form_type: FormType.REQUEST_FORM,
+// Save form hook
+export const useSaveForm = (options?: {
+  onSuccess?: () => void;
+  onError?: (error: Error) => void;
+}) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (formData: SaveFormInput) => {
+      const response = await apiClient.api.forms.$post({
+        json: {
+          title: formData.title,
+          description: formData.description,
+          user_id: formData.user_id,
+          form_type: formData.form_type,
+          form_configuration: formData.form_configuration,
         },
       });
 
       if (!response.ok) {
-        Alert.alert("Error", "Failed to load request form. Please try again.");
-        return null;
+        const errorData = await response.json().catch(() => ({
+          error: "Failed to save form",
+        }));
+        const errorMessage =
+          typeof errorData.error === "string"
+            ? errorData.error
+            : JSON.stringify(errorData.error) || "Failed to save form";
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
-      const forms = data.forms as Form[];
-
-      if (forms.length === 0) {
-        return null;
-      }
-
-      const activeForm = forms.find((form) => form.is_active) || forms[0];
-      return activeForm || null;
+      return data.form;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["activeForm"] });
+      await queryClient.invalidateQueries({ queryKey: ["forms"] });
+      options?.onSuccess?.();
+    },
+    onError: (error: Error) => {
+      options?.onError?.(error);
     },
   });
 };

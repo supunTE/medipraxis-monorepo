@@ -3,6 +3,7 @@ import type {
   GetAllClientsQuery,
   GetClientByPhoneQuery,
   GetClientParam,
+  GetClientsByNameQuery,
   UpdateClientInput,
   UpdateClientParam,
 } from "@repo/models";
@@ -43,6 +44,26 @@ export class ClientController {
       return c.json({ error: message }, status);
     }
   }
+  static async getClientByContactId(
+    c: APIContext<{ param: GetClientParam }, "/:id">
+  ) {
+    try {
+      const clientService = getClientService(c);
+      const contactId = c.req.param("id");
+
+      const clients = await clientService.getClientByContactId(contactId);
+
+      return c.json({ clients });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to get clients";
+      const status =
+        error instanceof Error && error.message === "Clients not found"
+          ? 404
+          : 500;
+      return c.json({ error: message }, status);
+    }
+  }
 
   static async getClientByPhone(
     c: APIContext<{ query: GetClientByPhoneQuery }>
@@ -56,6 +77,29 @@ export class ClientController {
         countryCode!,
         contactNumber!
       );
+
+      if (clients.length === 0) {
+        return c.json({ exists: false, clients: [] });
+      }
+
+      return c.json({ exists: true, clients });
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to check client existence";
+      return c.json({ error: message }, 500);
+    }
+  }
+
+  static async getClientsByName(
+    c: APIContext<{ query: GetClientsByNameQuery }>
+  ) {
+    try {
+      const clientService = getClientService(c);
+      const name = c.req.query("name");
+
+      const clients = await clientService.getClientsByName(name!);
 
       if (clients.length === 0) {
         return c.json({ exists: false, clients: [] });

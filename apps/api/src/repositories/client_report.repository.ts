@@ -1,4 +1,4 @@
-import type { ClientReport } from "@repo/models";
+import type { ClientReport, ReportFileType } from "@repo/models";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { REQUEST_REPORT_QUERIES } from "./request_report.repository";
 
@@ -67,6 +67,7 @@ export class ClientReportRepository {
       user_id: string;
       request_report_id?: string;
       expiry_date?: string;
+      file_type?: ReportFileType;
     },
     filePath: string
   ): Promise<ClientReport> {
@@ -80,6 +81,10 @@ export class ClientReportRepository {
 
     if (input.expiry_date) {
       insertData["expiry_date"] = input.expiry_date;
+    }
+
+    if (input.file_type) {
+      insertData[CLIENT_REPORT_QUERIES.FILE_TYPE] = input.file_type;
     }
 
     const { data, error } = await this.db

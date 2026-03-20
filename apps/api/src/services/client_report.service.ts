@@ -1,12 +1,16 @@
-import type {
-  ClientReport,
-  CreateClientReportInput,
-  GroupedCompletedReport,
-  GroupedPendingReport,
-  PendingReport,
-  ReportFileUrlResponse,
+import {
+  ReportFileType,
+  type ClientReport,
+  type CreateClientReportInput,
+  type GroupedCompletedReport,
+  type GroupedPendingReport,
+  type PendingReport,
+  type ReportFileUrlResponse,
 } from "@repo/models";
-import { ClientReportRepository, UserRepository } from "../repositories";
+import {
+  type ClientReportRepository,
+  type UserRepository,
+} from "../repositories";
 import type { ClientRepository } from "../repositories/client.repository";
 import type { RequestReportRepository } from "../repositories/request_report.repository";
 
@@ -37,6 +41,10 @@ export class ClientReportService {
       "image/jpeg",
       "image/png",
       "image/jpg",
+      "application/x-epdf",
+      "application/x-ejpeg",
+      "application/x-ejpg",
+      "application/x-epng",
     ];
     const maxSize = 10 * 1024 * 1024; // 10MB
 
@@ -78,6 +86,25 @@ export class ClientReportService {
         input.client_id
       );
 
+      const isPdf = file.type === "application/pdf";
+      const isEncryptedPdf = file.type === "application/x-epdf";
+      const isImage = file.type.startsWith("image/");
+      const isEncryptedImage = [
+        "application/x-ejpeg",
+        "application/x-ejpg",
+        "application/x-epng",
+      ].includes(file.type);
+
+      const file_type = isPdf
+        ? ReportFileType.Pdf
+        : isImage
+          ? ReportFileType.Image
+          : isEncryptedPdf
+            ? ReportFileType.EncryptedPdf
+            : isEncryptedImage
+              ? ReportFileType.EncryptedImage
+              : undefined;
+
       // Create database record with individual report title
       const reportInput = {
         report_title: reportTitle,
@@ -85,6 +112,7 @@ export class ClientReportService {
         user_id: input.user_id,
         request_report_id: input.request_report_id,
         expiry_date: input.expiry_date,
+        file_type,
       };
 
       const createdReport = await this.clientReportRepository.create(

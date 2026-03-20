@@ -35,7 +35,9 @@ export class ClientReportController {
         user_id: body["user_id"] as string,
         request_report_id: body["request_report_id"] as string,
         expiry_date: body["expiry_date"] as string | undefined,
-        reports: filesWithTitles.map((item) => ({ report_title: item.title })),
+        reports: filesWithTitles.map((item) => ({
+          report_title: item.title,
+        })),
       };
 
       const files = filesWithTitles.map((item) => item.file);
@@ -45,6 +47,7 @@ export class ClientReportController {
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to create report";
+      console.error("Error creating report:", error);
       return c.json({ error: message }, 500);
     }
   }

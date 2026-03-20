@@ -8,7 +8,14 @@ export default [
   ...config,
   reactRefresh.configs.vite,
   {
-    ignores: ["jest.setup.cjs", "jest.config.cjs", "coverage", "junit.xml"],
+    ignores: [
+      "jest.setup.cjs",
+      "jest.config.cjs",
+      "coverage",
+      "junit.xml",
+      "playwright-report/**",
+      "test-results/**",
+    ],
   },
   {
     files: ["**/__tests__/**/*.[jt]s?(x)", "**/?(*.)+(spec|test).[jt]s?(x)"],
