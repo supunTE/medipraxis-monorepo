@@ -1,3 +1,4 @@
+import { useAuth } from "@/auth/AuthContext";
 import { useFocusEffect } from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
 import { Tabs } from "expo-router";
@@ -26,9 +27,9 @@ import { formatISOToTime } from "@/utils";
 import { type TaskDetails } from "@repo/models";
 import { PlusIcon } from "phosphor-react-native";
 
-const USER_ID = "2a3c19b8-d352-4b30-a2ac-1cdf993d310c";
-
 export default function ScheduleScreen() {
+  const { user } = useAuth();
+  const userId = user?.user_id ?? "";
   const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState(() => {
     const now = new Date();
@@ -50,9 +51,9 @@ export default function ScheduleScreen() {
     useState(false);
   const [viewReminderReadOnly, setViewReminderReadOnly] = useState(true);
 
-  const slotWindowsQuery = useGetSlotWindows(USER_ID, selectedDate);
-  const appointmentsQuery = useGetAppointments(USER_ID, selectedDate);
-  const remindersQuery = useGetReminders(USER_ID, selectedDate);
+  const slotWindowsQuery = useGetSlotWindows(userId, selectedDate);
+  const appointmentsQuery = useGetAppointments(userId, selectedDate);
+  const remindersQuery = useGetReminders(userId, selectedDate);
   const timeBlockGroups =
     slotWindowsQuery.timeBlockGroups as AgendaData["timeBlockGroups"];
   const appointments = appointmentsQuery.appointments;
@@ -61,9 +62,9 @@ export default function ScheduleScreen() {
   useFocusEffect(
     useCallback(() => {
       void Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["slot-windows", USER_ID] }),
-        queryClient.invalidateQueries({ queryKey: ["appointments", USER_ID] }),
-        queryClient.invalidateQueries({ queryKey: ["reminders", USER_ID] }),
+        queryClient.invalidateQueries({ queryKey: ["slot-windows", userId] }),
+        queryClient.invalidateQueries({ queryKey: ["appointments", userId] }),
+        queryClient.invalidateQueries({ queryKey: ["reminders", userId] }),
       ]);
     }, [queryClient])
   );

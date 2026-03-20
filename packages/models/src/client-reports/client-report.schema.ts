@@ -1,5 +1,14 @@
 import { z } from "zod";
 
+/* ---------------- ENUMS ---------------- */
+
+export enum ReportFileType {
+  Pdf = "PDF",
+  Image = "IMAGE",
+  EncryptedPdf = "EPDF",
+  EncryptedImage = "EIMAGE",
+}
+
 /* ---------------- RESPONSE SCHEMAS ---------------- */
 
 export const clientReportSchema = z.object({
@@ -26,6 +35,7 @@ export const createClientReportSchema = z
       .array(
         z.object({
           report_title: z.string().min(1, "Report title is required"),
+          file_type: z.string().nullable().optional(),
         })
       )
       .min(1, "At least one report is required"),

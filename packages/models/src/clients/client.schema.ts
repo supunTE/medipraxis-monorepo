@@ -148,6 +148,10 @@ export const getClientByPhoneQuerySchema = z.object({
   contact_number: z.string().regex(PHONE_REGEX, "Invalid phone number format"),
 });
 
+export const getClientsByNameQuerySchema = z.object({
+  name: z.string(),
+});
+
 export const updateClientSchema = z
   .object({
     title: z.string().optional(),
@@ -178,6 +182,7 @@ export type GetClientParam = z.infer<typeof getClientParamSchema>;
 export type UpdateClientParam = z.infer<typeof updateClientParamSchema>;
 export type GetAllClientsQuery = z.infer<typeof getAllClientsQuerySchema>;
 export type GetClientByPhoneQuery = z.infer<typeof getClientByPhoneQuerySchema>;
+export type GetClientsByNameQuery = z.infer<typeof getClientsByNameQuerySchema>;
 
 export type CreateClientInput = z.infer<typeof createClientSchema>;
 type RequireNonNull<T> = {

@@ -63,7 +63,8 @@ export function AddFieldModal({
         field_type: selectedFieldType,
         display_label: fieldName.trim(),
         required: isRequired,
-        shareable: isShareEnabled,
+        shareable:
+          formType === "1" || formType === "3" ? false : isShareEnabled,
       });
       // Reset form
       setSelectedFieldType("");
@@ -141,16 +142,19 @@ export function AddFieldModal({
                 />
               </View>
 
-              <View className="flex-1 flex-row justify-between items-center py-3 px-4 rounded-lg">
-                <Text className="font-medium text-sm text-black">
-                  Enable Share
-                </Text>
-                <ToggleButton
-                  size={ToggleSize.Medium}
-                  isActive={isShareEnabled}
-                  onToggle={setIsShareEnabled}
-                />
-              </View>
+              {/* Hide Enable Share for Client Details (1) and Request Reports (3) forms */}
+              {formType !== "1" && formType !== "3" && (
+                <View className="flex-1 flex-row justify-between items-center py-3 px-4 rounded-lg">
+                  <Text className="font-medium text-sm text-black">
+                    Enable Share
+                  </Text>
+                  <ToggleButton
+                    size={ToggleSize.Medium}
+                    isActive={isShareEnabled}
+                    onToggle={setIsShareEnabled}
+                  />
+                </View>
+              )}
             </View>
           </ScrollView>
 

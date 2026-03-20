@@ -1,4 +1,12 @@
-import { ButtonComponent, ButtonSize, TextComponent } from "@/components/basic";
+import { useAuth } from "@/auth/AuthContext";
+import {
+  ButtonComponent,
+  ButtonSize,
+  MessagePopup,
+  MessageType,
+  TextComponent,
+} from "@/components/basic";
+import { useFetchActiveForm, useSaveForm } from "@/services/forms";
 import {
   DMSans_400Regular,
   DMSans_500Medium,
@@ -6,9 +14,11 @@ import {
 } from "@expo-google-fonts/dm-sans";
 import { Lato_400Regular, Lato_700Bold } from "@expo-google-fonts/lato";
 import { Color, TextSize, TextVariant } from "@repo/config";
+import { FormType } from "@repo/models";
 import { useFonts } from "expo-font";
 import React, { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Modal,
   ScrollView,
   Text,
@@ -23,12 +33,42 @@ import type { Field, FormConfigProps, FormData } from "./formConfig.types";
 
 const formDataStore: Record<string, FormData> = {};
 
+// Map form IDs to FormType enum values
+const FORM_TYPE_MAPPING: Record<string, FormType> = {
+  "1": FormType.CLIENT_DETAILS,
+  "2": FormType.APPOINTMENT_RECORD,
+  "3": FormType.REQUEST_FORM,
+};
+
 export function FormConfig({
   visible,
   onClose,
   formTitle,
   formType,
 }: FormConfigProps) {
+  const { user } = useAuth();
+  const { mutate: saveForm, isPending: isSaving } = useSaveForm({
+    onSuccess: () => {
+      setMessageType(MessageType.Success);
+      setMessageText("Form saved successfully!");
+      setShowMessagePopup(true);
+    },
+    onError: (error: Error) => {
+      setMessageType(MessageType.Error);
+      setMessageText(error.message || "Failed to save the form");
+      setShowMessagePopup(true);
+    },
+  });
+
+  // Get the form type enum for API call
+  const formTypeEnum = formType ? FORM_TYPE_MAPPING[formType] : undefined;
+
+  // Fetch active form from API
+  const { data: activeForm, isLoading: isLoadingForm } = useFetchActiveForm(
+    user?.user_id || "",
+    formTypeEnum!
+  );
+
   const [fontsLoaded] = useFonts({
     DMSans_400Regular,
     DMSans_500Medium,
@@ -47,35 +87,90 @@ export function FormConfig({
   const [draggingFieldSequence, setDraggingFieldSequence] = useState<
     number | null
   >(null);
+
+  // Message popup state
+  const [showMessagePopup, setShowMessagePopup] = useState(false);
+  const [messageType, setMessageType] = useState<MessageType>(
+    MessageType.Success
+  );
+  const [messageText, setMessageText] = useState("");
   const draggingFieldSequenceRef = useRef<number | null>(null);
   const dragStartYRef = useRef<number>(0);
   const descriptionInputRef = useRef<any>(null);
 
-  // Load form data for the specific form type
+  // Load form data from API when component is visible and data is available
   useEffect(() => {
-    if (formType && visible) {
-      const savedFormData = formDataStore[formType];
+    if (visible && activeForm) {
+      // Map API response to Field type with icons
+      const mappedFields: Field[] = activeForm.form_configuration.map(
+        (field) => {
+          const fieldTypeOption = FIELD_TYPES.find(
+            (type) => type.id === field.field_type
+          );
+          const defaultIcon = FIELD_TYPES[0]?.icon;
+          return {
+            ...field,
+            icon: fieldTypeOption?.icon || defaultIcon!,
+          };
+        }
+      );
+
+      setFormDescription(activeForm.description || "");
+      setFields(mappedFields);
+
+      // Also update local store
+      if (formType) {
+        formDataStore[formType] = {
+          description: activeForm.description || "",
+          form_configuration: mappedFields,
+        };
+      }
+    } else if (visible && !isLoadingForm && !activeForm) {
+      // No active form exist
+      const savedFormData = formType ? formDataStore[formType] : undefined;
       if (savedFormData) {
         setFormDescription(savedFormData.description || "");
-        setFields(savedFormData.form_structure || []);
+        setFields(savedFormData.form_configuration || []);
       } else {
         setFormDescription("");
         setFields([]);
       }
     }
-  }, [formType, visible]);
+  }, [visible, activeForm, isLoadingForm, formType]);
 
   const handleSave = () => {
     // Save form data to the store for this form type
-    if (formType) {
-      const formData = {
-        description: formDescription,
-        form_structure: fields,
-      };
-      formDataStore[formType] = formData;
+    if (formType && user?.user_id) {
+      const formTypeEnum = FORM_TYPE_MAPPING[formType];
 
-      //TO DO: API call to save form struct
-      console.log("Form Data JSON:", JSON.stringify(formData, null, 2));
+      if (!formTypeEnum) {
+        console.error("Invalid form type:", formType);
+        return;
+      }
+
+      const formData = {
+        title: formTitle,
+        description: formDescription,
+        user_id: user.user_id,
+        form_type: formTypeEnum,
+        form_configuration: fields.map((field) => ({
+          field_type: field.field_type,
+          display_label: field.display_label,
+          description: field.description,
+          help_text: field.help_text,
+          active: field.active,
+          required: field.required,
+          shareable: field.shareable,
+          sequence: field.sequence,
+        })),
+      };
+
+      formDataStore[formType] = {
+        description: formDescription,
+        form_configuration: fields,
+      };
+
+      saveForm(formData);
     }
   };
 
@@ -273,97 +368,121 @@ export function FormConfig({
             </View>
           </View>
 
-          <ScrollView
-            contentContainerStyle={{ padding: 20, paddingBottom: 160 }}
-            keyboardShouldPersistTaps="handled"
-            scrollEnabled={!draggingFieldSequence}
-          >
-            {/* Title */}
-            <TextComponent
-              variant={TextVariant.Title}
-              size={TextSize.Large}
-              color={Color.Black}
-              className="mb-6"
-            >
-              {formTitle}
-            </TextComponent>
-
-            {/* Add/Edit Description */}
-            {formDescription || isDescriptionFocused ? (
-              <View className="mb-4">
-                <TextInput
-                  ref={descriptionInputRef}
-                  className="py-3 px-4 rounded-lg bg-white text-base"
-                  style={{
-                    borderColor: isDescriptionFocused
-                      ? Color.LightGrey
-                      : "transparent",
-                    borderWidth: 1,
-                    color: Color.Black,
-                  }}
-                  placeholder="Enter form description (max 200 words)"
-                  placeholderTextColor={Color.Grey}
-                  value={formDescription}
-                  onChangeText={handleDescriptionChange}
-                  onFocus={() => setIsDescriptionFocused(true)}
-                  onBlur={() => setIsDescriptionFocused(false)}
-                  multiline
-                  numberOfLines={3}
-                  textAlignVertical="top"
-                />
-              </View>
-            ) : (
-              <TouchableOpacity
-                className="py-4 px-4 rounded-lg bg-white mb-4"
-                onPress={() => {
-                  setIsDescriptionFocused(true);
-                  setTimeout(() => descriptionInputRef.current?.focus(), 100);
-                }}
-              >
-                <Text className="text-base" style={{ color: Color.Grey }}>
-                  + Add Description
-                </Text>
-              </TouchableOpacity>
-            )}
-
-            {/* Display Fields */}
-            {[...fields]
-              .sort((a, b) => a.sequence - b.sequence)
-              .map((field) => (
-                <FieldItem
-                  key={field.sequence}
-                  field={field}
-                  onPress={() => handleEditField(field.sequence)}
-                  onDragStart={() => handleDragStart(field.sequence)}
-                  onDragMove={(y: number) => handleDragMove(field.sequence, y)}
-                  onDragEnd={() => handleDragEnd(field.sequence)}
-                  isDragging={draggingFieldSequence === field.sequence}
-                />
-              ))}
-
-            {/* Add New Field Button */}
-            <TouchableOpacity
-              className="py-4 px-4 rounded-lg bg-black items-center"
-              onPress={handleAddNewField}
-            >
-              <Text className="font-semibold text-base text-white">
-                + Add New Field
+          {/* Loading indicator while fetching form */}
+          {isLoadingForm ? (
+            <View className="flex-1 justify-center items-center">
+              <ActivityIndicator size="large" color={Color.Green} />
+              <Text className="mt-4 text-base" style={{ color: Color.Grey }}>
+                Loading form configuration...
               </Text>
-            </TouchableOpacity>
-          </ScrollView>
+            </View>
+          ) : (
+            <>
+              <ScrollView
+                contentContainerStyle={{ padding: 20, paddingBottom: 160 }}
+                keyboardShouldPersistTaps="handled"
+                scrollEnabled={!draggingFieldSequence}
+              >
+                {/* Title */}
+                <TextComponent
+                  variant={TextVariant.Title}
+                  size={TextSize.Large}
+                  color={Color.Black}
+                  className="mb-6"
+                >
+                  {formTitle}
+                </TextComponent>
 
-          {/* Action Footer */}
-          <View
-            className="absolute bottom-0 w-full px-4 py-5 border-t bg-white"
-            style={{ borderTopColor: Color.LightGrey, borderTopWidth: 1 }}
-          >
-            <TouchableOpacity
-              className="bg-black py-3 px-6 rounded-lg items-center"
-              onPress={handleSave}
-            >
-              <Text className="font-semibold text-white text-base">Save</Text>
-            </TouchableOpacity>
-          </View>
+                {/* Add/Edit Description */}
+                {formDescription || isDescriptionFocused ? (
+                  <View className="mb-4">
+                    <TextInput
+                      ref={descriptionInputRef}
+                      className="py-3 px-4 rounded-lg bg-white text-base"
+                      style={{
+                        borderColor: isDescriptionFocused
+                          ? Color.LightGrey
+                          : "transparent",
+                        borderWidth: 1,
+                        color: Color.Black,
+                      }}
+                      placeholder="Enter form description (max 200 words)"
+                      placeholderTextColor={Color.Grey}
+                      value={formDescription}
+                      onChangeText={handleDescriptionChange}
+                      onFocus={() => setIsDescriptionFocused(true)}
+                      onBlur={() => setIsDescriptionFocused(false)}
+                      multiline
+                      numberOfLines={3}
+                      textAlignVertical="top"
+                    />
+                  </View>
+                ) : (
+                  <TouchableOpacity
+                    className="py-4 px-4 rounded-lg bg-white mb-4"
+                    onPress={() => {
+                      setIsDescriptionFocused(true);
+                      setTimeout(
+                        () => descriptionInputRef.current?.focus(),
+                        100
+                      );
+                    }}
+                  >
+                    <Text className="text-base" style={{ color: Color.Grey }}>
+                      + Add Description
+                    </Text>
+                  </TouchableOpacity>
+                )}
+
+                {/* Display Fields */}
+                {[...fields]
+                  .sort((a, b) => a.sequence - b.sequence)
+                  .map((field) => (
+                    <FieldItem
+                      key={field.sequence}
+                      field={field}
+                      onPress={() => handleEditField(field.sequence)}
+                      onDragStart={() => handleDragStart(field.sequence)}
+                      onDragMove={(y: number) =>
+                        handleDragMove(field.sequence, y)
+                      }
+                      onDragEnd={() => handleDragEnd(field.sequence)}
+                      isDragging={draggingFieldSequence === field.sequence}
+                    />
+                  ))}
+
+                {/* Add New Field Button */}
+                <TouchableOpacity
+                  className="py-4 px-4 rounded-lg bg-black items-center"
+                  onPress={handleAddNewField}
+                >
+                  <Text className="font-semibold text-base text-white">
+                    + Add New Field
+                  </Text>
+                </TouchableOpacity>
+              </ScrollView>
+
+              {/* Action Footer */}
+              <View
+                className="absolute bottom-0 w-full px-4 py-5 border-t bg-white"
+                style={{ borderTopColor: Color.LightGrey, borderTopWidth: 1 }}
+              >
+                <TouchableOpacity
+                  className="bg-black py-3 px-6 rounded-lg items-center"
+                  onPress={handleSave}
+                  disabled={isSaving}
+                >
+                  {isSaving ? (
+                    <ActivityIndicator size="small" color={Color.White} />
+                  ) : (
+                    <Text className="font-semibold text-white text-base">
+                      Save
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </>
+          )}
         </View>
       </Modal>
 
@@ -378,6 +497,14 @@ export function FormConfig({
         onDelete={handleDeleteField}
         editingField={getEditingFieldData()}
         formType={formType}
+      />
+
+      {/* Message Popup */}
+      <MessagePopup
+        visible={showMessagePopup}
+        type={messageType}
+        message={messageText}
+        onClose={() => setShowMessagePopup(false)}
       />
     </>
   );

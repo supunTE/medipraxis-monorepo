@@ -479,7 +479,6 @@ export default function TaskForm({ visible, onClose }: Props) {
           {eventType === EVENT_TYPES.TASK && (
             <View className="mt-2.5 flex-row items-center">
               <CheckboxComponent
-                value="alarm"
                 label="Do you want to set an alarm"
                 isChecked={alarm}
                 onChange={(checked) => setField("alarm", checked)}

@@ -3,6 +3,7 @@ import { z } from "zod";
 export enum FormType {
   REQUEST_FORM = "REQUEST_FORM",
   APPOINTMENT_RECORD = "APPOINTMENT_RECORD",
+  CLIENT_DETAILS = "CLIENT_DETAILS",
 }
 
 export interface Form {
@@ -19,7 +20,7 @@ export interface Form {
 }
 
 export const formFieldSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string().uuid().optional(),
   active: z.boolean(),
   sequence: z.number(),
   help_text: z.string(),
@@ -34,7 +35,6 @@ export const formFieldSchema = z.object({
 export const createFormSchema = z.object({
   title: z.string().min(1),
   description: z.string().optional().nullable(),
-  is_active: z.boolean().optional().default(true),
   form_configuration: z.array(formFieldSchema),
   user_id: z.string().uuid(),
   form_type: z.nativeEnum(FormType),

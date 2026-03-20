@@ -3,6 +3,7 @@ import {
   BellIcon,
   CalendarIcon,
   CalendarBlankIcon,
+  CalendarCheckIcon,
   CalendarDotsIcon,
   CaretDownIcon,
   CaretLeftIcon,
@@ -61,6 +62,7 @@ export const Icons = {
   UploadIcon: UploadIcon,
   Bell: BellIcon,
   Gear: GearIcon,
+  CalendarCheckIcon: CalendarCheckIcon,
 } as const;
 
 export type IconName = keyof typeof Icons;

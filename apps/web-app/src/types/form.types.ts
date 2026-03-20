@@ -1,10 +1,8 @@
 export const FormFieldType = {
-  TEXT: "text",
-  TEXTAREA: "textarea",
-  NUMBER: "number",
-  SINGLE_SELECT: "single_select",
-  MULTI_SELECT: "multi_select",
-  FILE_UPLOAD: "file_upload",
+  TEXT: "single-text",
+  TEXTAREA: "multi-text",
+  NUMBER: "numeric",
+  FILE_UPLOAD: "upload-attachment",
   DATE: "date",
 } as const;
 

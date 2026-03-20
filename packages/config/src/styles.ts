@@ -29,8 +29,10 @@ export enum Color {
   Grey = "#7D7D7D", // For Placeholder text
   LightGrey = "#D3D3D3", // For borders
   Danger = "#FF5757",
+  DangerDark = "#DC2626",
   Success = "#44B619",
   Warning = "#FFA500",
+  Transparent = "transparent",
 }
 
 // Variant and Size enums

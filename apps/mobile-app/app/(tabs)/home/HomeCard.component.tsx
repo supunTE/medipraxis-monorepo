@@ -1,3 +1,4 @@
+import { useAuth } from "@/auth/AuthContext";
 import { Icons } from "@/config";
 import { useFetchTaskSummary } from "@/services/tasks/useTaskSummary";
 import { useFetchUser } from "@/services/user";
@@ -29,7 +30,6 @@ import {
   Text as SvgText,
 } from "react-native-svg";
 
-const HARDCODED_USER_ID = "2a3c19b8-d352-4b30-a2ac-1cdf993d310c";
 const IMG_SIZE = 120;
 
 const fontFamilyMap: { [key in Font]: string } = {
@@ -106,17 +106,18 @@ interface HomeCardProps {
 const BellIcon = Icons.Bell;
 const SettingsIcon = Icons.Gear;
 
-export default function HomeCard({
+export function HomeCard({
   onNotificationPress,
   onSettingsPress,
   notificationCount = 8,
 }: HomeCardProps) {
+  const { user: authUser } = useAuth();
+  const userId = authUser?.user_id ?? "";
   const today = getLocalDateString();
 
-  const { data: user, isLoading: userLoading } =
-    useFetchUser(HARDCODED_USER_ID);
+  const { data: user, isLoading: userLoading } = useFetchUser(userId);
   const { data: taskSummary, isLoading: summaryLoading } = useFetchTaskSummary(
-    HARDCODED_USER_ID,
+    userId,
     today
   );
 
@@ -140,7 +141,6 @@ export default function HomeCard({
       imageStyle={{ borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}
       resizeMode="cover"
     >
-      {/* Date + Icons Row */}
       <View className="flex-row justify-between items-center px-5 pt-5">
         <Text style={{ color: Color.Black, fontSize: 14, fontWeight: "500" }}>
           {getFormattedDate()}
@@ -169,7 +169,6 @@ export default function HomeCard({
         </View>
       </View>
 
-      {/* Greeting + Name */}
       <View className="px-5 pt-3">
         <Text style={{ color: Color.Black, fontSize: 32, fontWeight: "700" }}>
           {getGreeting()}
