@@ -2,10 +2,10 @@ import { View } from "@/components/Themed";
 import { TextComponent } from "@/components/basic";
 import { Icons, type IconName } from "@/config";
 import { Color, TextSize, TextVariant } from "@repo/config";
+import { type Client } from "@repo/models";
 import React, { useRef } from "react";
 import { Animated, TouchableOpacity, type ViewStyle } from "react-native";
 import { SameContactSection } from "./SameContactSection.component";
-import { Client } from "@repo/models";
 
 // Client card props
 interface ClientCardProps {

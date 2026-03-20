@@ -127,7 +127,7 @@ const originalTextStyles: TextMapping = {
     [TextSize.Large]: {
       fontFamily: Font.DMsans,
       fontSize: 14,
-      fontWeight: FontWeight.Regular,
+      fontWeight: FontWeight.SemiBold,
       fontStyle: FontStyle.Normal,
     },
   },
