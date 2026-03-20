@@ -199,6 +199,7 @@ export default function TabLayout() {
           name="clients/index"
           options={{
             title: "Clients",
+            headerShown: false,
             tabBarIcon: ({ focused }) => (
               <CustomTabIcon name="user" focused={focused} />
             ),
@@ -209,6 +210,7 @@ export default function TabLayout() {
           name="reports/index"
           options={{
             title: "Reports",
+            headerShown: false,
             tabBarIcon: ({ focused }) => (
               <CustomTabIcon name="folder" focused={focused} />
             ),

@@ -13,10 +13,11 @@ import {
   View,
   type TextStyle as RNTextStyle,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ReportTile } from "./ReportTile.component";
 
 const SEARCH_ICON_SIZE = 20;
-const INPUT_HEIGHT = 56;
+const INPUT_HEIGHT = 54;
 const INPUT_BORDER_WIDTH = 1.5;
 const INPUT_BORDER_RADIUS = 12;
 const BOTTOM_PADDING = 100;
@@ -26,6 +27,7 @@ type TabType = "completed" | "pending";
 const textLargeStyle = textStyles[TextVariant.Body][TextSize.Large];
 
 export default function ReportsScreen() {
+  const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const userId = user?.user_id ?? "";
   const [searchQuery, setSearchQuery] = useState("");
@@ -86,7 +88,10 @@ export default function ReportsScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white px-5 pt-5">
+    <View
+      className="flex-1 bg-white"
+      style={{ paddingTop: insets.top + 20, paddingHorizontal: 20 }}
+    >
       {/* Header with Title and Button */}
       <View className="flex-row justify-between items-center mb-5">
         <TextComponent
