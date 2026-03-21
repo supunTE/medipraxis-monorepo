@@ -82,7 +82,6 @@ export const createReminder = ai.defineTool(
         ),
       start_date: z
         .string()
-        .optional()
         .describe("Reminder start date-time in ISO format"),
       note: z.string().optional().describe("Optional reminder note"),
       set_alarm: z
@@ -92,7 +91,9 @@ export const createReminder = ai.defineTool(
       client_id: z
         .string()
         .optional()
-        .describe("Optional client ID linked to the reminder"),
+        .describe(
+          "Optional client identifier from user input. This will be converted into note text and will not be attached as client_id."
+        ),
     }),
     outputSchema: z.object({
       success: z.boolean(),
@@ -102,13 +103,23 @@ export const createReminder = ai.defineTool(
   },
   async (input) => {
     const userId = getUserId();
+    const noteWithClientContext = input.client_id
+      ? [input.note, `Client mentioned: ${input.client_id}`]
+          .filter(Boolean)
+          .join(" | ")
+      : input.note;
 
     const res = await apiClient.api.tasks.$post(
       {
         json: {
-          ...input,
+          task_title: input.task_title,
+          end_date: input.end_date,
+          start_date: input.start_date,
+          note: noteWithClientContext,
+          set_alarm: input.set_alarm,
           user_id: userId,
           task_type_id: REMINDER_TASK_TYPE_ID,
+          client_id: undefined,
         },
       },
       {
