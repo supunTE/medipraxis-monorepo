@@ -80,9 +80,7 @@ export const createReminder = ai.defineTool(
         .describe(
           "Reminder due date-time in ISO format (e.g. 2026-03-22T14:30:00Z)"
         ),
-      start_date: z
-        .string()
-        .describe("Reminder start date-time in ISO format"),
+      start_date: z.string().describe("Reminder start date-time in ISO format"),
       note: z.string().optional().describe("Optional reminder note"),
       set_alarm: z
         .boolean()
