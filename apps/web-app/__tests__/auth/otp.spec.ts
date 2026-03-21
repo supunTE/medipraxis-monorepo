@@ -26,9 +26,9 @@ async function mockAndSubmitPhone(page: Page, phoneNumber = "0771234567") {
   await page.goto(PHONE_ENTRY_URL);
   await page.fill("#phoneNumber", phoneNumber);
   await page.getByRole("button", { name: "Continue" }).click();
-  await expect(
-    page.getByText("Enter 5 digit verification code")
-  ).toBeVisible({ timeout: 10000 });
+  await expect(page.getByText("Enter 5 digit verification code")).toBeVisible({
+    timeout: 10000,
+  });
 }
 
 async function fillOtp(page: Page, digits: string) {
@@ -38,8 +38,13 @@ async function fillOtp(page: Page, digits: string) {
   }
 }
 
-function hasClass(locator: ReturnType<Page["locator"]>, cls: string): Promise<string | null> {
-  return locator.getAttribute("class").then((c) => (c?.includes(cls) ? cls : null));
+function hasClass(
+  locator: ReturnType<Page["locator"]>,
+  cls: string
+): Promise<string | null> {
+  return locator
+    .getAttribute("class")
+    .then((c) => (c?.includes(cls) ? cls : null));
 }
 
 test.describe("OTP Phone Entry", () => {
@@ -183,9 +188,7 @@ test.describe("OTP Verification Form", () => {
     await fillOtp(page, "123");
     await page.getByRole("button", { name: "Verify" }).click();
 
-    await expect(
-      page.getByText("Please enter the 5-digit OTP")
-    ).toBeVisible();
+    await expect(page.getByText("Please enter the 5-digit OTP")).toBeVisible();
   });
 
   test("should navigate to dashboard on correct OTP", async ({ page }) => {

@@ -36,17 +36,33 @@ function makeMockRepo(
   overrides: Partial<ClientRepository> = {}
 ): jest.Mocked<ClientRepository> {
   return {
-    findAll: jest.fn<ClientRepository["findAll"]>().mockResolvedValue([mockClient]),
-    findById: jest.fn<ClientRepository["findById"]>().mockResolvedValue(mockClient),
-    findByContactId: jest.fn<ClientRepository["findByContactId"]>().mockResolvedValue([mockClient]),
-    findByPhone: jest.fn<ClientRepository["findByPhone"]>().mockResolvedValue([mockClient]),
-    findByName: jest.fn<ClientRepository["findByName"]>().mockResolvedValue([mockClient]),
+    findAll: jest
+      .fn<ClientRepository["findAll"]>()
+      .mockResolvedValue([mockClient]),
+    findById: jest
+      .fn<ClientRepository["findById"]>()
+      .mockResolvedValue(mockClient),
+    findByContactId: jest
+      .fn<ClientRepository["findByContactId"]>()
+      .mockResolvedValue([mockClient]),
+    findByPhone: jest
+      .fn<ClientRepository["findByPhone"]>()
+      .mockResolvedValue([mockClient]),
+    findByName: jest
+      .fn<ClientRepository["findByName"]>()
+      .mockResolvedValue([mockClient]),
     create: jest.fn<ClientRepository["create"]>().mockResolvedValue(mockClient),
     update: jest.fn<ClientRepository["update"]>().mockResolvedValue(mockClient),
     delete: jest.fn<ClientRepository["delete"]>().mockResolvedValue(true),
-    findContactInfo: jest.fn<ClientRepository["findContactInfo"]>().mockResolvedValue(mockContactInfo),
-    createContactInfo: jest.fn<ClientRepository["createContactInfo"]>().mockResolvedValue(mockContactInfo),
-    findContactInfoById: jest.fn<ClientRepository["findContactInfoById"]>().mockResolvedValue(mockContactInfo),
+    findContactInfo: jest
+      .fn<ClientRepository["findContactInfo"]>()
+      .mockResolvedValue(mockContactInfo),
+    createContactInfo: jest
+      .fn<ClientRepository["createContactInfo"]>()
+      .mockResolvedValue(mockContactInfo),
+    findContactInfoById: jest
+      .fn<ClientRepository["findContactInfoById"]>()
+      .mockResolvedValue(mockContactInfo),
     ...overrides,
   } as jest.Mocked<ClientRepository>;
 }
