@@ -14,10 +14,35 @@ import "../global.css";
 import { useColorScheme } from "@/components/useColorScheme";
 
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+import { mmkvClientStorage } from "@/lib/mmkv";
+import NetInfo from "@react-native-community/netinfo";
+import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
+import { QueryClient, onlineManager } from "@tanstack/react-query";
+import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { AuthProvider, useAuth } from "../auth/AuthContext";
 
-const queryClient = new QueryClient();
+// Sync online/offline state with React Query
+onlineManager.setEventListener((setOnline) => {
+  return NetInfo.addEventListener((state) => {
+    setOnline(!!state.isConnected);
+  });
+});
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      gcTime: 1000 * 60 * 60 * 24, // 24h — keep cached data on disk
+      staleTime: 1000 * 60 * 5, // 5 min — avoid unnecessary refetches
+      retry: 2,
+      networkMode: "offlineFirst",
+    },
+  },
+});
+
+const persister = createAsyncStoragePersister({
+  storage: mmkvClientStorage,
+});
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -59,7 +84,18 @@ function RootLayoutNav() {
           <ThemeProvider
             value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
           >
-            <QueryClientProvider client={queryClient}>
+            <PersistQueryClientProvider
+              client={queryClient}
+              persistOptions={{
+                persister,
+                maxAge: 1000 * 60 * 60 * 24,
+                dehydrateOptions: {
+                  shouldDehydrateQuery: (query) =>
+                    query.state.status === "success" &&
+                    query.meta?.persist === true,
+                },
+              }}
+            >
               <Stack>
                 <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                 <Stack.Screen
@@ -79,7 +115,7 @@ function RootLayoutNav() {
                   options={{ headerShown: false, gestureEnabled: false }}
                 />
               </Stack>
-            </QueryClientProvider>
+            </PersistQueryClientProvider>
           </ThemeProvider>
         </AuthWrapper>
       </AuthProvider>
