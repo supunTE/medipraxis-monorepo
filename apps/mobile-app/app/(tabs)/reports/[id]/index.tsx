@@ -126,7 +126,10 @@ export default function ReportViewerScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 bg-white justify-center items-center" style={{ paddingTop: insets.top }}>
+      <View
+        className="flex-1 bg-white justify-center items-center"
+        style={{ paddingTop: insets.top }}
+      >
         <ActivityIndicator size="large" color={Color.Green} />
         <TextComponent
           variant={TextVariant.Body}

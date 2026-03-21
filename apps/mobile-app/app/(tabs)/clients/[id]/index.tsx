@@ -252,7 +252,10 @@ export default function ClientDetailScreen() {
 
   if (isLoading) {
     return (
-      <View className="flex-1 bg-white justify-center items-center" style={{ paddingTop: insets.top }}>
+      <View
+        className="flex-1 bg-white justify-center items-center"
+        style={{ paddingTop: insets.top }}
+      >
         <ActivityIndicator size="large" color={Color.Green} />
       </View>
     );
@@ -260,7 +263,10 @@ export default function ClientDetailScreen() {
 
   if (!client) {
     return (
-      <View className="flex-1 bg-white justify-center items-center gap-4" style={{ paddingTop: insets.top }}>
+      <View
+        className="flex-1 bg-white justify-center items-center gap-4"
+        style={{ paddingTop: insets.top }}
+      >
         <TextComponent
           variant={TextVariant.Body}
           size={TextSize.Medium}
