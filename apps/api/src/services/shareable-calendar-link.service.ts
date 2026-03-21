@@ -1,4 +1,5 @@
 import type {
+  ShareableCalendarLink,
   ShareableCalendarLinkWithSlotWindows,
   SlotWindowForClient,
 } from "@repo/models";
@@ -117,5 +118,13 @@ export class ShareableCalendarLinkService {
       clientReservedSlotWindowIds,
       clientReservedAppointments,
     };
+  }
+
+  async getShareableCalendarLinkByUserId(
+    userId: string
+  ): Promise<ShareableCalendarLink | null> {
+    const link =
+      await this.shareableCalendarLinkRepository.findByUserId(userId);
+    return link;
   }
 }

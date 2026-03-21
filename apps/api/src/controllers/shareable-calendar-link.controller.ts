@@ -1,5 +1,6 @@
 import type {
   GetClientAppointmentsByLinkQuery,
+  GetShareableCalendarLinkByUserIdParam,
   GetShareableCalendarLinkParam,
 } from "@repo/models";
 import { getShareableCalendarLinkService } from "../lib";
@@ -36,6 +37,35 @@ export class ShareableCalendarLinkController {
           error.message.includes("deleted"))
           ? 404
           : 500;
+      return c.json({ error: message }, status);
+    }
+  }
+
+  static async getShareableCalendarLinkByUserId(
+    c: APIContext<{
+      param: GetShareableCalendarLinkByUserIdParam;
+    }>
+  ) {
+    try {
+      const shareableCalendarLinkService = getShareableCalendarLinkService(c);
+      const userId = c.req.param("userId") as string;
+
+      const link =
+        await shareableCalendarLinkService.getShareableCalendarLinkByUserId(
+          userId
+        );
+
+      if (!link) {
+        return c.json({ success: true, data: null });
+      }
+
+      return c.json({ success: true, data: link });
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch shareable calendar link";
+      const status = 500;
       return c.json({ error: message }, status);
     }
   }

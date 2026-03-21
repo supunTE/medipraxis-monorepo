@@ -1,4 +1,7 @@
-import type { ShareableCalendarLinkWithUser } from "@repo/models";
+import type {
+  ShareableCalendarLink,
+  ShareableCalendarLinkWithUser,
+} from "@repo/models";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export const SHAREABLE_CALENDAR_LINK_QUERIES = {
@@ -7,6 +10,12 @@ export const SHAREABLE_CALENDAR_LINK_QUERIES = {
     user_id,
     visible_days_ahead,
     user:user_id (first_name, last_name)
+  `,
+  FIND_BY_USER_ID: `
+    link_id,
+    user_id,
+    visible_days_ahead,
+    expiry_date
   `,
 } as const;
 
@@ -49,5 +58,29 @@ export class ShareableCalendarLinkRepository {
     };
 
     return result;
+  }
+
+  async findByUserId(userId: string): Promise<ShareableCalendarLink | null> {
+    const { data, error } = await this.db
+      .from("shareable_calendar_link")
+      .select(SHAREABLE_CALENDAR_LINK_QUERIES.FIND_BY_USER_ID)
+      .eq("user_id", userId)
+      .eq("is_deleted", false)
+      .or(`expiry_date.is.null,expiry_date.gt.${new Date().toISOString()}`)
+      .maybeSingle();
+
+    if (error || !data) {
+      return null;
+    }
+
+    return {
+      link_id: data.link_id as string,
+      user_id: data.user_id as string,
+      visible_days_ahead: data.visible_days_ahead as number,
+      expiry_date: data.expiry_date as string,
+      days_until_expiry: 0,
+      created_date: "",
+      is_deleted: false,
+    };
   }
 }

@@ -19,6 +19,10 @@ export const getShareableCalendarLinkParamSchema = z.object({
   id: z.string(),
 });
 
+export const getShareableCalendarLinkByUserIdParamSchema = z.object({
+  userId: z.string(),
+});
+
 export const getClientAppointmentsByLinkQuerySchema = z.object({
   client_id: z.string(),
 });
@@ -38,6 +42,10 @@ export type ShareableCalendarLinkWithUser = Omit<
 
 export type GetShareableCalendarLinkParam = z.infer<
   typeof getShareableCalendarLinkParamSchema
+>;
+
+export type GetShareableCalendarLinkByUserIdParam = z.infer<
+  typeof getShareableCalendarLinkByUserIdParamSchema
 >;
 
 export type GetClientAppointmentsByLinkQuery = z.infer<
