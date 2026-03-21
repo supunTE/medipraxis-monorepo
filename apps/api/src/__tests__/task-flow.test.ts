@@ -44,7 +44,9 @@ type MockTaskContext = {
 const buildMockContext = (): MockTaskContext => ({
   req: {
     valid: jest.fn() as jest.MockedFunction<(target: string) => unknown>,
-    query: jest.fn() as jest.MockedFunction<(key: string) => string | undefined>,
+    query: jest.fn() as jest.MockedFunction<
+      (key: string) => string | undefined
+    >,
     param: jest.fn() as jest.MockedFunction<(key: string) => string>,
   },
   json: jest.fn(),
@@ -207,10 +209,7 @@ describe("Task flow", () => {
       toApiContext<{ param: { id: string } }, "/:id">(context)
     );
 
-    expect(context.json).toHaveBeenCalledWith(
-      { error: "Task not found" },
-      404
-    );
+    expect(context.json).toHaveBeenCalledWith({ error: "Task not found" }, 404);
   });
 
   type RepositorySubset = Pick<
@@ -246,9 +245,7 @@ describe("Task flow", () => {
       if (type === TaskType.APPOINTMENT) return appointmentTypeId;
       return null;
     });
-    repositoryMock.getTaskStatusByName.mockResolvedValue(
-      notStartedStatusId
-    );
+    repositoryMock.getTaskStatusByName.mockResolvedValue(notStartedStatusId);
     const createdTask: Task = {
       task_id: "task-1",
       task_title: "Follow up",
