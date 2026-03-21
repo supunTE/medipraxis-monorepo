@@ -1,5 +1,11 @@
 import { useAuth } from "@/auth/AuthContext";
-import { ButtonComponent, ButtonSize, TextComponent } from "@/components/basic";
+import {
+  ButtonComponent,
+  ButtonSize,
+  DateTimePickerComponent,
+  NumberDropdownComponent,
+  TextComponent,
+} from "@/components/basic";
 import { ChipComponent, ChipVariant } from "@/components/basic/Chip.component";
 import { Input, InputField, InputSlot } from "@/components/ui/input";
 import { Icons } from "@/config";
@@ -12,6 +18,7 @@ import React, { useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
+  Modal,
   Platform,
   Pressable,
   SafeAreaView,
@@ -67,6 +74,9 @@ export default function ClientDetailScreen() {
   const [showLeftShadow, setShowLeftShadow] = useState(false);
   const [showRightShadow, setShowRightShadow] = useState(true);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [showShareCalendarModal, setShowShareCalendarModal] = useState(false);
+  const [visibleDaysAhead, setVisibleDaysAhead] = useState(7);
+  const [expiryDate, setExpiryDate] = useState("");
   const optionsButtonRef = useRef<View>(null);
 
   const getDaySuffix = (day: number): string => {
@@ -375,9 +385,7 @@ export default function ClientDetailScreen() {
                     buttonColor={Color.Black}
                     textColor={Color.White}
                     iconColor={Color.White}
-                    onPress={() =>
-                      console.log("Share calendar:", client.client_id)
-                    }
+                    onPress={() => setShowShareCalendarModal(true)}
                   >
                     Share Calendar
                   </ButtonComponent>
@@ -657,6 +665,95 @@ export default function ClientDetailScreen() {
           activeOpacity={1}
         />
       )}
+
+      {/* Share Calendar Modal */}
+      <Modal visible={showShareCalendarModal} transparent animationType="fade">
+        <View className="flex-1 bg-black/50 justify-center items-center px-5">
+          <View className="bg-white rounded-2xl w-full max-w-[400px] overflow-hidden">
+            {/* Header */}
+            <View className="px-5 pt-5 pb-4">
+              <TextComponent
+                variant={TextVariant.Title}
+                size={TextSize.Medium}
+                color={Color.Black}
+              >
+                Share Calendar
+              </TextComponent>
+              <TextComponent
+                variant={TextVariant.Body}
+                size={TextSize.Small}
+                color={Color.Grey}
+                style={{ marginTop: 4 }}
+              >
+                Create a shareable link for your appointment calendar
+              </TextComponent>
+            </View>
+
+            {/* Content */}
+            <View className="px-5 py-5 gap-5">
+              {/* Visible Days Ahead */}
+              <NumberDropdownComponent
+                value={visibleDaysAhead}
+                onValueChange={setVisibleDaysAhead}
+                maxNumber={7}
+                minNumber={1}
+                label="Visible days ahead"
+                placeholder="Select number of days"
+              />
+
+              {/* Link Expiry Date */}
+              <DateTimePickerComponent
+                label="Link expiry date"
+                value={expiryDate}
+                onChange={setExpiryDate}
+                placeholder="Select expiry date"
+                mode="date"
+              />
+            </View>
+
+            {/* Action Buttons */}
+            <View className="px-5 pb-5 flex-row gap-3">
+              <View className="flex-1">
+                <TouchableOpacity
+                  className="py-3 px-6 rounded-lg items-center border border-gray-300"
+                  onPress={() => setShowShareCalendarModal(false)}
+                >
+                  <TextComponent
+                    variant={TextVariant.Button}
+                    size={TextSize.Medium}
+                    color={Color.Black}
+                  >
+                    Cancel
+                  </TextComponent>
+                </TouchableOpacity>
+              </View>
+              <View className="flex-1">
+                <TouchableOpacity
+                  className="py-3 px-6 rounded-lg items-center"
+                  style={{ backgroundColor: Color.Green }}
+                  onPress={() => {
+                    // TODO: Implement share calendar logic
+                    console.log("Share calendar with:", {
+                      clientId: client?.client_id,
+                      visibleDaysAhead,
+                      expiryDate,
+                    });
+                    setShowShareCalendarModal(false);
+                  }}
+                >
+                  <TextComponent
+                    variant={TextVariant.Button}
+                    size={TextSize.Medium}
+                    color={Color.White}
+                  >
+                    Share
+                  </TextComponent>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
