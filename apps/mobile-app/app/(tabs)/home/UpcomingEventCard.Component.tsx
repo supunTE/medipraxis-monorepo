@@ -122,10 +122,10 @@ function EventCard({
         paddingVertical: 12,
         paddingHorizontal: 14,
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.07,
-        shadowRadius: 3,
-        elevation: 2,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.05,
+        shadowRadius: 16,
+        elevation: 1,
       }}
     >
       {/* Icon */}

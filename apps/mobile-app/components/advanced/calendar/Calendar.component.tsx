@@ -10,6 +10,7 @@ import { CaretLeftIcon, CaretRightIcon } from "phosphor-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Animated,
+  Easing,
   Pressable,
   ScrollView,
   Text,
@@ -42,6 +43,7 @@ interface CalendarComponentProps {
   agendaData?: AgendaData;
   selectedDate?: string;
   onDateChange?: (date: string) => void;
+  agendaHeaderRightAction?: React.ReactNode;
   onAppointmentPress?: (
     appointment: AgendaBlockContent,
     groupId: string | null
@@ -135,12 +137,13 @@ export function CalendarComponent({
   agendaData,
   selectedDate,
   onDateChange,
+  agendaHeaderRightAction,
   onAppointmentPress,
   onEmptySlotPress,
   onReminderPress,
 }: CalendarComponentProps = {}) {
   const [isExpanded, setIsExpanded] = useState(false);
-  // Controls which calendar component renders - switches with animation timing
+  // Controls which calendar component renders
   const [showFullCalendar, setShowFullCalendar] = useState(false);
   const today = new Date().toISOString().split("T")[0] || "";
   const selected = selectedDate || today;
@@ -160,41 +163,68 @@ export function CalendarComponent({
 
   // Animation values
   const animatedHeight = useRef(new Animated.Value(0)).current;
-  const animatedOpacity = useRef(new Animated.Value(1)).current;
+  const calendarOpacity = useRef(new Animated.Value(1)).current;
+  const isCollapsingTransition = useRef(false);
 
   useEffect(() => {
-    // When expanding, show full calendar immediately and sync weekRows
-    // to the selected date's month (Calendar remounts on that month)
-    if (isExpanded) {
-      const d = new Date(selected);
-      setWeekRows(getWeekRowCount(d.getFullYear(), d.getMonth() + 1));
-      setShowFullCalendar(true);
-    }
-
-    Animated.parallel([
-      Animated.timing(animatedHeight, {
-        toValue: isExpanded ? 1 : 0,
-        duration: 300,
-        // use js thread to avoid issues
-        useNativeDriver: false,
-      }),
-      Animated.timing(animatedOpacity, {
-        toValue: 1,
-        duration: 200,
-        // use js thread to avoid issues
-        useNativeDriver: false,
-      }),
-    ]).start(() => {
-      // When collapsing, switch to week calendar after animation completes
-      if (!isExpanded) {
-        setShowFullCalendar(false);
+    Animated.timing(animatedHeight, {
+      toValue: isExpanded ? 1 : 0,
+      duration: isExpanded ? 260 : 220,
+      easing: Easing.out(Easing.cubic),
+      // height animation requires JS driver
+      useNativeDriver: false,
+    }).start(({ finished }) => {
+      if (finished && !isExpanded) {
+        if (isCollapsingTransition.current) {
+          // Mount week view first at low opacity, then fade it in.
+          calendarOpacity.setValue(0.7);
+          setShowFullCalendar(false);
+          requestAnimationFrame(() => {
+            Animated.timing(calendarOpacity, {
+              toValue: 1,
+              duration: 140,
+              easing: Easing.out(Easing.cubic),
+              useNativeDriver: true,
+            }).start(() => {
+              isCollapsingTransition.current = false;
+            });
+          });
+        } else {
+          setShowFullCalendar(false);
+        }
       }
     });
-  }, [isExpanded, selected, animatedHeight, animatedOpacity]);
+  }, [isExpanded, animatedHeight, calendarOpacity]);
 
   const toggleCalendar = useCallback(() => {
-    setIsExpanded(!isExpanded);
-  }, [isExpanded]);
+    setIsExpanded((prev) => {
+      const next = !prev;
+
+      if (next) {
+        const d = new Date(selected);
+        setWeekRows(getWeekRowCount(d.getFullYear(), d.getMonth() + 1));
+
+        setShowFullCalendar(true);
+        calendarOpacity.setValue(0.88);
+        Animated.timing(calendarOpacity, {
+          toValue: 1,
+          duration: 180,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: true,
+        }).start();
+      } else {
+        isCollapsingTransition.current = true;
+        Animated.timing(calendarOpacity, {
+          toValue: 0.92,
+          duration: 160,
+          easing: Easing.out(Easing.quad),
+          useNativeDriver: true,
+        }).start();
+      }
+
+      return next;
+    });
+  }, [calendarOpacity, selected]);
 
   const onMonthChange = useCallback((date: DateData) => {
     setWeekRows(getWeekRowCount(date.year, date.month));
@@ -210,7 +240,13 @@ export function CalendarComponent({
 
   const renderToggleButton = useCallback(() => {
     return (
-      <View className="flex-row justify-end items-center mt-2 mb-2 pr-4">
+      <View
+        className="flex-row justify-end items-center pr-4 gap-2"
+        style={{
+          marginTop: isExpanded ? 8 : 4,
+          marginBottom: isExpanded ? 8 : 2,
+        }}
+      >
         <TouchableOpacity
           onPress={toggleCalendar}
           activeOpacity={0.7}
@@ -281,14 +317,15 @@ export function CalendarComponent({
             className="overflow-hidden w-full relative"
             style={{
               height: calendarHeight,
-              opacity: animatedOpacity,
             }}
           >
             {showFullCalendar && (
-              <View className="bg-mp-secondary rounded-b-3xl overflow-hidden z-[2]">
+              <Animated.View
+                className="bg-mp-secondary rounded-b-3xl overflow-hidden z-[2]"
+                style={{ opacity: calendarOpacity }}
+              >
                 <Calendar
                   current={selected}
-                  key={selected}
                   firstDay={1}
                   theme={calendarTheme}
                   style={{
@@ -300,29 +337,20 @@ export function CalendarComponent({
                   dayComponent={renderDay}
                   onMonthChange={onMonthChange}
                 />
-              </View>
+              </Animated.View>
             )}
             {!showFullCalendar && (
-              <View className="rounded-b-3xl overflow-hidden w-full">
+              <Animated.View
+                className="bg-mp-secondary rounded-b-3xl overflow-hidden w-full"
+                style={{ opacity: calendarOpacity }}
+              >
                 <WeekCalendar
                   firstDay={1}
                   theme={calendarTheme}
                   renderArrow={renderArrow}
                   dayComponent={renderDay}
                 />
-              </View>
-            )}
-            {showFullCalendar && !isExpanded && (
-              <View className="absolute top-0 left-0 right-0 bg-mp-secondary z-[1]">
-                <View className="rounded-b-3xl overflow-hidden w-full">
-                  <WeekCalendar
-                    firstDay={1}
-                    theme={calendarTheme}
-                    renderArrow={renderArrow}
-                    dayComponent={renderDay}
-                  />
-                </View>
-              </View>
+              </Animated.View>
             )}
             {renderToggleButton()}
           </Animated.View>
@@ -331,6 +359,8 @@ export function CalendarComponent({
       <AgendaComponent
         selectedDate={selected}
         agendaData={agendaData}
+        compactTopSpacing={!isExpanded}
+        headerRightAction={agendaHeaderRightAction}
         onAppointmentPress={onAppointmentPress}
         onEmptySlotPress={onEmptySlotPress}
         onReminderPress={onReminderPress}
