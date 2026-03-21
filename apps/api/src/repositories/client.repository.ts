@@ -160,13 +160,14 @@ export class ClientRepository {
     return data as Client[];
   }
 
-  async findByName(name: string): Promise<Client[]> {
+  async findByName(name: string, userId: string): Promise<Client[]> {
     const parts = name.trim().split(/\s+/);
 
     let query = this.db
       .from(CLIENT_QUERIES.CLIENT_TABLE)
       .select(CLIENT_QUERIES.FIND_ALL)
-      .is(CLIENT_QUERIES.DELETED_DATE, null);
+      .is(CLIENT_QUERIES.DELETED_DATE, null)
+      .eq(CLIENT_QUERIES.USER_ID, userId);
 
     if (parts.length === 1) {
       // Single word → search both fields
