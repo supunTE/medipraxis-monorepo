@@ -194,11 +194,11 @@ yarn workspace mobile-app test
 
 ## Commit Conventions
 
-These are commit messages (not branches or PRs). When you are coding and you want to commit your changes for the hour/day then use the following commit message conventions:
+Use the following conventions when writing commit messages for this project:
 
-- `feat` - general features
-- `fix` - general fixes
-- `doc` - documentational changes
-- `style` - style related changes
-- `refactor` - coding moving, and other refactoring that are not features or fixes
-- `chore` - little changes that are not features or fixes
+- **`feat`** - general features
+- **`fix`** - general fixes
+- **`doc`** - documentational changes
+- **`style`** - style related changes
+- **`refactor`** - coding moving, and other refactoring that are not features or fixes
+- **`chore`** - little changes that are not features or fixes
