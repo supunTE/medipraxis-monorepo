@@ -3,6 +3,8 @@ import { apiClient } from "../../api-client";
 import { getUserId } from "../../context";
 import { ai } from "../../models";
 
+const REMINDER_TASK_TYPE_ID = "24f21ec7-bf59-4c35-9c54-36cb24afafbb";
+
 export const getAllReminders = ai.defineTool(
   {
     name: "getAllReminders",
@@ -36,6 +38,8 @@ export const getAllReminders = ai.defineTool(
 
     const res = await apiClient.api.tasks.$get({
       query: { user_id: userId, task_type: "REMINDER" },
+    }, {
+      headers: { "x-ai-engine-api-key": process.env.AI_ENGINE_API_KEY || "" },
     });
 
     if (!res.ok) {
@@ -58,6 +62,73 @@ export const getAllReminders = ai.defineTool(
       }));
 
     return { reminders };
+  }
+);
+
+export const createReminder = ai.defineTool(
+  {
+    name: "createReminder",
+    description:
+      "Create a reminder task for the authenticated practitioner. Use this when the user asks to create, add, schedule, or set a reminder.",
+    inputSchema: z.object({
+      task_title: z.string().describe("Reminder title"),
+      end_date: z
+        .string()
+        .describe("Reminder due date-time in ISO format (e.g. 2026-03-22T14:30:00Z)"),
+      start_date: z
+        .string()
+        .optional()
+        .describe("Reminder start date-time in ISO format"),
+      note: z.string().optional().describe("Optional reminder note"),
+      set_alarm: z
+        .boolean()
+        .optional()
+        .describe("Whether an alarm should be enabled"),
+      client_id: z
+        .string()
+        .optional()
+        .describe("Optional client ID linked to the reminder"),
+    }),
+    outputSchema: z.object({
+      success: z.boolean(),
+      task_id: z.string().optional(),
+      message: z.string(),
+    }),
+  },
+  async (input) => {
+    const userId = getUserId();
+
+    const res = await apiClient.api.tasks.$post(
+      {
+        json: {
+          ...input,
+          user_id: userId,
+          task_type_id: REMINDER_TASK_TYPE_ID,
+        },
+      },
+      {
+        headers: {
+          "x-ai-engine-api-key": process.env.AI_ENGINE_API_KEY || "",
+        },
+      }
+    );
+
+    if (!res.ok) {
+      const errorBody = await res.text();
+      console.error("[TOOL] createReminder failed:", res.status, errorBody);
+      return {
+        success: false,
+        message: `Failed to create reminder (HTTP ${res.status}).`,
+      };
+    }
+
+    const data = await res.json();
+
+    return {
+      success: true,
+      task_id: data.task?.task_id,
+      message: "Reminder created successfully.",
+    };
   }
 );
 
@@ -93,4 +164,4 @@ export const checkDateTime = ai.defineTool(
   }
 );
 
-export const reminderTools = [getAllReminders, checkDateTime];
+export const reminderTools = [getAllReminders, createReminder, checkDateTime];
