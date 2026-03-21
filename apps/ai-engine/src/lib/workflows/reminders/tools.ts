@@ -36,11 +36,14 @@ export const getAllReminders = ai.defineTool(
       userId,
     });
 
-    const res = await apiClient.api.tasks.$get({
-      query: { user_id: userId, task_type: "REMINDER" },
-    }, {
-      headers: { "x-ai-engine-api-key": process.env.AI_ENGINE_API_KEY || "" },
-    });
+    const res = await apiClient.api.tasks.$get(
+      {
+        query: { user_id: userId, task_type: "REMINDER" },
+      },
+      {
+        headers: { "x-ai-engine-api-key": process.env.AI_ENGINE_API_KEY || "" },
+      }
+    );
 
     if (!res.ok) {
       console.error("[TOOL] Failed to fetch reminders:", res.status);
@@ -74,7 +77,9 @@ export const createReminder = ai.defineTool(
       task_title: z.string().describe("Reminder title"),
       end_date: z
         .string()
-        .describe("Reminder due date-time in ISO format (e.g. 2026-03-22T14:30:00Z)"),
+        .describe(
+          "Reminder due date-time in ISO format (e.g. 2026-03-22T14:30:00Z)"
+        ),
       start_date: z
         .string()
         .optional()
