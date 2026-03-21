@@ -27,6 +27,18 @@ export const getClientAppointmentsByLinkQuerySchema = z.object({
   client_id: z.string(),
 });
 
+export const createShareableCalendarLinkBodySchema = z.object({
+  user_id: z.string(),
+  client_id: z.string(),
+  expiry_date: z.string().optional(),
+  visible_days_ahead: z.number().min(1).max(30),
+  notification_type: z.object({
+    whatsapp: z.boolean(),
+    text: z.boolean(),
+    email: z.boolean(),
+  }),
+});
+
 /* ---------------- TYPES (DERIVED) ---------------- */
 
 export type ShareableCalendarLink = z.infer<typeof shareableCalendarLinkSchema>;
@@ -50,6 +62,10 @@ export type GetShareableCalendarLinkByUserIdParam = z.infer<
 
 export type GetClientAppointmentsByLinkQuery = z.infer<
   typeof getClientAppointmentsByLinkQuerySchema
+>;
+
+export type CreateShareableCalendarLinkBody = z.infer<
+  typeof createShareableCalendarLinkBodySchema
 >;
 
 export type ShareableCalendarLinkWithSlotWindows =

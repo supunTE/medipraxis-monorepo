@@ -1,4 +1,5 @@
 import type {
+  CreateShareableCalendarLinkBody,
   GetClientAppointmentsByLinkQuery,
   GetShareableCalendarLinkByUserIdParam,
   GetShareableCalendarLinkParam,
@@ -65,6 +66,31 @@ export class ShareableCalendarLinkController {
         error instanceof Error
           ? error.message
           : "Failed to fetch shareable calendar link";
+      const status = 500;
+      return c.json({ error: message }, status);
+    }
+  }
+
+  static async createOrUpdateShareableCalendarLink(
+    c: APIContext<{
+      json: CreateShareableCalendarLinkBody;
+    }>
+  ) {
+    try {
+      const shareableCalendarLinkService = getShareableCalendarLinkService(c);
+      const body = await c.req.json();
+
+      const link =
+        await shareableCalendarLinkService.createOrUpdateShareableCalendarLink(
+          body
+        );
+
+      return c.json({ success: true, data: link });
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to create/update shareable calendar link";
       const status = 500;
       return c.json({ error: message }, status);
     }

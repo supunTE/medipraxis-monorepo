@@ -127,10 +127,18 @@ export function getShareableCalendarLinkService(c: Context<{ Bindings: Env }>) {
   );
   const slotWindowRepository = new SlotWindowRepository(db);
   const taskRepository = new TaskRepository(db);
+  const userRepository = new UserRepository(db);
+  const clientRepository = new ClientRepository(db);
+  const smsService = getSmsService(c);
+  const webAppUrl = c.env.MEDIPRAXIS_WEB_URL;
   return new ShareableCalendarLinkService(
     shareableCalendarLinkRepository,
     slotWindowRepository,
-    taskRepository
+    taskRepository,
+    userRepository,
+    clientRepository,
+    smsService,
+    webAppUrl
   );
 }
 

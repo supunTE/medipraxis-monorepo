@@ -1,5 +1,6 @@
 import { zValidator } from "@hono/zod-validator";
 import {
+  createShareableCalendarLinkBodySchema,
   getClientAppointmentsByLinkQuerySchema,
   getShareableCalendarLinkByUserIdParamSchema,
   getShareableCalendarLinkParamSchema,
@@ -8,6 +9,11 @@ import { Hono } from "hono";
 import { ShareableCalendarLinkController } from "../controllers";
 
 const shareableCalendarLinks = new Hono()
+  .put(
+    "/",
+    zValidator("json", createShareableCalendarLinkBodySchema),
+    ShareableCalendarLinkController.createOrUpdateShareableCalendarLink
+  )
   .get(
     "/user/:userId",
     zValidator("param", getShareableCalendarLinkByUserIdParamSchema),
