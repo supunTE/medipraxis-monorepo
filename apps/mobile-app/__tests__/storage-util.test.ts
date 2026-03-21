@@ -8,7 +8,9 @@ const createSecureStoreMock = () => {
     getItemAsync: jest.fn() as jest.MockedFunction<
       (key: string) => Promise<string | null>
     >,
-    deleteItemAsync: jest.fn() as jest.MockedFunction<(key: string) => Promise<void>>,
+    deleteItemAsync: jest.fn() as jest.MockedFunction<
+      (key: string) => Promise<void>
+    >,
   };
 
   mock.setItemAsync.mockResolvedValue(undefined);
@@ -19,7 +21,9 @@ const createSecureStoreMock = () => {
 };
 
 const createLocalStorageMock = () => ({
-  setItem: jest.fn() as jest.MockedFunction<(key: string, value: string) => void>,
+  setItem: jest.fn() as jest.MockedFunction<
+    (key: string, value: string) => void
+  >,
   getItem: jest.fn() as jest.MockedFunction<(key: string) => string | null>,
   removeItem: jest.fn() as jest.MockedFunction<(key: string) => void>,
 });
@@ -39,7 +43,8 @@ const loadStorageModule = (
     delete (global as any).localStorage;
   }
 
-  const storage = require("../utils/storage") as typeof import("../utils/storage");
+  const storage =
+    require("../utils/storage") as typeof import("../utils/storage");
   return {
     storage,
     secureStoreMock,
@@ -65,8 +70,12 @@ describe("storage helpers on native platforms", () => {
   it("authStorage helpers reuse SecureStore", async () => {
     const { storage, secureStoreMock } = loadStorageModule("android");
 
-    secureStoreMock.getItemAsync.mockResolvedValue(JSON.stringify({ name: "Tester" }));
-    await expect(storage.authStorage.getUser()).resolves.toEqual({ name: "Tester" });
+    secureStoreMock.getItemAsync.mockResolvedValue(
+      JSON.stringify({ name: "Tester" })
+    );
+    await expect(storage.authStorage.getUser()).resolves.toEqual({
+      name: "Tester",
+    });
 
     await storage.authStorage.clearAll();
     expect(secureStoreMock.deleteItemAsync).toHaveBeenCalledTimes(4);
