@@ -78,7 +78,6 @@ export class ShareableCalendarLinkRepository {
       user_id: data.user_id as string,
       visible_days_ahead: data.visible_days_ahead as number,
       expiry_date: data.expiry_date as string,
-      days_until_expiry: 0,
       created_date: "",
       is_deleted: false,
     };
@@ -113,7 +112,6 @@ export class ShareableCalendarLinkRepository {
         user_id: updated.user_id as string,
         visible_days_ahead: updated.visible_days_ahead as number,
         expiry_date: updated.expiry_date as string,
-        days_until_expiry: 0,
         created_date: updated.created_date as string,
         is_deleted: false,
       };
@@ -140,7 +138,6 @@ export class ShareableCalendarLinkRepository {
         user_id: created.user_id as string,
         visible_days_ahead: created.visible_days_ahead as number,
         expiry_date: created.expiry_date as string,
-        days_until_expiry: 0,
         created_date: created.created_date as string,
         is_deleted: false,
       };
