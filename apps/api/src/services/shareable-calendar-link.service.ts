@@ -210,7 +210,7 @@ export class ShareableCalendarLinkService {
         .trim();
 
       const phoneNumber = `${contact.country_code}${contact.contact_number}`;
-      const link = `${this.webAppUrl}/${link_id}`;
+      const link = `${this.webAppUrl}/schedules/${link_id}`;
 
       const message = `${userName} shared their calendar with ${clientName}. \n\nTo view available appointment slots, visit the link below: \n${link}`;
 
