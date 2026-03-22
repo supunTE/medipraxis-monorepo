@@ -136,9 +136,7 @@ describe("SlotWindowService", () => {
           end_time: "11:00:00",
           total_slots: 2,
         })
-      ).rejects.toThrow(
-        "Template conflicts with existing template on MONDAY"
-      );
+      ).rejects.toThrow("Template conflicts with existing template on MONDAY");
     });
 
     it("throws when end time is before start time", async () => {

@@ -90,10 +90,8 @@ function makeCalendarResponse(overrides?: {
           note: "789 Lake Road, Colombo",
         },
       ],
-      clientReservedSlotWindowIds:
-        overrides?.clientReservedSlotWindowIds ?? [],
-      clientReservedAppointments:
-        overrides?.clientReservedAppointments ?? {},
+      clientReservedSlotWindowIds: overrides?.clientReservedSlotWindowIds ?? [],
+      clientReservedAppointments: overrides?.clientReservedAppointments ?? {},
     },
   };
 }
@@ -114,11 +112,7 @@ async function mockCalendar(
   });
 }
 
-async function mockReserve(
-  page: Page,
-  status = 200,
-  responseBody?: object
-) {
+async function mockReserve(page: Page, status = 200, responseBody?: object) {
   await page.route("**/api/tasks/appointments/reserve", async (route) => {
     await route.fulfill({
       status,
@@ -164,17 +158,14 @@ test.describe("Appointment Calendar", () => {
   test.describe("Page Load", () => {
     test("shows loading indicator while fetching data", async ({ page }) => {
       // Delay API response so the loading state is observable
-      await page.route(
-        "**/api/shareable-calendar-links/**",
-        async (route) => {
-          await new Promise((r) => setTimeout(r, 400));
-          await route.fulfill({
-            status: 200,
-            contentType: "application/json",
-            body: JSON.stringify(makeCalendarResponse()),
-          });
-        }
-      );
+      await page.route("**/api/shareable-calendar-links/**", async (route) => {
+        await new Promise((r) => setTimeout(r, 400));
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(makeCalendarResponse()),
+        });
+      });
 
       await page.goto(`/schedules/${LINK_ID}`);
       await expect(
@@ -400,25 +391,22 @@ test.describe("Appointment Calendar", () => {
       page,
     }) => {
       let callCount = 0;
-      await page.route(
-        "**/api/shareable-calendar-links/**",
-        async (route) => {
-          callCount++;
-          // First call: slot unreserved. Subsequent calls: slot reserved.
-          const body =
-            callCount > 1
-              ? makeCalendarResponse({
-                  clientReservedSlotWindowIds: ["sw-001"],
-                  clientReservedAppointments: { "sw-001": "task-new" },
-                })
-              : makeCalendarResponse();
-          await route.fulfill({
-            status: 200,
-            contentType: "application/json",
-            body: JSON.stringify(body),
-          });
-        }
-      );
+      await page.route("**/api/shareable-calendar-links/**", async (route) => {
+        callCount++;
+        // First call: slot unreserved. Subsequent calls: slot reserved.
+        const body =
+          callCount > 1
+            ? makeCalendarResponse({
+                clientReservedSlotWindowIds: ["sw-001"],
+                clientReservedAppointments: { "sw-001": "task-new" },
+              })
+            : makeCalendarResponse();
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(body),
+        });
+      });
 
       await gotoCalendar(page);
       await page.getByRole("button", { name: /^Reserve$/ }).click();
@@ -438,21 +426,18 @@ test.describe("Appointment Calendar", () => {
   test.describe("Cancel Appointment", () => {
     // Override the calendar mock so sw-001 is already reserved
     test.beforeEach(async ({ page }) => {
-      await page.route(
-        "**/api/shareable-calendar-links/**",
-        async (route) => {
-          await route.fulfill({
-            status: 200,
-            contentType: "application/json",
-            body: JSON.stringify(
-              makeCalendarResponse({
-                clientReservedSlotWindowIds: ["sw-001"],
-                clientReservedAppointments: { "sw-001": "task-001" },
-              })
-            ),
-          });
-        }
-      );
+      await page.route("**/api/shareable-calendar-links/**", async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(
+            makeCalendarResponse({
+              clientReservedSlotWindowIds: ["sw-001"],
+              clientReservedAppointments: { "sw-001": "task-001" },
+            })
+          ),
+        });
+      });
     });
 
     test("shows 'Cancel Reservation' button for a reserved slot", async ({
@@ -590,8 +575,7 @@ test.describe("Appointment Calendar", () => {
     test("shows cooldown error toast when reserving too quickly (reserve 429)", async ({
       page,
     }) => {
-      const cooldownMsg =
-        "Please wait 30 minutes before reserving again";
+      const cooldownMsg = "Please wait 30 minutes before reserving again";
       await page.route("**/api/tasks/appointments/reserve", async (route) => {
         await route.fulfill({
           status: 429,
@@ -614,21 +598,18 @@ test.describe("Appointment Calendar", () => {
       page,
     }) => {
       // Load page with a pre-reserved slot
-      await page.route(
-        "**/api/shareable-calendar-links/**",
-        async (route) => {
-          await route.fulfill({
-            status: 200,
-            contentType: "application/json",
-            body: JSON.stringify(
-              makeCalendarResponse({
-                clientReservedSlotWindowIds: ["sw-001"],
-                clientReservedAppointments: { "sw-001": "task-001" },
-              })
-            ),
-          });
-        }
-      );
+      await page.route("**/api/shareable-calendar-links/**", async (route) => {
+        await route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify(
+            makeCalendarResponse({
+              clientReservedSlotWindowIds: ["sw-001"],
+              clientReservedAppointments: { "sw-001": "task-001" },
+            })
+          ),
+        });
+      });
       await page.route("**/api/tasks/appointments/cancel", async (route) => {
         await route.fulfill({
           status: 404,

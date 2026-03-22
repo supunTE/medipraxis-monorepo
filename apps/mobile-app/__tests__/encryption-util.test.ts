@@ -10,9 +10,10 @@ jest.mock("expo-crypto", () => ({
   getRandomBytesAsync: jest.fn(),
 }));
 
-const mockGetRandomBytes = ExpoCrypto.getRandomBytesAsync as jest.MockedFunction<
-  typeof ExpoCrypto.getRandomBytesAsync
->;
+const mockGetRandomBytes =
+  ExpoCrypto.getRandomBytesAsync as jest.MockedFunction<
+    typeof ExpoCrypto.getRandomBytesAsync
+  >;
 
 afterEach(() => jest.clearAllMocks());
 
@@ -23,10 +24,19 @@ const EPHEMERAL_PRIV = new Uint8Array(32).fill(0x22);
 const ECIES_IV = new Uint8Array(12).fill(0x55);
 
 /** Constructs a deterministic ECIES blob matching the layout expected by decryptFile */
-function eciesEncrypt(plaintext: Uint8Array, recipientPub: Uint8Array): Uint8Array {
+function eciesEncrypt(
+  plaintext: Uint8Array,
+  recipientPub: Uint8Array
+): Uint8Array {
   const ephemPub = p256.getPublicKey(EPHEMERAL_PRIV, false); // 65 bytes
   const sharedPoint = p256.getSharedSecret(EPHEMERAL_PRIV, recipientPub);
-  const aesKey = hkdf(sha256, sharedPoint.slice(1, 33), undefined, undefined, 32);
+  const aesKey = hkdf(
+    sha256,
+    sharedPoint.slice(1, 33),
+    undefined,
+    undefined,
+    32
+  );
   const ciphertext = gcm(aesKey, ECIES_IV).encrypt(plaintext);
 
   const blob = new Uint8Array(65 + 12 + ciphertext.length);
@@ -61,7 +71,9 @@ describe("generateRecoveryKey", () => {
 
     expect(raw).toHaveLength(16);
     expect(/^[0-9A-Z]{16}$/.test(raw)).toBe(true);
-    expect(formatted).toMatch(/^[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}$/);
+    expect(formatted).toMatch(
+      /^[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}$/
+    );
     expect(formatted.replace(/-/g, "")).toBe(raw);
   });
 });
@@ -74,8 +86,13 @@ describe("generateUserKeys + unwrapPrivateKey", () => {
   it("round-trip: unwrapPrivateKey recovers the original private key bytes", async () => {
     const { privateKey } = mockGenerateUserKeysCalls();
 
-    const { wrappedPrivateKey, pbkdf2Salt } = await generateUserKeys(RECOVERY_KEY);
-    const recovered = unwrapPrivateKey(wrappedPrivateKey, pbkdf2Salt, RECOVERY_KEY);
+    const { wrappedPrivateKey, pbkdf2Salt } =
+      await generateUserKeys(RECOVERY_KEY);
+    const recovered = unwrapPrivateKey(
+      wrappedPrivateKey,
+      pbkdf2Salt,
+      RECOVERY_KEY
+    );
 
     expect(recovered).toEqual(privateKey);
   });
@@ -92,7 +109,8 @@ describe("generateUserKeys + unwrapPrivateKey", () => {
   it("unwrapPrivateKey throws when a wrong recovery key is used (GCM auth failure)", async () => {
     mockGenerateUserKeysCalls();
 
-    const { wrappedPrivateKey, pbkdf2Salt } = await generateUserKeys(RECOVERY_KEY);
+    const { wrappedPrivateKey, pbkdf2Salt } =
+      await generateUserKeys(RECOVERY_KEY);
 
     expect(() =>
       unwrapPrivateKey(wrappedPrivateKey, pbkdf2Salt, "WRONG0000KEY1111")
