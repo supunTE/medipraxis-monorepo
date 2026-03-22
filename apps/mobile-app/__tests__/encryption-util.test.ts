@@ -132,7 +132,7 @@ describe("decryptFile", () => {
 
   it("throws on tampered ciphertext (GCM authentication failure)", () => {
     const blob = eciesEncrypt(PLAINTEXT, PUB_KEY);
-    blob[77] ^= 0xff; // flip a bit in the ciphertext region
+    blob[77] = blob[77]! ^ 0xff; // flip a bit in the ciphertext region
     expect(() => decryptFile(blob, PRIV_KEY)).toThrow();
   });
 });
