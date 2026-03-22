@@ -58,6 +58,7 @@ export default function AIAssistantModal({
   });
 
   const [inputText, setInputText] = useState("");
+  const [resolvedClientIds, setResolvedClientIds] = useState<string[]>([]);
   const { messages, isLoading, sendMessage, clearMessages } = useAIChat();
   const scrollViewRef = useRef<ScrollView>(null);
 
@@ -110,7 +111,7 @@ export default function AIAssistantModal({
     if (inputText.trim() && !isLoading) {
       const message = inputText;
       setInputText("");
-      void sendMessage(message);
+      void sendMessage(message, { clientIds: resolvedClientIds });
     }
   };
 
@@ -307,6 +308,7 @@ export default function AIAssistantModal({
                   parsed={parsed}
                   onInputChange={setInputText}
                   clients={clients ?? []}
+                  onClientIdChange={setResolvedClientIds}
                 />
                 <View className="flex-row items-center gap-3">
                   {/* Input field */}

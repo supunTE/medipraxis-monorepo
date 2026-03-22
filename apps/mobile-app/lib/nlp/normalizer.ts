@@ -2,6 +2,7 @@ const ABBREVIATIONS: Record<string, string> = {
   // Time
   tmr: "tomorrow",
   tmrw: "tomorrow",
+  yest: "yesterday",
   // Appointment
   appt: "appointment",
   apptmt: "appointment",

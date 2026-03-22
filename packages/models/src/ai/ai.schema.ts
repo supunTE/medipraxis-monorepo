@@ -10,6 +10,7 @@ export const chatMessageSchema = z.object({
 export const aiQuerySchema = z.object({
   query: z.string().min(1, "Query is required"),
   history: z.array(chatMessageSchema).max(10).optional(),
+  clientIds: z.array(z.string()).optional(),
 });
 
 /* ---------------- TYPES (DERIVED) ---------------- */

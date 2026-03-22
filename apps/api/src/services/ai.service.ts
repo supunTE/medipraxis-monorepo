@@ -9,7 +9,8 @@ export class AIService {
   async query(
     query: string,
     history: ChatMessage[] = [],
-    userId: string
+    userId: string,
+    clientIds?: string[]
   ): Promise<RouterResponse> {
     const response = await fetch(`${this.aiEngineUrl}/api/ai/query`, {
       method: "POST",
@@ -17,7 +18,7 @@ export class AIService {
         "Content-Type": "application/json",
         "x-api-key": this.aiEngineApiKey,
       },
-      body: JSON.stringify({ query, history, userId }),
+      body: JSON.stringify({ query, history, userId, clientIds }),
     });
 
     if (!response.ok) {

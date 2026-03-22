@@ -9,12 +9,13 @@ import {
   UserIcon,
   XIcon,
 } from "phosphor-react-native";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   FlatList,
   Modal,
   Pressable,
   ScrollView,
+  Text,
   TextInput,
   TouchableOpacity,
   View,
@@ -24,6 +25,7 @@ interface ParsedEntitiesProps {
   parsed: ParsedInput | null;
   onInputChange: (newText: string) => void;
   clients?: ClientDisplay[];
+  onClientIdChange?: (clientIds: string[]) => void;
 }
 
 interface LocalPerson {
@@ -142,13 +144,12 @@ function ClientPickerModal({
           <View className="bg-white rounded-3xl overflow-hidden w-72">
             {/* Header */}
             <View className="flex-row items-center justify-between px-5 pt-5 pb-3">
-              <TextComponent
-                variant={TextVariant.Body}
-                size={TextSize.Large}
-                color={Color.Black}
+              <Text
+                className="text-xl text-[#333]"
+                style={{ fontFamily: "Inter_700Bold" }}
               >
                 Select patient
-              </TextComponent>
+              </Text>
               <TouchableOpacity onPress={onClose} className="p-1">
                 <XIcon size={20} color={Color.Grey} weight="bold" />
               </TouchableOpacity>
@@ -227,6 +228,7 @@ export function ParsedEntities({
   parsed,
   onInputChange,
   clients = [],
+  onClientIdChange,
 }: ParsedEntitiesProps) {
   const [datePickerIndex, setDatePickerIndex] = useState<number | null>(null);
   const [clientPickerIndex, setClientPickerIndex] = useState<number | null>(
@@ -240,35 +242,73 @@ export function ParsedEntities({
   const [localDates, setLocalDates] = useState<LocalDate[]>([]);
   const [localTimes, setLocalTimes] = useState<string[]>([]);
 
+  // Tracks dismissed chip nerTexts so they don't reappear mid-session
+  const dismissedRef = useRef<Set<string>>(new Set());
+
   useEffect(() => {
     if (!parsed) {
       setLocalPeople([]);
       setLocalDates([]);
       setLocalTimes([]);
+      dismissedRef.current.clear();
       return;
     }
     if (parsed.entities.people.length > 0) {
       setLocalPeople(
-        parsed.entities.people.map((p) => ({
-          text: p.suggestedClient?.name ?? p.text,
-          nerText: p.text,
-          clientId: p.suggestedClient?.id,
-        }))
+        parsed.entities.people
+          .filter((p) => !dismissedRef.current.has(p.text))
+          .map((p) => ({
+            text: p.suggestedClient?.name ?? p.text,
+            nerText: p.text,
+            clientId: p.suggestedClient?.id,
+          }))
       );
     }
     if (parsed.entities.dates.length > 0) {
       setLocalDates(
-        parsed.entities.dates.map((d) => ({
-          displayText: d.displayText,
-          isoDate: d.resolved.toISOString().split("T")[0] ?? "",
-          nerText: d.text,
-        }))
+        parsed.entities.dates
+          .filter((d) => !dismissedRef.current.has(d.text))
+          .map((d) => ({
+            displayText: d.displayText,
+            isoDate: d.resolved.toISOString().split("T")[0] ?? "",
+            nerText: d.text,
+          }))
       );
     }
     if (parsed.entities.times.length > 0) {
-      setLocalTimes(parsed.entities.times.map((t) => t.resolved));
+      setLocalTimes(
+        parsed.entities.times
+          .filter((t) => !dismissedRef.current.has(t.resolved))
+          .map((t) => t.resolved)
+      );
     }
   }, [parsed]);
+
+  // Notify parent of all resolved client IDs whenever localPeople changes
+  useEffect(() => {
+    const clientIds = localPeople
+      .map((p) => p.clientId)
+      .filter((id): id is string => Boolean(id));
+    onClientIdChange?.(clientIds);
+  }, [localPeople, onClientIdChange]);
+
+  const dismissPerson = (index: number) => {
+    const person = localPeople[index];
+    if (person) dismissedRef.current.add(person.nerText);
+    setLocalPeople((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const dismissDate = (index: number) => {
+    const date = localDates[index];
+    if (date) dismissedRef.current.add(date.nerText);
+    setLocalDates((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const dismissTime = (index: number) => {
+    const time = localTimes[index];
+    if (time) dismissedRef.current.add(time);
+    setLocalTimes((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const hasChips =
     localPeople.length > 0 || localDates.length > 0 || localTimes.length > 0;
@@ -285,55 +325,81 @@ export function ParsedEntities({
         className="mb-2"
         contentContainerClassName="flex-row gap-2 px-1 items-center"
       >
-        {/* ── Person chips ─────────────────────────────────────────────── */}
         {localPeople.map((person, i) => (
-          <Pressable
+          <View
             key={`person-${i}`}
-            onPress={() => setClientPickerIndex(i)}
-            className="flex-row items-center gap-1.5 bg-purple-100 rounded-full px-3 py-1.5 active:opacity-70"
+            className="flex-row items-center bg-purple-100 rounded-full px-3 py-1.5"
           >
-            <UserIcon size={13} color="#7C3AED" weight="fill" />
-            <TextComponent
-              variant={TextVariant.Body}
-              size={TextSize.Small}
-              style={{ color: "#7C3AED" }}
+            <Pressable
+              onPress={() => setClientPickerIndex(i)}
+              className="flex-row items-center gap-1.5 active:opacity-70"
             >
-              {person.text}
-            </TextComponent>
-          </Pressable>
+              <UserIcon size={13} color="#7C3AED" weight="fill" />
+              <Text
+                className="text-[13px] text-purple-700"
+                style={{ fontFamily: "DMSans_400Regular" }}
+              >
+                {person.text}
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => dismissPerson(i)}
+              hitSlop={6}
+              className="ml-1.5 active:opacity-70"
+            >
+              <XIcon size={11} color="#7C3AED" weight="bold" />
+            </Pressable>
+          </View>
         ))}
 
         {localDates.map((date, i) => (
-          <Pressable
+          <View
             key={`date-${i}`}
-            onPress={() => setDatePickerIndex(i)}
-            className="flex-row items-center gap-1.5 bg-green-100 rounded-full px-3 py-1.5 active:opacity-70"
+            className="flex-row items-center bg-green-100 rounded-full px-3 py-1.5"
           >
-            <CalendarIcon size={13} color="#16A34A" weight="fill" />
-            <TextComponent
-              variant={TextVariant.Body}
-              size={TextSize.Small}
-              style={{ color: "#16A34A" }}
+            <Pressable
+              onPress={() => setDatePickerIndex(i)}
+              className="flex-row items-center gap-1.5 active:opacity-70"
             >
-              {date.displayText}
-            </TextComponent>
-          </Pressable>
+              <CalendarIcon size={13} color="#16A34A" weight="fill" />
+              <Text
+                className="text-[13px] text-green-600"
+                style={{ fontFamily: "DMSans_400Regular" }}
+              >
+                {date.displayText}
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={() => dismissDate(i)}
+              hitSlop={6}
+              className="ml-1.5 active:opacity-70"
+            >
+              <XIcon size={11} color="#16A34A" weight="bold" />
+            </Pressable>
+          </View>
         ))}
 
-        {/* ── Time chips (display only) ─────────────────────────────────── */}
         {localTimes.map((time, i) => (
           <View
             key={`time-${i}`}
-            className="flex-row items-center gap-1.5 bg-amber-100 rounded-full px-3 py-1.5"
+            className="flex-row items-center bg-amber-100 rounded-full px-3 py-1.5"
           >
-            <ClockIcon size={13} color="#D97706" weight="fill" />
-            <TextComponent
-              variant={TextVariant.Body}
-              size={TextSize.Small}
-              style={{ color: "#D97706" }}
+            <View className="flex-row items-center gap-1.5">
+              <ClockIcon size={13} color="#D97706" weight="fill" />
+              <Text
+                className="text-[13px] text-amber-600"
+                style={{ fontFamily: "DMSans_400Regular" }}
+              >
+                {time}
+              </Text>
+            </View>
+            <Pressable
+              onPress={() => dismissTime(i)}
+              hitSlop={6}
+              className="ml-1.5 active:opacity-70"
             >
-              {time}
-            </TextComponent>
+              <XIcon size={11} color="#D97706" weight="bold" />
+            </Pressable>
           </View>
         ))}
       </ScrollView>
