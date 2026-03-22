@@ -303,7 +303,11 @@ export default function AIAssistantModal({
 
               {/* Fixed bottom input area */}
               <View className="absolute bottom-0 left-0 right-0 px-6 py-4">
-                <ParsedEntities parsed={parsed} />
+                <ParsedEntities
+                  parsed={parsed}
+                  onInputChange={setInputText}
+                  clients={clients ?? []}
+                />
                 <View className="flex-row items-center gap-3">
                   {/* Input field */}
                   <View className="flex-1 relative">
