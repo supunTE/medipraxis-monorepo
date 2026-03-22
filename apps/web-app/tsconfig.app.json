@@ -8,5 +8,5 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "tests", "__tests__"]
+  "include": ["src", "__tests__"]
 }
