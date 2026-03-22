@@ -53,7 +53,10 @@ describe("Auth Controller Flow", () => {
       };
       mockContext.req.json.mockResolvedValue(payload);
 
-      const mockResult = { user: { id: "1", username: "testuser" }, token: "abc" };
+      const mockResult = {
+        user: { id: "1", username: "testuser" },
+        token: "abc",
+      };
       mockAuthService.register.mockResolvedValue(mockResult);
 
       await AuthController.register(mockContext as APIContext<any>);
@@ -70,20 +73,30 @@ describe("Auth Controller Flow", () => {
 
     it("should handle conflicts (409) for existing user/mobile", async () => {
       mockContext.req.json.mockResolvedValue({});
-      mockAuthService.register.mockRejectedValue(new Error("Username already exists"));
+      mockAuthService.register.mockRejectedValue(
+        new Error("Username already exists")
+      );
 
       await AuthController.register(mockContext as APIContext<any>);
 
-      expect(mockContext.json).toHaveBeenCalledWith({ error: "Username already exists" }, 409);
+      expect(mockContext.json).toHaveBeenCalledWith(
+        { error: "Username already exists" },
+        409
+      );
     });
 
     it("should handle validation or other bad request (400) errors", async () => {
       mockContext.req.json.mockResolvedValue({});
-      mockAuthService.register.mockRejectedValue(new Error("Password too weak"));
+      mockAuthService.register.mockRejectedValue(
+        new Error("Password too weak")
+      );
 
       await AuthController.register(mockContext as APIContext<any>);
 
-      expect(mockContext.json).toHaveBeenCalledWith({ error: "Password too weak" }, 400);
+      expect(mockContext.json).toHaveBeenCalledWith(
+        { error: "Password too weak" },
+        400
+      );
     });
   });
 
@@ -115,7 +128,10 @@ describe("Auth Controller Flow", () => {
 
       await AuthController.login(mockContext as APIContext<any>);
 
-      expect(mockContext.json).toHaveBeenCalledWith({ error: "Invalid credentials" }, 401);
+      expect(mockContext.json).toHaveBeenCalledWith(
+        { error: "Invalid credentials" },
+        401
+      );
     });
   });
 
@@ -136,7 +152,10 @@ describe("Auth Controller Flow", () => {
 
       await AuthController.refresh(mockContext as APIContext<any>);
 
-      expect(mockContext.json).toHaveBeenCalledWith({ error: "Invalid refresh token" }, 401);
+      expect(mockContext.json).toHaveBeenCalledWith(
+        { error: "Invalid refresh token" },
+        401
+      );
     });
   });
 
@@ -148,18 +167,32 @@ describe("Auth Controller Flow", () => {
 
       await AuthController.logout(mockContext as APIContext<any>);
 
-      expect(mockJwtService.verifyRefreshToken).toHaveBeenCalledWith("valid-refresh");
-      expect(mockAuthService.logout).toHaveBeenCalledWith("user-1", "valid-refresh");
-      expect(mockContext.json).toHaveBeenCalledWith({ message: "Logged out from this device" });
+      expect(mockJwtService.verifyRefreshToken).toHaveBeenCalledWith(
+        "valid-refresh"
+      );
+      expect(mockAuthService.logout).toHaveBeenCalledWith(
+        "user-1",
+        "valid-refresh"
+      );
+      expect(mockContext.json).toHaveBeenCalledWith({
+        message: "Logged out from this device",
+      });
     });
 
     it("should return 401 for an invalid token or verification issue", async () => {
-      mockContext.req.json.mockResolvedValue({ refreshToken: "invalid-refresh" });
-      mockJwtService.verifyRefreshToken.mockRejectedValue(new Error("Invalid token"));
+      mockContext.req.json.mockResolvedValue({
+        refreshToken: "invalid-refresh",
+      });
+      mockJwtService.verifyRefreshToken.mockRejectedValue(
+        new Error("Invalid token")
+      );
 
       await AuthController.logout(mockContext as APIContext<any>);
 
-      expect(mockContext.json).toHaveBeenCalledWith({ message: "Token invalid or already logged out" }, 401);
+      expect(mockContext.json).toHaveBeenCalledWith(
+        { message: "Token invalid or already logged out" },
+        401
+      );
     });
 
     it("should return 400 if no refresh token is provided", async () => {
@@ -167,7 +200,10 @@ describe("Auth Controller Flow", () => {
 
       await AuthController.logout(mockContext as APIContext<any>);
 
-      expect(mockContext.json).toHaveBeenCalledWith({ error: "Refresh token is required for logout" }, 400);
+      expect(mockContext.json).toHaveBeenCalledWith(
+        { error: "Refresh token is required for logout" },
+        400
+      );
     });
 
     it("should handle error in extracting body without throwing", async () => {
@@ -175,7 +211,10 @@ describe("Auth Controller Flow", () => {
 
       await AuthController.logout(mockContext as APIContext<any>);
 
-      expect(mockContext.json).toHaveBeenCalledWith({ error: "Refresh token is required for logout" }, 400);
+      expect(mockContext.json).toHaveBeenCalledWith(
+        { error: "Refresh token is required for logout" },
+        400
+      );
     });
   });
 });

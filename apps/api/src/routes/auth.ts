@@ -17,7 +17,11 @@ const auth = new Hono<{ Bindings: Env }>()
     AuthController.register
   )
   .post("/login", zValidator("json", loginSchema), AuthController.login)
-  .post("/refresh", zValidator("json", refreshTokenSchema), AuthController.refresh)
+  .post(
+    "/refresh",
+    zValidator("json", refreshTokenSchema),
+    AuthController.refresh
+  )
   .post("/logout", AuthController.logout);
 
 export default auth;

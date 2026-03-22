@@ -49,29 +49,42 @@ describe("User Controller Flow", () => {
       expect(getUserService).toHaveBeenCalledWith(mockContext);
       expect(mockContext.req.param).toHaveBeenCalledWith("id");
       expect(mockUserService.getUserById).toHaveBeenCalledWith(mockUserId);
-      expect(mockContext.json).toHaveBeenCalledWith({ success: true, user: mockUser });
+      expect(mockContext.json).toHaveBeenCalledWith({
+        success: true,
+        user: mockUser,
+      });
     });
 
     it("should return 404 when user is not found", async () => {
       const mockUserId = "user-123";
 
       mockContext.req.param.mockReturnValue(mockUserId);
-      mockUserService.getUserById.mockRejectedValue(new Error("User not found"));
+      mockUserService.getUserById.mockRejectedValue(
+        new Error("User not found")
+      );
 
       await UserController.getUserById(mockContext as APIContext<any>);
 
-      expect(mockContext.json).toHaveBeenCalledWith({ error: "User not found" }, 404);
+      expect(mockContext.json).toHaveBeenCalledWith(
+        { error: "User not found" },
+        404
+      );
     });
 
     it("should return 500 on internal server error", async () => {
       const mockUserId = "user-123";
 
       mockContext.req.param.mockReturnValue(mockUserId);
-      mockUserService.getUserById.mockRejectedValue(new Error("Database connection failed"));
+      mockUserService.getUserById.mockRejectedValue(
+        new Error("Database connection failed")
+      );
 
       await UserController.getUserById(mockContext as APIContext<any>);
 
-      expect(mockContext.json).toHaveBeenCalledWith({ error: "Database connection failed" }, 500);
+      expect(mockContext.json).toHaveBeenCalledWith(
+        { error: "Database connection failed" },
+        500
+      );
     });
   });
 
@@ -90,8 +103,14 @@ describe("User Controller Flow", () => {
       expect(getUserService).toHaveBeenCalledWith(mockContext);
       expect(mockContext.req.param).toHaveBeenCalledWith("id");
       expect(mockContext.req.valid).toHaveBeenCalledWith("json");
-      expect(mockUserService.updateUser).toHaveBeenCalledWith(mockUserId, mockUpdateBody);
-      expect(mockContext.json).toHaveBeenCalledWith({ success: true, user: mockUpdatedUser });
+      expect(mockUserService.updateUser).toHaveBeenCalledWith(
+        mockUserId,
+        mockUpdateBody
+      );
+      expect(mockContext.json).toHaveBeenCalledWith({
+        success: true,
+        user: mockUpdatedUser,
+      });
     });
 
     it("should return 404 when user to update is not found", async () => {
@@ -104,7 +123,10 @@ describe("User Controller Flow", () => {
 
       await UserController.updateUser(mockContext as APIContext<any>);
 
-      expect(mockContext.json).toHaveBeenCalledWith({ error: "User not found" }, 404);
+      expect(mockContext.json).toHaveBeenCalledWith(
+        { error: "User not found" },
+        404
+      );
     });
 
     it("should return 400 on bad validation or upate error", async () => {
@@ -117,7 +139,10 @@ describe("User Controller Flow", () => {
 
       await UserController.updateUser(mockContext as APIContext<any>);
 
-      expect(mockContext.json).toHaveBeenCalledWith({ error: "Invalid format" }, 400);
+      expect(mockContext.json).toHaveBeenCalledWith(
+        { error: "Invalid format" },
+        400
+      );
     });
   });
 });
