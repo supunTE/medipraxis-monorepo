@@ -22,6 +22,7 @@ import {
   type NativeSyntheticEvent,
   type TextStyle as RNTextStyle,
 } from "react-native";
+import { AppointmentsList } from "./AppointmentList.component";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 enum ClientDetailTab {
@@ -48,10 +49,6 @@ export default function ClientDetailScreen() {
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
-
-  // useRouter gives us programmatic navigation (push, back, replace etc.)
-  // We need this because the back button triggers navigation in code,
-  // not via a static <Link> element
   const router = useRouter();
 
   const { data: client, isLoading } = useFetchClientById(id ?? "");
@@ -140,6 +137,7 @@ export default function ClientDetailScreen() {
 
   const handleReportsTabPress = () => {
     setActiveTab(ClientDetailTab.Reports);
+    setSearchQuery("");
 
     if (!user?.user_id || !client?.client_id) {
       return;
@@ -348,7 +346,7 @@ export default function ClientDetailScreen() {
               </View>
             </View>
 
-            {/* Action Buttons */}
+            {/* Action Buttons — horizontal scroll */}
             <View className="-ml-5">
               <ScrollView
                 horizontal
@@ -437,7 +435,10 @@ export default function ClientDetailScreen() {
                         ? Color.Green
                         : "transparent",
                   }}
-                  onPress={() => setActiveTab(ClientDetailTab.Appointments)}
+                  onPress={() => {
+                    setActiveTab(ClientDetailTab.Appointments);
+                    setSearchQuery("");
+                  }}
                   activeOpacity={0.7}
                 >
                   <TextComponent
@@ -592,9 +593,15 @@ export default function ClientDetailScreen() {
             ) : (
               <View className="flex-1">
                 {activeTab === ClientDetailTab.Appointments ? (
-                  <EmptyState
-                    icon={Icons.CalendarBlank}
-                    message="No appointments found"
+                  <AppointmentsList
+                    clientId={client.client_id}
+                    searchQuery={searchQuery}
+                    onViewAppointment={(appointmentId) =>
+                      console.log("View appointment:", appointmentId)
+                    }
+                    onAddRecord={(appointmentId) =>
+                      console.log("Add record:", appointmentId)
+                    }
                   />
                 ) : filteredReports.length > 0 ? (
                   <View

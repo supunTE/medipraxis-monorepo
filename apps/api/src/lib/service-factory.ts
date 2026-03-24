@@ -41,6 +41,14 @@ export function getTaskService(c: Context<{ Bindings: Env }>) {
   return new TaskService(taskRepository);
 }
 
+// Passes slotWindowRepository so getAppointmentsByClientIdWithLocation works
+export function getTaskServiceWithLocation(c: Context<{ Bindings: Env }>) {
+  const db = createDatabaseClient(c.env);
+  const taskRepository = new TaskRepository(db);
+  const slotWindowRepository = new SlotWindowRepository(db);
+  return new TaskService(taskRepository, slotWindowRepository);
+}
+
 export function getAIService(c: Context<{ Bindings: Env }>) {
   if (!c.env.AI_ENGINE_URL || !c.env.AI_ENGINE_API_KEY) {
     throw new Error("AI Engine URL or API key not configured");
