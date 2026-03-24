@@ -448,7 +448,7 @@ export const ViewClient: React.FC<ViewClientProps> = ({
                                   textButtonMediumStyle.fontFamily ===
                                   Font.DMsans
                                     ? "DMSans_400Regular"
-                                    : "Lato_400Regular",
+                                    : "Inter_400Regular",
                                 fontSize: textButtonMediumStyle.fontSize,
                                 fontWeight: String(
                                   textButtonMediumStyle.fontWeight
@@ -498,7 +498,7 @@ export const ViewClient: React.FC<ViewClientProps> = ({
                       fontFamily:
                         textLargeStyle.fontFamily === Font.DMsans
                           ? "DMSans_400Regular"
-                          : "Lato_400Regular",
+                          : "Inter_400Regular",
                       fontSize: textLargeStyle.fontSize,
                       fontWeight: "400" as RNTextStyle["fontWeight"],
                       textAlign: "left",

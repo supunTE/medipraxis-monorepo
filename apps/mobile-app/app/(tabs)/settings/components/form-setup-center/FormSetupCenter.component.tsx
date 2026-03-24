@@ -4,7 +4,7 @@ import {
   DMSans_500Medium,
   DMSans_600SemiBold,
 } from "@expo-google-fonts/dm-sans";
-import { Lato_400Regular, Lato_700Bold } from "@expo-google-fonts/lato";
+import { Inter_400Regular, Inter_700Bold } from "@expo-google-fonts/inter";
 import { Color, TextSize, TextVariant } from "@repo/config";
 import { useFonts } from "expo-font";
 import { PencilSimpleIcon } from "phosphor-react-native";
@@ -17,17 +17,20 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FormConfig } from "./FormConfig.component";
 import { FORM_TILES } from "./formSetupCenter.constants";
 import type { FormSetupCenterProps } from "./formSetupCenter.types";
 
 export function FormSetupCenter({ visible, onClose }: FormSetupCenterProps) {
+  const insets = useSafeAreaInsets();
+
   const [fontsLoaded] = useFonts({
     DMSans_400Regular,
     DMSans_500Medium,
     DMSans_600SemiBold,
-    Lato_400Regular,
-    Lato_700Bold,
+    Inter_400Regular,
+    Inter_700Bold,
   });
 
   const [showFormConfig, setShowFormConfig] = useState(false);
@@ -45,7 +48,7 @@ export function FormSetupCenter({ visible, onClose }: FormSetupCenterProps) {
   }
 
   const content = (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
       {/* Back Button - only show in modal mode */}
       {onClose && (
         <View className="px-5 pt-4 pb-2">

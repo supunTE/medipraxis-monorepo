@@ -66,5 +66,5 @@ export interface FieldItemProps {
 
 export interface FormData {
   description: string;
-  form_structure: Field[];
+  form_configuration: Field[];
 }

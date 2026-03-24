@@ -1,5 +1,6 @@
+import { useAuth } from "@/auth/AuthContext";
 import { DayOfWeek } from "@repo/models";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert } from "react-native";
 import { useCreateAppointmentSlot } from "@/services/slotWindows";
 import { useCreateTask } from "./useCreateTask";
@@ -69,7 +70,7 @@ const DEFAULT_FORM_STATE: FormState = {
   endDate: "",
   note: "",
   alarm: true,
-  userId: "2a3c19b8-d352-4b30-a2ac-1cdf993d310c",
+  userId: "",
   repeatDays: [],
   totalSlots: 1,
   location: "",
@@ -86,7 +87,7 @@ const DEFAULT_APPOINTMENT_SLOT_STATE: FormState = {
   endDate: "",
   note: "",
   location: "",
-  userId: "2a3c19b8-d352-4b30-a2ac-1cdf993d310c",
+  userId: "",
   totalSlots: 1,
   repeatDays: [],
   taskTitle: "",
@@ -107,7 +108,7 @@ const DEFAULT_APPOINTMENT_STATE: FormState = {
   endDate: "",
   note: "",
   location: "",
-  userId: "2a3c19b8-d352-4b30-a2ac-1cdf993d310c",
+  userId: "",
   totalSlots: 1,
   repeatDays: [],
   alarm: false,
@@ -164,13 +165,25 @@ const formatDateOnly = (dateStr: string): string => {
 };
 
 export const useTaskHandler = (onClose: () => void) => {
-  const [formState, setFormState] = useState<FormState>(DEFAULT_FORM_STATE);
+  const { user } = useAuth();
+  const authUserId = user?.user_id ?? "";
+  const [formState, setFormState] = useState<FormState>(() => ({
+    ...DEFAULT_FORM_STATE,
+    userId: authUserId,
+  }));
   const [error, setError] = useState<string | null>(null);
+
+  // Sync userId when auth loads after initial mount
+  useEffect(() => {
+    if (authUserId && !formState.userId) {
+      setFormState((prev) => ({ ...prev, userId: authUserId }));
+    }
+  }, [authUserId]);
 
   const { mutate: createTask, isPending: isTaskPending } = useCreateTask({
     onSuccess: () => {
       Alert.alert("Success", "Task created successfully");
-      setFormState(DEFAULT_FORM_STATE);
+      setFormState({ ...DEFAULT_FORM_STATE, userId: authUserId });
       setError(null);
       onClose();
     },
@@ -184,7 +197,7 @@ export const useTaskHandler = (onClose: () => void) => {
     useCreateTask({
       onSuccess: () => {
         Alert.alert("Success", "Appointment created successfully");
-        setFormState(DEFAULT_APPOINTMENT_STATE);
+        setFormState({ ...DEFAULT_APPOINTMENT_STATE, userId: authUserId });
         setError(null);
         onClose();
       },
@@ -197,7 +210,7 @@ export const useTaskHandler = (onClose: () => void) => {
     useCreateAppointmentSlot({
       onSuccess: () => {
         Alert.alert("Success", "Appointment slot created successfully");
-        setFormState(DEFAULT_APPOINTMENT_SLOT_STATE);
+        setFormState({ ...DEFAULT_APPOINTMENT_SLOT_STATE, userId: authUserId });
         setError(null);
         onClose();
       },
@@ -210,7 +223,7 @@ export const useTaskHandler = (onClose: () => void) => {
     useReserveAppointment({
       onSuccess: () => {
         Alert.alert("Success", "Appointment reserved successfully");
-        setFormState(DEFAULT_APPOINTMENT_STATE);
+        setFormState({ ...DEFAULT_APPOINTMENT_STATE, userId: authUserId });
         setError(null);
         onClose();
       },

@@ -1,16 +1,21 @@
 import { DynamicForm } from "@/components/forms";
 import { colors } from "@/constants";
-import { useRequestReport, useUploadReports } from "@/services";
+import {
+  useAppUserPublicKey,
+  useRequestReport,
+  useUploadReports,
+} from "@/services";
 import type { FormResponse, FormValues } from "@/types";
 import { FormFieldType } from "@/types";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
 interface ReportField {
-  id: string;
   active: boolean;
+  required: boolean;
   sequence: number;
   help_text: string;
+  shareable: boolean;
   field_type: string;
   description: string;
   display_label: string;
@@ -32,6 +37,13 @@ export function UploadReport({ requestReportId }: UploadReportProps) {
     error: fetchError,
   } = useRequestReport(requestReportId);
 
+  // Fetch user's public key (needed for encryption)
+  const {
+    data: appUserPublicKey,
+    isLoading: keyLoading,
+    error: keyError,
+  } = useAppUserPublicKey(requestReport?.user_id ?? undefined);
+
   // Upload reports mutation
   const {
     mutate: uploadReports,
@@ -47,7 +59,10 @@ export function UploadReport({ requestReportId }: UploadReportProps) {
   });
 
   const error =
-    (fetchError as Error)?.message || (uploadError as Error)?.message || "";
+    (fetchError as Error)?.message ||
+    (keyError as Error)?.message ||
+    (uploadError as Error)?.message ||
+    "";
 
   // Transform request report data into form data
   if (requestReport && !formData) {
@@ -59,11 +74,11 @@ export function UploadReport({ requestReportId }: UploadReportProps) {
       title: "Upload Reports",
       description: "Please upload the requested documents",
       questions: activeFields.map((field: ReportField) => ({
-        id: field.id,
+        id: `field-${field.sequence}`,
         type: FormFieldType.FILE_UPLOAD,
         question: field.display_label,
         helpText: field.help_text,
-        compulsory: true,
+        compulsory: field.required,
         sequence: field.sequence,
         notes: field.description,
         fileConfig: {
@@ -77,7 +92,7 @@ export function UploadReport({ requestReportId }: UploadReportProps) {
   }
 
   const handleSubmit = async (values: FormValues) => {
-    if (!requestReport || uploading) return;
+    if (!requestReport || uploading || !appUserPublicKey) return;
 
     // Calculate expiry date based on expiration_days from values
     const expirationDays = values.expiration_days || 7;
@@ -88,8 +103,9 @@ export function UploadReport({ requestReportId }: UploadReportProps) {
     const files: Array<{ file: File; title: string }> = [];
     Object.entries(values).forEach(([fieldId, file]) => {
       if (file instanceof File) {
+        const sequence = parseInt(fieldId.replace("field-", ""));
         const field = requestReport.requested_reports.find(
-          (f: ReportField) => f.id === fieldId
+          (f: ReportField) => f.sequence === sequence
         );
         const title = field?.display_label || "Report";
         files.push({ file, title });
@@ -102,10 +118,11 @@ export function UploadReport({ requestReportId }: UploadReportProps) {
       request_report_id: requestReportId,
       expiry_date: expiryDate.toISOString(),
       files,
+      appUserPublicKey,
     });
   };
 
-  if (loading) {
+  if (loading || keyLoading) {
     return (
       <div
         style={{

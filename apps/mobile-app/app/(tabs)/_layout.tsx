@@ -1,21 +1,25 @@
-import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { type BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { LinearGradient } from "expo-linear-gradient";
-import { Link, Tabs } from "expo-router";
+import { Tabs } from "expo-router";
 import {
   CalendarIcon,
   FoldersIcon,
   HouseLineIcon,
   UsersIcon,
 } from "phosphor-react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Pressable, View } from "react-native";
+
+import { KeyEntryModal } from "../auth/KeyEntryModal";
+import { KeyRevealModal } from "../auth/KeyRevealModal";
+
+import { encryptionKeyStorage } from "../../utils/storage";
 
 import { useClientOnlyValue } from "@/components/useClientOnlyValue";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 import { Color } from "@repo/config";
-import { useAuth } from "../../auth/AuthContext";
+import { useQueryClient } from "@tanstack/react-query";
 import { AIAssistantButton } from "./ai/AIAssistantButton";
 import AIAssistantModal from "./ai/index";
 
@@ -110,8 +114,8 @@ function CustomTabBar({
                   key={route.key}
                   accessibilityRole="button"
                   accessibilityState={isFocused ? { selected: true } : {}}
-                  accessibilityLabel={(options as any).tabBarAccessibilityLabel}
-                  testID={(options as any).tabBarTestID}
+                  accessibilityLabel={options.tabBarAccessibilityLabel}
+                  testID={options.tabBarButtonTestID}
                   onPress={onPress}
                   onLongPress={onLongPress}
                   className="items-center justify-center h-[50px] px-1"
@@ -139,7 +143,19 @@ function CustomTabBar({
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const [isAIAssistantVisible, setIsAIAssistantVisible] = useState(false);
-  const { signOut } = useAuth();
+  const [isKeyModalVisible, setIsKeyModalVisible] = useState(false);
+  const [isKeyEntryVisible, setIsKeyEntryVisible] = useState(false);
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const checkEncryptionKey = async () => {
+      const key = await encryptionKeyStorage.get();
+      if (!key) {
+        setIsKeyEntryVisible(true);
+      }
+    };
+    void checkEncryptionKey();
+  }, []);
 
   return (
     <View className="flex-1 h-full">
@@ -161,34 +177,9 @@ export default function TabLayout() {
           name="index"
           options={{
             title: "Home",
+            headerShown: false,
             tabBarIcon: ({ focused }) => (
               <CustomTabIcon name="home" focused={focused} />
-            ),
-            headerRight: () => (
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Link href="/modal" asChild>
-                  <Pressable className="mr-[15px]">
-                    {({ pressed }) => (
-                      <FontAwesome
-                        name="info-circle"
-                        size={25}
-                        color={Colors[colorScheme ?? "light"].text}
-                        style={{ opacity: pressed ? 0.5 : 1 }}
-                      />
-                    )}
-                  </Pressable>
-                </Link>
-                <Pressable onPress={signOut} className="mr-[15px]">
-                  {({ pressed }) => (
-                    <FontAwesome
-                      name="sign-out"
-                      size={25}
-                      color={Colors[colorScheme ?? "light"].text}
-                      style={{ opacity: pressed ? 0.5 : 1 }}
-                    />
-                  )}
-                </Pressable>
-              </View>
             ),
           }}
         />
@@ -197,6 +188,7 @@ export default function TabLayout() {
           name="schedule"
           options={{
             title: "Schedule",
+            headerShown: false,
             tabBarIcon: ({ focused }) => (
               <CustomTabIcon name="calendar" focused={focused} />
             ),
@@ -207,6 +199,7 @@ export default function TabLayout() {
           name="clients/index"
           options={{
             title: "Clients",
+            headerShown: false,
             tabBarIcon: ({ focused }) => (
               <CustomTabIcon name="user" focused={focused} />
             ),
@@ -217,6 +210,7 @@ export default function TabLayout() {
           name="reports/index"
           options={{
             title: "Reports",
+            headerShown: false,
             tabBarIcon: ({ focused }) => (
               <CustomTabIcon name="folder" focused={focused} />
             ),
@@ -239,11 +233,66 @@ export default function TabLayout() {
             headerShown: false,
           }}
         />
+        <Tabs.Screen
+          name="settings/index"
+          options={{
+            href: null,
+            headerShown: false,
+          }}
+        />
+        <Tabs.Screen
+          name="settings/form-setup-center/index"
+          options={{
+            href: null,
+            headerShown: false,
+          }}
+        />
+        <Tabs.Screen
+          name="reports/request-report"
+          options={{
+            href: null,
+            headerShown: false,
+          }}
+        />
+        <Tabs.Screen
+          name="reports/request-report/[id]"
+          options={{
+            href: null,
+            headerShown: false,
+          }}
+        />
       </Tabs>
 
       <AIAssistantModal
         visible={isAIAssistantVisible}
         onClose={() => setIsAIAssistantVisible(false)}
+      />
+
+      <KeyEntryModal
+        visible={isKeyEntryVisible}
+        onSuccess={() => setIsKeyEntryVisible(false)}
+        onForgotKey={() => {
+          setIsKeyEntryVisible(false);
+          setIsKeyModalVisible(true);
+        }}
+      />
+
+      <KeyRevealModal
+        visible={isKeyModalVisible}
+        mode="revoke"
+        onSuccess={() => {
+          setIsKeyModalVisible(false);
+          setIsKeyEntryVisible(false);
+          void queryClient.invalidateQueries({ queryKey: ["user-keys"] });
+        }}
+        onClose={() => {
+          setIsKeyModalVisible(false);
+          // Re-check: if key still missing, re-show entry modal
+          void (async () => {
+            const key = await encryptionKeyStorage.get();
+            if (!key) setIsKeyEntryVisible(true);
+          })();
+        }}
       />
     </View>
   );

@@ -1,4 +1,4 @@
-import { JwtService } from "../lib/jwt";
+import { type JwtService } from "../lib/jwt";
 import { hashPassword, verifyPassword } from "../lib/password";
 import type { RefreshTokenRepository, UserRepository } from "../repositories";
 

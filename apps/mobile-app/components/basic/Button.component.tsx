@@ -81,9 +81,10 @@ const ButtonComponent = ({
   const iconSettings = { size: defaultIconSize, color: finalIconColor };
 
   // Apply custom background color if provided
-  const buttonStyle = buttonColor
-    ? { backgroundColor: buttonColor }
-    : undefined;
+  const buttonStyle: ViewStyle = {
+    minWidth: 0,
+    ...(buttonColor ? { backgroundColor: buttonColor } : {}),
+  };
 
   // Apply text color to button text style
   const textStyleWithColor: RNTextStyle = {
@@ -92,6 +93,7 @@ const ButtonComponent = ({
     fontWeight: String(buttonTextStyle.fontWeight) as RNTextStyle["fontWeight"],
     fontStyle: buttonTextStyle.fontStyle,
     color: textColor,
+    textAlign: "center",
   };
 
   // Animation style for scaling
@@ -119,7 +121,7 @@ const ButtonComponent = ({
 
   // Button styling based on size using clsx
   const buttonClassName = clsx(
-    "justify-center items-center",
+    "justify-center items-center rounded-md !min-w-0",
     {
       // Large: Full width with fixed height, centered content
       "px-4 h-14 w-full gap-2": size === ButtonSize.Large,

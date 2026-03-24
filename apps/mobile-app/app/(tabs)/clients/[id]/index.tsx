@@ -1,17 +1,19 @@
+import { useAuth } from "@/auth/AuthContext";
 import { ButtonComponent, ButtonSize, TextComponent } from "@/components/basic";
 import { ChipComponent, ChipVariant } from "@/components/basic/Chip.component";
 import { Input, InputField, InputSlot } from "@/components/ui/input";
 import { Icons } from "@/config";
 import { useFetchClientById } from "@/services/clients";
+import { useFetchClientReports } from "@/services/reports";
 import { Color, Font, TextSize, TextVariant, textStyles } from "@repo/config";
+import type { ClientReport } from "@repo/models";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  SafeAreaView,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -21,6 +23,7 @@ import {
   type TextStyle as RNTextStyle,
 } from "react-native";
 import { AppointmentsList } from "./AppointmentList.component";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 enum ClientDetailTab {
   Appointments = "Appointments",
@@ -43,10 +46,17 @@ const textLargeStyle = textStyles[TextVariant.Body][TextSize.Large];
 const textButtonMediumStyle = textStyles[TextVariant.Button][TextSize.Medium];
 
 export default function ClientDetailScreen() {
+  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { user } = useAuth();
   const router = useRouter();
 
   const { data: client, isLoading } = useFetchClientById(id ?? "");
+  const {
+    mutate: fetchClientReports,
+    data: clientReportsResponse,
+    isPending: isReportsLoading,
+  } = useFetchClientReports();
 
   const [activeTab, setActiveTab] = useState<ClientDetailTab>(
     ClientDetailTab.Appointments
@@ -56,6 +66,88 @@ export default function ClientDetailScreen() {
   const [showRightShadow, setShowRightShadow] = useState(true);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
   const optionsButtonRef = useRef<View>(null);
+
+  const getDaySuffix = (day: number): string => {
+    if (day >= 11 && day <= 13) {
+      return "th";
+    }
+
+    switch (day % 10) {
+      case 1:
+        return "st";
+      case 2:
+        return "nd";
+      case 3:
+        return "rd";
+      default:
+        return "th";
+    }
+  };
+
+  const formatReportDate = (createdDate: string): string => {
+    const date = new Date(createdDate);
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+
+    const dateOnly = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    );
+    const todayOnly = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
+    const yesterdayOnly = new Date(
+      yesterday.getFullYear(),
+      yesterday.getMonth(),
+      yesterday.getDate()
+    );
+
+    if (dateOnly.getTime() === todayOnly.getTime()) {
+      return "Today";
+    }
+
+    if (dateOnly.getTime() === yesterdayOnly.getTime()) {
+      return "Yesterday";
+    }
+
+    const day = date.getDate();
+    const month = date.toLocaleString("en-US", { month: "short" });
+
+    return `${day}${getDaySuffix(day)} ${month}`;
+  };
+
+  const reports = useMemo(() => {
+    return clientReportsResponse?.reports ?? [];
+  }, [clientReportsResponse?.reports]);
+
+  const filteredReports = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) {
+      return reports;
+    }
+
+    return reports.filter((report) =>
+      (report.report_title ?? "").toLowerCase().includes(query)
+    );
+  }, [reports, searchQuery]);
+
+  const handleReportsTabPress = () => {
+    setActiveTab(ClientDetailTab.Reports);
+    setSearchQuery("");
+
+    if (!user?.user_id || !client?.client_id) {
+      return;
+    }
+
+    fetchClientReports({
+      user_id: user.user_id,
+      client_id: client.client_id,
+    });
+  };
 
   const handleActionScroll = (
     event: NativeSyntheticEvent<NativeScrollEvent>
@@ -128,7 +220,7 @@ export default function ClientDetailScreen() {
         console.log("Schedule appointment for:", client?.client_id);
         break;
       case "request_report":
-        console.log("Request report for:", client?.client_id);
+        router.push(`/reports/request-report/${client?.client_id}` as any);
         break;
       case "direct_upload_report":
         console.log("Direct upload report for:", client?.client_id);
@@ -158,15 +250,21 @@ export default function ClientDetailScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-white justify-center items-center">
+      <View
+        className="flex-1 bg-white justify-center items-center"
+        style={{ paddingTop: insets.top }}
+      >
         <ActivityIndicator size="large" color={Color.Green} />
-      </SafeAreaView>
+      </View>
     );
   }
 
   if (!client) {
     return (
-      <SafeAreaView className="flex-1 bg-white justify-center items-center gap-4">
+      <View
+        className="flex-1 bg-white justify-center items-center gap-4"
+        style={{ paddingTop: insets.top }}
+      >
         <TextComponent
           variant={TextVariant.Body}
           size={TextSize.Medium}
@@ -178,7 +276,7 @@ export default function ClientDetailScreen() {
           size={ButtonSize.Small}
           onPress={() => router.push("/clients" as any)}
         />
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -199,7 +297,7 @@ export default function ClientDetailScreen() {
   const displayName = titlePrefix ? `${titlePrefix} ${fullName}` : fullName;
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1"
@@ -360,10 +458,7 @@ export default function ClientDetailScreen() {
                         ? Color.Green
                         : "transparent",
                   }}
-                  onPress={() => {
-                    setActiveTab(ClientDetailTab.Reports);
-                    setSearchQuery("");
-                  }}
+                  onPress={handleReportsTabPress}
                   activeOpacity={0.7}
                 >
                   <TextComponent
@@ -427,7 +522,7 @@ export default function ClientDetailScreen() {
                               fontFamily:
                                 textButtonMediumStyle.fontFamily === Font.DMsans
                                   ? "DMSans_400Regular"
-                                  : "Lato_400Regular",
+                                  : "Inter_400Regular",
                               fontSize: textButtonMediumStyle.fontSize,
                               fontWeight: String(
                                 textButtonMediumStyle.fontWeight
@@ -470,7 +565,7 @@ export default function ClientDetailScreen() {
                     fontFamily:
                       textLargeStyle.fontFamily === Font.DMsans
                         ? "DMSans_400Regular"
-                        : "Lato_400Regular",
+                        : "Inter_400Regular",
                     fontSize: textLargeStyle.fontSize,
                     fontWeight: "400" as RNTextStyle["fontWeight"],
                     textAlign: "left",
@@ -491,19 +586,78 @@ export default function ClientDetailScreen() {
             }}
             showsVerticalScrollIndicator={false}
           >
-            {activeTab === ClientDetailTab.Appointments ? (
-              <AppointmentsList
-                clientId={client.client_id}
-                searchQuery={searchQuery}
-                onViewAppointment={(appointmentId) =>
-                  console.log("View appointment:", appointmentId)
-                }
-                onAddRecord={(appointmentId) =>
-                  console.log("Add record:", appointmentId)
-                }
-              />
+            {activeTab === ClientDetailTab.Reports && isReportsLoading ? (
+              <View className="flex-1 justify-center items-center py-20">
+                <ActivityIndicator size="large" color={Color.Green} />
+              </View>
             ) : (
-              <EmptyState icon={Icons.FileText} message="No reports found" />
+              <View className="flex-1">
+                {activeTab === ClientDetailTab.Appointments ? (
+                  <AppointmentsList
+                    clientId={client.client_id}
+                    searchQuery={searchQuery}
+                    onViewAppointment={(appointmentId) =>
+                      console.log("View appointment:", appointmentId)
+                    }
+                    onAddRecord={(appointmentId) =>
+                      console.log("Add record:", appointmentId)
+                    }
+                  />
+                ) : filteredReports.length > 0 ? (
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      flexWrap: "wrap",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    {filteredReports.map((report: ClientReport) => (
+                      <TouchableOpacity
+                        key={report.report_id}
+                        className="w-[31%] bg-white rounded-xl p-3 mb-3 justify-between"
+                        style={{
+                          minHeight: 140,
+                        }}
+                        onPress={() =>
+                          router.push(`/reports/${report.report_id}` as any)
+                        }
+                        activeOpacity={0.7}
+                      >
+                        <View className="items-center">
+                          <Icons.FileText
+                            size={52}
+                            color={Color.Grey}
+                            weight="light"
+                          />
+                          <TextComponent
+                            variant={TextVariant.Body}
+                            size={TextSize.Medium}
+                            className="mt-2 text-center"
+                            style={{
+                              color: Color.Black,
+                            }}
+                          >
+                            {report.report_title || "Untitled Report"}
+                          </TextComponent>
+                        </View>
+                        <TextComponent
+                          variant={TextVariant.Body}
+                          size={TextSize.Small}
+                          color={Color.Grey}
+                          className="text-center"
+                        >
+                          {formatReportDate(report.created_date)}
+                        </TextComponent>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                ) : (
+                  <EmptyState
+                    icon={Icons.FileText}
+                    message="No reports found"
+                  />
+                )}
+              </View>
             )}
           </ScrollView>
         </View>
@@ -517,6 +671,6 @@ export default function ClientDetailScreen() {
           activeOpacity={1}
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 }

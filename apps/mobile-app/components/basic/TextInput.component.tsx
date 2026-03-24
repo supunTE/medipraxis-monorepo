@@ -133,12 +133,10 @@ export const TextInput: React.FC<TextInputProps> = ({
             color: Color.Black,
             fontFamily:
               textLargeStyle.fontFamily === Font.DMsans
-                ? "DMSans_400Regular"
-                : "Lato_400Regular",
+                ? "DMSans_600SemiBold"
+                : "Inter_600SemiBold",
             fontSize: textLargeStyle.fontSize,
-            fontWeight: String(
-              textLargeStyle.fontWeight
-            ) as RNTextStyle["fontWeight"],
+            fontWeight: "600" as RNTextStyle["fontWeight"],
           }}
         >
           {label}
@@ -155,7 +153,7 @@ export const TextInput: React.FC<TextInputProps> = ({
           borderWidth: 1,
           borderRadius: 8,
           width: "100%",
-          height: 50,
+          height: 42,
           backgroundColor: inputWrapper.isDisabled
             ? Color.LightGrey
             : Color.White,
@@ -178,7 +176,7 @@ export const TextInput: React.FC<TextInputProps> = ({
             fontFamily:
               textLargeStyle.fontFamily === Font.DMsans
                 ? "DMSans_400Regular"
-                : "Lato_400Regular",
+                : "Inter_400Regular",
             fontSize: textLargeStyle.fontSize,
             fontWeight: String(
               textLargeStyle.fontWeight
@@ -206,7 +204,7 @@ export const TextInput: React.FC<TextInputProps> = ({
             fontFamily:
               textSmallStyle.fontFamily === Font.DMsans
                 ? "DMSans_400Regular"
-                : "Lato_400Regular",
+                : "Inter_400Regular",
             fontSize: textSmallStyle.fontSize,
             fontWeight: String(
               textSmallStyle.fontWeight
@@ -250,12 +248,10 @@ const OTPField: React.FC<OTPInputFieldProps> = ({
             color: Color.Black,
             fontFamily:
               textLargeStyle.fontFamily === Font.DMsans
-                ? "DMSans_400Regular"
-                : "Lato_400Regular",
+                ? "DMSans_600SemiBold"
+                : "Inter_600SemiBold",
             fontSize: textLargeStyle.fontSize,
-            fontWeight: String(
-              textLargeStyle.fontWeight
-            ) as RNTextStyle["fontWeight"],
+            fontWeight: "600" as RNTextStyle["fontWeight"],
           }}
         >
           {label}
@@ -289,7 +285,7 @@ const OTPField: React.FC<OTPInputFieldProps> = ({
             fontFamily:
               buttonLargeStyle.fontFamily === Font.DMsans
                 ? "DMSans_500Regular"
-                : "Lato_500Regular",
+                : "Inter_500Medium",
             fontSize: buttonLargeStyle.fontSize,
             fontWeight: String(
               buttonLargeStyle.fontWeight

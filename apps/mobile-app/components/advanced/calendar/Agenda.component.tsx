@@ -24,6 +24,8 @@ import type {
 interface AgendaComponentProps {
   selectedDate: string;
   agendaData?: AgendaData;
+  compactTopSpacing?: boolean;
+  headerRightAction?: React.ReactNode;
   onAppointmentPress?: (
     appointment: AgendaBlockContent,
     groupId: string | null
@@ -35,6 +37,8 @@ interface AgendaComponentProps {
 export function AgendaComponent({
   selectedDate,
   agendaData,
+  compactTopSpacing = false,
+  headerRightAction,
   onAppointmentPress,
   onEmptySlotPress,
   onReminderPress,
@@ -80,8 +84,9 @@ export function AgendaComponent({
   return (
     <>
       <View
-        className={clsx("px-4 py-4 bg-white z-10")}
+        className={clsx("px-4 pb-4 bg-white z-10")}
         style={{
+          paddingTop: compactTopSpacing ? 8 : 16,
           shadowColor: "#0000007b",
           shadowOffset: { width: 0, height: 8 },
           shadowOpacity: isScrolled ? 0.05 : 0,
@@ -89,9 +94,12 @@ export function AgendaComponent({
           elevation: isScrolled ? 2 : 0,
         }}
       >
-        <TextComponent size={TextSize.Small} variant={TextVariant.Title}>
-          {formatDate(selectedDate)}
-        </TextComponent>
+        <View className="flex-row items-center justify-between gap-3">
+          <TextComponent size={TextSize.Small} variant={TextVariant.Title}>
+            {formatDate(selectedDate)}
+          </TextComponent>
+          {headerRightAction ? <View>{headerRightAction}</View> : null}
+        </View>
       </View>
       <ScrollView
         className="flex-1 bg-white"

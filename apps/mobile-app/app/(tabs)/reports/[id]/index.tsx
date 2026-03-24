@@ -1,31 +1,35 @@
+import { useAuth } from "@/auth/AuthContext";
 import { ButtonComponent, ButtonSize, TextComponent } from "@/components/basic";
-import { useFetchReportFile } from "@/services/reports";
+import { useDecryptedReport, useFetchReportFile } from "@/services/reports";
 import { Color, TextSize, TextVariant } from "@repo/config";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import {
-  CalendarBlankIcon,
-  ClockIcon,
-  FileTextIcon,
-  UserIcon,
-} from "phosphor-react-native";
+import { ReportFileType } from "@repo/models";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import {
   allowScreenCaptureAsync,
   preventScreenCaptureAsync,
 } from "expo-screen-capture";
-import { useFocusEffect } from "expo-router";
+import {
+  CalendarBlankIcon,
+  ClockIcon,
+  FileTextIcon,
+  LockIcon,
+  UserIcon,
+} from "phosphor-react-native";
 import React, { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
   Image,
   Platform,
-  SafeAreaView,
   ScrollView,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
 
-const TEMP_USER_ID = "2a3c19b8-d352-4b30-a2ac-1cdf993d310c";
+const ICON_SIZE = 18;
+const DOCUMENT_HEIGHT_RATIO = 0.6;
+const IMAGE_HEIGHT_RATIO = 0.5;
 
 const HIDE_POPOUT_ICON_JS = `
 (function() {
@@ -66,7 +70,15 @@ const isImage = (fileType: string | null) => {
   );
 };
 
+const isEncrypted = (fileType: string | null) =>
+  fileType === ReportFileType.EncryptedPdf ||
+  fileType === ReportFileType.EncryptedImage;
+
 export default function ReportViewerScreen() {
+  const insets = useSafeAreaInsets();
+  const { user } = useAuth();
+  const userId = user?.user_id ?? "";
+
   useFocusEffect(
     useCallback(() => {
       preventScreenCaptureAsync();
@@ -87,7 +99,10 @@ export default function ReportViewerScreen() {
     isLoading,
     error,
     refetch,
-  } = useFetchReportFile(TEMP_USER_ID, id || "");
+  } = useFetchReportFile(userId, id || "");
+
+  const { decryptedBase64, originalType, isDecrypting, decryptionError } =
+    useDecryptedReport(reportData?.fileUrl ?? "", reportData?.fileType ?? null);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -111,7 +126,10 @@ export default function ReportViewerScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-white justify-center items-center">
+      <View
+        className="flex-1 bg-white justify-center items-center"
+        style={{ paddingTop: insets.top }}
+      >
         <ActivityIndicator size="large" color={Color.Green} />
         <TextComponent
           variant={TextVariant.Body}
@@ -121,13 +139,13 @@ export default function ReportViewerScreen() {
         >
           Loading report...
         </TextComponent>
-      </SafeAreaView>
+      </View>
     );
   }
 
   if (error || !reportData) {
     return (
-      <SafeAreaView className="flex-1 bg-white">
+      <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
         <View className="px-5 pt-3">
           <View className="mb-6 self-start">
             <ButtonComponent.BackButton
@@ -154,13 +172,13 @@ export default function ReportViewerScreen() {
             Retry
           </ButtonComponent>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <View className="flex-1 bg-[#F5F5F5]">
+    <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+      <View className="flex-1" style={{ backgroundColor: Color.LightGrey }}>
         {/* Header Section */}
         <View className="px-5 pt-3 pb-6 bg-white">
           {/* Back Button */}
@@ -175,7 +193,7 @@ export default function ReportViewerScreen() {
           <View className="gap-2">
             {/* Client Name */}
             <View className="flex-row items-center gap-2">
-              <UserIcon size={18} color={Color.Black} weight="regular" />
+              <UserIcon size={ICON_SIZE} color={Color.Black} weight="regular" />
               <TextComponent
                 variant={TextVariant.Body}
                 size={TextSize.Small}
@@ -194,7 +212,11 @@ export default function ReportViewerScreen() {
 
             {/* Report Title */}
             <View className="flex-row items-center gap-2">
-              <FileTextIcon size={18} color={Color.Black} weight="regular" />
+              <FileTextIcon
+                size={ICON_SIZE}
+                color={Color.Black}
+                weight="regular"
+              />
               <TextComponent
                 variant={TextVariant.Body}
                 size={TextSize.Small}
@@ -214,7 +236,7 @@ export default function ReportViewerScreen() {
             {/* Uploaded On */}
             <View className="flex-row items-center gap-2">
               <CalendarBlankIcon
-                size={18}
+                size={ICON_SIZE}
                 color={Color.Black}
                 weight="regular"
               />
@@ -237,7 +259,11 @@ export default function ReportViewerScreen() {
             {/* Expires On */}
             {reportData.expiresIn && (
               <View className="flex-row items-center gap-2">
-                <ClockIcon size={18} color={Color.Danger} weight="regular" />
+                <ClockIcon
+                  size={ICON_SIZE}
+                  color={Color.Danger}
+                  weight="regular"
+                />
                 <TextComponent
                   variant={TextVariant.Body}
                   size={TextSize.Small}
@@ -259,7 +285,8 @@ export default function ReportViewerScreen() {
 
         {/* Document Viewer */}
         <ScrollView
-          className="flex-1 bg-[#F5F5F5]"
+          className="flex-1"
+          style={{ backgroundColor: Color.LightGrey }}
           contentContainerStyle={{
             paddingHorizontal: 20,
             paddingTop: 20,
@@ -291,11 +318,116 @@ export default function ReportViewerScreen() {
                 Retry
               </ButtonComponent>
             </View>
-          ) : reportData.fileType && isPDF(reportData.fileType) ? (
+          ) : isEncrypted(reportData.fileType) && isDecrypting ? (
+            <View className="flex-1 justify-center items-center">
+              <ActivityIndicator size="large" color={Color.Green} />
+              <TextComponent
+                variant={TextVariant.Body}
+                size={TextSize.Small}
+                color={Color.Grey}
+                className="mt-2"
+              >
+                Decrypting report...
+              </TextComponent>
+            </View>
+          ) : isEncrypted(reportData.fileType) && decryptionError ? (
+            <View className="p-6 bg-gray-100 rounded-lg items-center">
+              <LockIcon size={48} color={Color.Grey} weight="regular" />
+              <TextComponent
+                variant={TextVariant.Body}
+                size={TextSize.Medium}
+                color={Color.Black}
+                className="mt-4 mb-2"
+              >
+                File is locked
+              </TextComponent>
+              <TextComponent
+                variant={TextVariant.Body}
+                size={TextSize.Small}
+                color={Color.Grey}
+                className="text-center"
+              >
+                {decryptionError}
+              </TextComponent>
+            </View>
+          ) : isEncrypted(reportData.fileType) &&
+            decryptedBase64 &&
+            originalType === "pdf" ? (
             <View
               className="relative rounded-xl overflow-hidden bg-white"
               style={{
                 height: Dimensions.get("window").height * 0.6,
+              }}
+            >
+              <WebView
+                source={{
+                  html: `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>*{margin:0;padding:0}canvas{width:100%;display:block;margin-bottom:4px}</style><script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script></head><body><div id="c"></div><script>pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";var r=atob("${decryptedBase64}"),u=new Uint8Array(r.length);for(var i=0;i<r.length;i++)u[i]=r.charCodeAt(i);pdfjsLib.getDocument({data:u}).promise.then(function(p){var c=document.getElementById("c");(function next(n){if(n>p.numPages)return;p.getPage(n).then(function(pg){var s=window.innerWidth/pg.getViewport({scale:1}).width;var vp=pg.getViewport({scale:s});var cv=document.createElement("canvas");cv.width=vp.width;cv.height=vp.height;c.appendChild(cv);pg.render({canvasContext:cv.getContext("2d"),viewport:vp}).promise.then(function(){next(n+1)})});})(1);});</script></body></html>`,
+                }}
+                onLoadStart={() => setDocumentLoading(true)}
+                onLoadEnd={() => setDocumentLoading(false)}
+                onError={() => {
+                  setDocumentError(true);
+                  setDocumentLoading(false);
+                }}
+                originWhitelist={["*"]}
+                className="flex-1 w-full"
+                startInLoadingState={true}
+                scalesPageToFit={true}
+                javaScriptEnabled={true}
+              />
+              {documentLoading && (
+                <View className="absolute inset-0 justify-center items-center bg-white/80">
+                  <ActivityIndicator size="large" color={Color.Green} />
+                  <TextComponent
+                    variant={TextVariant.Body}
+                    size={TextSize.Small}
+                    color={Color.Grey}
+                    className="mt-2"
+                  >
+                    Loading PDF...
+                  </TextComponent>
+                </View>
+              )}
+            </View>
+          ) : isEncrypted(reportData.fileType) &&
+            decryptedBase64 &&
+            originalType === "image" ? (
+            <View className="relative">
+              <Image
+                source={{
+                  uri: `data:image/png;base64,${decryptedBase64}`,
+                }}
+                className="w-full rounded-xl"
+                style={{
+                  height: Dimensions.get("window").height * 0.5,
+                }}
+                resizeMode="contain"
+                onLoadStart={() => setDocumentLoading(true)}
+                onLoadEnd={() => setDocumentLoading(false)}
+                onError={() => {
+                  setDocumentError(true);
+                  setDocumentLoading(false);
+                }}
+              />
+              {documentLoading && (
+                <View className="absolute inset-0 justify-center items-center bg-white/80">
+                  <ActivityIndicator size="large" color={Color.Green} />
+                  <TextComponent
+                    variant={TextVariant.Body}
+                    size={TextSize.Small}
+                    color={Color.Grey}
+                    className="mt-2"
+                  >
+                    Loading image...
+                  </TextComponent>
+                </View>
+              )}
+            </View>
+          ) : reportData.fileType && isPDF(reportData.fileType) ? (
+            <View
+              className="relative rounded-xl overflow-hidden bg-white"
+              style={{
+                height: Dimensions.get("window").height * DOCUMENT_HEIGHT_RATIO,
               }}
             >
               <WebView
@@ -345,7 +477,7 @@ export default function ReportViewerScreen() {
                 source={{ uri: reportData.fileUrl }}
                 className="w-full rounded-xl"
                 style={{
-                  height: Dimensions.get("window").height * 0.5,
+                  height: Dimensions.get("window").height * IMAGE_HEIGHT_RATIO,
                 }}
                 resizeMode="contain"
                 onLoadStart={() => setDocumentLoading(true)}
@@ -382,6 +514,6 @@ export default function ReportViewerScreen() {
           )}
         </ScrollView>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }

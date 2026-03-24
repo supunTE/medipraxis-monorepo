@@ -1,3 +1,4 @@
+import { useAuth } from "@/auth/AuthContext";
 import { ButtonComponent, ButtonSize, TextComponent } from "@/components/basic";
 import { View } from "@/components/Themed";
 import { Input, InputField, InputSlot } from "@/components/ui/input";
@@ -6,11 +7,12 @@ import {
   groupClientsByLetter,
   useCreateClient,
   useFetchClients,
+  useFetchFirstThreeClientMembers,
   type CreateClientInput,
 } from "@/services/clients";
 import { Color, Font, TextSize, TextVariant, textStyles } from "@repo/config";
 import { useRouter } from "expo-router";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Platform,
@@ -22,6 +24,7 @@ import {
   type NativeSyntheticEvent,
   type TextStyle as RNTextStyle,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AddClient } from "./addClient";
 import { ClientCardComponent } from "./ClientCard.component";
 
@@ -32,13 +35,10 @@ const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 const NAV_BAR_HEIGHT = Platform.OS === "ios" ? 83 : 60;
 const CIRCLE_SIZE = 18;
 
-interface ClientsScreenProps {
-  userId?: string; // Will use default if not provided
-}
-
-export default function ClientsScreen({
-  userId = "2a3c19b8-d352-4b30-a2ac-1cdf993d310c", // Default hard coded user ID
-}: ClientsScreenProps) {
+export default function ClientsScreen() {
+  const insets = useSafeAreaInsets();
+  const { user } = useAuth();
+  const userId = user?.user_id ?? "";
   const [searchQuery, setSearchQuery] = useState("");
   const [visibleSection, setVisibleSection] = useState<string>("A");
   const [isAddClientVisible, setIsAddClientVisible] = useState(false);
@@ -51,17 +51,37 @@ export default function ClientsScreen({
   const router = useRouter();
 
   // Fetch clients using React Query
-  const { data: clients = [], isLoading } = useFetchClients(userId);
+  const { data: clients, isLoading } = useFetchClients(userId);
 
   // Create client mutation
   const createClientMutation = useCreateClient(userId);
 
   // Filter clients based on search
-  const filteredClients = clients.filter((client) =>
-    client.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const groupedClients = useMemo(() => {
+    const filteredClients = (clients ?? []).filter((client) =>
+      client.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const groupClient = groupClientsByLetter(filteredClients);
+    return groupClient;
+  }, [clients, searchQuery]);
+
+  const [familyMembersMap, setFamilyMembersMap] = useState<
+    Record<string, any[]>
+  >({});
+
+  // Fetch first three clients' family members
+  const { data: firstThreeMembers } = useFetchFirstThreeClientMembers(
+    groupedClients,
+    searchQuery
   );
 
-  const groupedClients = groupClientsByLetter(filteredClients);
+  // Update familyMembersMap when firstThreeMembers data arrives
+  useEffect(() => {
+    if (firstThreeMembers) {
+      setFamilyMembersMap(firstThreeMembers);
+    }
+  }, [firstThreeMembers]);
 
   const handleClientPress = (clientId: string) => {
     router.push(`/clients/${clientId}` as any);
@@ -139,9 +159,9 @@ export default function ClientsScreen({
   }
 
   // Empty state - no clients loaded
-  if (clients.length === 0) {
+  if (clients?.length === 0) {
     return (
-      <View className="flex-1 pt-5">
+      <View className="flex-1" style={{ paddingTop: insets.top + 20 }}>
         {/* Header */}
         <View className="flex-row justify-between items-center px-5 mb-5">
           <TextComponent variant={TextVariant.Title} size={TextSize.Large}>
@@ -169,7 +189,7 @@ export default function ClientsScreen({
               borderWidth: 1.5,
               borderRadius: 12,
               width: "100%",
-              height: 56,
+              height: 54,
               backgroundColor: Color.White,
             }}
           >
@@ -185,7 +205,7 @@ export default function ClientsScreen({
                 fontFamily:
                   textLargeStyle.fontFamily === Font.DMsans
                     ? "DMSans_400Regular"
-                    : "Lato_400Regular",
+                    : "Inter_400Regular",
                 fontSize: textLargeStyle.fontSize,
                 fontWeight: "400" as RNTextStyle["fontWeight"],
                 textAlign: "left",
@@ -200,13 +220,6 @@ export default function ClientsScreen({
 
         {/* Empty state message */}
         <View className="flex-1 justify-center items-center px-5">
-          <TextComponent
-            variant={TextVariant.Title}
-            size={TextSize.Large}
-            style={{ marginTop: 16, color: Color.Grey }}
-          >
-            📋
-          </TextComponent>
           <TextComponent
             variant={TextVariant.Title}
             size={TextSize.Medium}
@@ -233,8 +246,10 @@ export default function ClientsScreen({
     );
   }
 
+  let globalIndex = 0;
+
   return (
-    <View className="flex-1 pt-5">
+    <View className="flex-1" style={{ paddingTop: insets.top + 20 }}>
       {/* Header */}
       <View className="flex-row justify-between items-center px-5 mb-5">
         <TextComponent variant={TextVariant.Title} size={TextSize.Large}>
@@ -262,7 +277,7 @@ export default function ClientsScreen({
             borderWidth: 1.5,
             borderRadius: 12,
             width: "100%",
-            height: 56,
+            height: 54,
             backgroundColor: Color.White,
           }}
         >
@@ -278,7 +293,7 @@ export default function ClientsScreen({
               fontFamily:
                 textLargeStyle.fontFamily === Font.DMsans
                   ? "DMSans_400Regular"
-                  : "Lato_400Regular",
+                  : "Inter_400Regular",
               fontSize: textLargeStyle.fontSize,
               fontWeight: "400" as RNTextStyle["fontWeight"],
               textAlign: "left",
@@ -323,16 +338,21 @@ export default function ClientsScreen({
                   >
                     {letter}
                   </TextComponent>
-                  {clientGroup.map((client) => (
-                    <ClientCardComponent
-                      key={client.id}
-                      id={client.id}
-                      name={client.name}
-                      color={client.color}
-                      icon={client.icon}
-                      onPress={() => handleClientPress(client.id)}
-                    />
-                  ))}
+                  {clientGroup.map((client) => {
+                    const currentIndex = globalIndex++;
+                    return (
+                      <ClientCardComponent
+                        key={client.id}
+                        id={client.id}
+                        name={client.name}
+                        color={client.color}
+                        icon={client.icon}
+                        onPress={() => handleClientPress(client.id)}
+                        index={currentIndex}
+                        familyMembers={familyMembersMap[client.id] || []}
+                      />
+                    );
+                  })}
                 </View>
               );
             })}

@@ -1,12 +1,3 @@
-import { useFetchClients } from "@/services/clients/useClients";
-import { useGetSlotWindows } from "@/services/slot-windows/useGetSlotWindows";
-import {
-  EVENT_TYPES,
-  useTaskHandler,
-  type EventType,
-} from "@/services/tasks/useTaskHandler";
-import React, { useEffect, useMemo, useState } from "react";
-import { Alert, Modal, ScrollView, TouchableOpacity, View } from "react-native";
 import {
   ButtonComponent,
   ButtonSize,
@@ -21,7 +12,16 @@ import {
   ToggleButton,
 } from "@/components/basic";
 import { Icons } from "@/config";
+import { useFetchClients } from "@/services/clients/useClients";
+import { useGetSlotWindows } from "@/services/slot-windows/useGetSlotWindows";
+import {
+  EVENT_TYPES,
+  useTaskHandler,
+  type EventType,
+} from "@/services/tasks/useTaskHandler";
 import { Color, TextSize, TextVariant } from "@repo/config";
+import React, { useEffect, useMemo, useState } from "react";
+import { Alert, Modal, ScrollView, TouchableOpacity, View } from "react-native";
 
 type Props = {
   visible: boolean;
@@ -173,7 +173,7 @@ export default function TaskForm({ visible, onClose }: Props) {
             value={eventType}
             onChange={(val) => switchEventType(val as EventType)}
             options={eventTypes.map((type) => ({
-              label: EVENT_TYPE_LABELS[type as keyof typeof EVENT_TYPE_LABELS],
+              label: EVENT_TYPE_LABELS[type],
               value: type,
             }))}
             className="mb-4 gap-3 flex-col"
@@ -479,7 +479,6 @@ export default function TaskForm({ visible, onClose }: Props) {
           {eventType === EVENT_TYPES.TASK && (
             <View className="mt-2.5 flex-row items-center">
               <CheckboxComponent
-                value="alarm"
                 label="Do you want to set an alarm"
                 isChecked={alarm}
                 onChange={(checked) => setField("alarm", checked)}

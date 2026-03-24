@@ -118,12 +118,10 @@ export const TextAreaComponent: React.FC<TextAreaProps> = ({
             color: Color.Black,
             fontFamily:
               textLargeStyle.fontFamily === Font.DMsans
-                ? "DMSans_400Regular"
-                : "Lato_400Regular",
+                ? "DMSans_600SemiBold"
+                : "Inter_600SemiBold",
             fontSize: textLargeStyle.fontSize,
-            fontWeight: String(
-              textLargeStyle.fontWeight
-            ) as RNTextStyle["fontWeight"],
+            fontWeight: "600" as RNTextStyle["fontWeight"],
           }}
         >
           {label}
@@ -152,7 +150,7 @@ export const TextAreaComponent: React.FC<TextAreaProps> = ({
             fontFamily:
               textLargeStyle.fontFamily === Font.DMsans
                 ? "DMSans_400Regular"
-                : "Lato_400Regular",
+                : "Inter_400Regular",
             fontSize: textLargeStyle.fontSize,
             fontWeight: String(
               textLargeStyle.fontWeight
@@ -170,7 +168,7 @@ export const TextAreaComponent: React.FC<TextAreaProps> = ({
             fontFamily:
               textSmallStyle.fontFamily === Font.DMsans
                 ? "DMSans_400Regular"
-                : "Lato_400Regular",
+                : "Inter_400Regular",
             fontSize: textSmallStyle.fontSize,
             fontWeight: String(
               textSmallStyle.fontWeight

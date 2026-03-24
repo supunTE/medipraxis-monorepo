@@ -1,3 +1,4 @@
+import { useAuth } from "@/auth/AuthContext";
 import { ButtonComponent, ButtonSize, TextComponent } from "@/components/basic";
 import { Input, InputField, InputSlot } from "@/components/ui/input";
 import { Icons } from "@/config";
@@ -12,24 +13,30 @@ import {
   View,
   type TextStyle as RNTextStyle,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ReportTile } from "./ReportTile.component";
 
-// Text styles
-const textLargeStyle = textStyles[TextVariant.Body][TextSize.Large];
+const SEARCH_ICON_SIZE = 20;
+const INPUT_HEIGHT = 54;
+const INPUT_BORDER_WIDTH = 1.5;
+const INPUT_BORDER_RADIUS = 12;
+const BOTTOM_PADDING = 100;
 
 type TabType = "completed" | "pending";
 
-// Hardcoded user ID for now - TODO: Get from auth context
-const TEMP_USER_ID = "2a3c19b8-d352-4b30-a2ac-1cdf993d310c";
+const textLargeStyle = textStyles[TextVariant.Body][TextSize.Large];
 
 export default function ReportsScreen() {
+  const insets = useSafeAreaInsets();
+  const { user } = useAuth();
+  const userId = user?.user_id ?? "";
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<TabType>("completed");
   const router = useRouter();
 
   // Fetch reports based on active tab
   const { data: groupedReports = [], isLoading } = useFetchGroupedReports(
-    TEMP_USER_ID,
+    userId,
     activeTab === "completed"
   );
 
@@ -68,8 +75,23 @@ export default function ReportsScreen() {
     router.push(`/reports/${reportId}` as any);
   };
 
+  const handleRequestReport = () => {
+    const firstGroup = filteredReports[0];
+    const clientId = firstGroup?.client_id || "unknown-client";
+    const clientName = firstGroup
+      ? `${firstGroup.client_first_name} ${firstGroup.client_last_name}`.trim()
+      : "Unknown Client";
+
+    router.push(
+      `/reports/request-report/${clientId}?clientName=${encodeURIComponent(clientName)}` as any
+    );
+  };
+
   return (
-    <View className="flex-1 bg-white px-5 pt-5">
+    <View
+      className="flex-1 bg-white"
+      style={{ paddingTop: insets.top + 20, paddingHorizontal: 20 }}
+    >
       {/* Header with Title and Button */}
       <View className="flex-row justify-between items-center mb-5">
         <TextComponent
@@ -84,10 +106,7 @@ export default function ReportsScreen() {
           size={ButtonSize.Small}
           buttonColor={Color.Black}
           textColor={Color.White}
-          onPress={() => {
-            // TODO: Implement request report functionality
-            console.log("Request Report pressed");
-          }}
+          onPress={handleRequestReport}
         >
           + Request Report
         </ButtonComponent>
@@ -100,10 +119,10 @@ export default function ReportsScreen() {
           size="md"
           style={{
             borderColor: Color.LightGrey,
-            borderWidth: 1.5,
-            borderRadius: 12,
+            borderWidth: INPUT_BORDER_WIDTH,
+            borderRadius: INPUT_BORDER_RADIUS,
             width: "100%",
-            height: 56,
+            height: INPUT_HEIGHT,
             backgroundColor: Color.White,
           }}
         >
@@ -119,7 +138,7 @@ export default function ReportsScreen() {
               fontFamily:
                 textLargeStyle.fontFamily === Font.DMsans
                   ? "DMSans_400Regular"
-                  : "Lato_400Regular",
+                  : "Inter_400Regular",
               fontSize: textLargeStyle.fontSize,
               fontWeight: "400" as RNTextStyle["fontWeight"],
               textAlign: "left",
@@ -127,7 +146,11 @@ export default function ReportsScreen() {
             }}
           />
           <InputSlot className="pr-4">
-            <Icons.Search size={20} color={Color.Grey} weight="regular" />
+            <Icons.Search
+              size={SEARCH_ICON_SIZE}
+              color={Color.Grey}
+              weight="regular"
+            />
           </InputSlot>
         </Input>
       </View>
@@ -174,7 +197,7 @@ export default function ReportsScreen() {
         className="flex-1"
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingBottom: 100,
+          paddingBottom: BOTTOM_PADDING,
         }}
       >
         {isLoading ? (

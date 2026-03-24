@@ -1,4 +1,4 @@
-import type { ClientReport } from "@repo/models";
+import type { ClientReport, ReportFileType } from "@repo/models";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { REQUEST_REPORT_QUERIES } from "./request_report.repository";
 
@@ -18,6 +18,8 @@ export const CLIENT_REPORT_QUERIES = {
   USER_ID: "user_id",
   CREATED_DATE: "created_date",
   REQUEST_REPORT_ID: "request_report_id",
+  EXPIRY_DATE: "expiry_date",
+  DELETED: "deleted",
 
   // Select queries
   FIND_ALL: "*",
@@ -67,6 +69,7 @@ export class ClientReportRepository {
       user_id: string;
       request_report_id?: string;
       expiry_date?: string;
+      file_type?: ReportFileType;
     },
     filePath: string
   ): Promise<ClientReport> {
@@ -80,6 +83,10 @@ export class ClientReportRepository {
 
     if (input.expiry_date) {
       insertData["expiry_date"] = input.expiry_date;
+    }
+
+    if (input.file_type) {
+      insertData[CLIENT_REPORT_QUERIES.FILE_TYPE] = input.file_type;
     }
 
     const { data, error } = await this.db
@@ -99,9 +106,15 @@ export class ClientReportRepository {
    * Find all client reports (optionally filter by user_id or client_id)
    */
   async findAll(userId?: string, clientId?: string): Promise<ClientReport[]> {
+    const today = new Date().toISOString().split("T")[0];
+
     let query = this.db
       .from(CLIENT_REPORT_QUERIES.CLIENT_REPORT_TABLE)
-      .select(CLIENT_REPORT_QUERIES.FIND_ALL);
+      .select(CLIENT_REPORT_QUERIES.FIND_ALL)
+      .eq(CLIENT_REPORT_QUERIES.DELETED, false)
+      .or(
+        `${CLIENT_REPORT_QUERIES.EXPIRY_DATE}.gt.${today},${CLIENT_REPORT_QUERIES.EXPIRY_DATE}.is.null`
+      );
 
     if (userId) {
       query = query.eq(CLIENT_REPORT_QUERIES.USER_ID, userId);

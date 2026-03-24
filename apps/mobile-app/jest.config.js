@@ -4,7 +4,7 @@ module.exports = {
   setupFilesAfterEnv: ["<rootDir>/jest.setup.js"],
   testMatch: ["**/__tests__/**/*.ts?(x)", "**/?(*.)+(spec|test).ts?(x)"],
   transformIgnorePatterns: [
-    "node_modules/(?!(react-native|@react-native|@react-navigation|expo|@expo|phosphor-react-native)/)",
+    "node_modules/(?!(react-native|@react-native|@react-navigation|expo|@expo|phosphor-react-native|@noble)/)",
   ],
   moduleFileExtensions: ["ts", "tsx", "js", "jsx"],
   coverageDirectory: "<rootDir>/coverage",

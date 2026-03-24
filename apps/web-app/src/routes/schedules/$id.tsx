@@ -127,7 +127,7 @@ function ScheduleDetail() {
     );
   }
 
-  const doctorName = data?.data?.user
+  const practitionerName = data?.data?.user
     ? `Dr. ${data.data.user.first_name} ${data.data.user.last_name}`
     : "Doctor";
 
@@ -147,7 +147,7 @@ function ScheduleDetail() {
           </span>
           <button className="bg-mp-green px-6 py-2 rounded-md hover:bg-mp-green/90 transition-colors">
             <span className="text-lg font-semibold text-mp-dark-green font-lato">
-              {doctorName}
+              {practitionerName}
             </span>
           </button>
         </div>
