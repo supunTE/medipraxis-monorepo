@@ -272,4 +272,3 @@ The AI assistant is intentionally restricted for safety.
 ### Design Principle:
 
 > AI is **supportive, controlled, and human-supervised**
-
