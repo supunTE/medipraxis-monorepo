@@ -3,6 +3,7 @@
 ## Table of Contents
 
 - [About MediPraxis](#about-medipraxis)
+  - [Useful Links](#useful-links)
 - [Who We Serve](#who-we-serve)
 - [Core Features](#core-features)
   - [Appointment Scheduling](#appointment-scheduling)
@@ -38,6 +39,15 @@ MediPraxis solves these problems by providing:
 - **Flexible and customizable tools**
 
 The system is built with an **empathy-driven, practitioner-centered approach**, ensuring ease of use and adaptability to real-world healthcare environments.
+
+### Useful Links
+
+- **Marketing Website:** [medipraxis.com.lk](https://medipraxis.com.lk/)
+- **Social Media:**
+  - **Facebook:** [MediPraxis Official](https://www.facebook.com/profile.php?id=61586449318855)
+  - **LinkedIn:** [MediPraxis Company](https://www.linkedin.com/company/medi-praxis/about/)
+  - **Instagram:** [@medipraxis.social](https://www.instagram.com/medipraxis.social/)
+  - **YouTube:** [@MediPraxis](http://youtube.com/@MediPraxis)
 
 ---
 
