@@ -1,10 +1,10 @@
 import { useAuth } from "@/auth/AuthContext";
 import { useFocusEffect } from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCallback, useMemo, useState } from "react";
-import { Alert, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
+import { useCallback, useMemo, useState } from "react";
+import { Alert, StyleSheet } from "react-native";
+import { View } from "@/components/Themed";
 import {
   type AgendaBlockContent,
   type AgendaData,
@@ -23,8 +23,9 @@ import {
   useGetAppointments,
   useGetReminders,
   useGetTaskById,
+  useUpdateTask,
 } from "@/services/tasks";
-import { formatISOToTime } from "@/utils";
+import { formatISOToTime, simpleDateTimeToISO } from "@/utils";
 import { Color } from "@repo/config";
 import { type TaskDetails } from "@repo/models";
 
@@ -88,6 +89,18 @@ export default function ScheduleScreen() {
     onError: (message) => {
       Alert.alert("Error", message);
       setSelectedReminderId(null);
+    },
+  });
+
+  const { mutate: updateTask, isLoading: isLoadingUpdate } = useUpdateTask({
+    onSuccess: () => {
+      setViewReminderReadOnly(true);
+      if (selectedReminderId) {
+        reminderTaskQuery.mutate({ task_id: selectedReminderId });
+      }
+    },
+    onError: (message) => {
+      Alert.alert("Error", message ?? "Failed to update reminder");
     },
   });
 
@@ -169,6 +182,21 @@ export default function ScheduleScreen() {
     setViewReminderReadOnly(false);
   };
 
+  const handleSaveTaskModal = (form: TaskDetails) => {
+    updateTask({
+      task_id: form.task_id,
+      data: {
+        start_date: form.start_date.includes("T")
+          ? form.start_date
+          : simpleDateTimeToISO(form.start_date),
+        note: form.note ?? undefined,
+        set_alarm: form.set_alarm,
+      },
+    });
+    setViewApptReadOnly(true);
+    setViewReminderReadOnly(true);
+  };
+
   const handleReminderPress = (reminderId: string) => {
     setSelectedReminderId(reminderId);
     reminderTaskQuery.mutate({ task_id: reminderId });
@@ -221,8 +249,10 @@ export default function ScheduleScreen() {
           data={appointmentTaskQuery.data.task}
           onClose={handleCloseViewApptModal}
           onEdit={handleEditViewApptModal}
+          onSave={handleSaveTaskModal}
           onCancel={handleCloseViewApptModal}
           readOnly={viewApptReadOnly}
+          isSaving={isLoadingUpdate}
         />
       )}
 
@@ -232,8 +262,10 @@ export default function ScheduleScreen() {
           data={reminderTaskQuery.data.task}
           onClose={handleCloseViewReminderModal}
           onEdit={handleEditViewReminderModal}
+          onSave={handleSaveTaskModal}
           onCancel={handleCloseViewReminderModal}
           readOnly={viewReminderReadOnly}
+          isSaving={isLoadingUpdate}
         />
       )}
 

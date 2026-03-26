@@ -25,6 +25,7 @@ interface ToggleButtonProps {
   isActive?: boolean;
   onToggle?: (active: boolean) => void;
   label?: string;
+  readOnly?: boolean;
 }
 
 // Map user size to platform-specific internal size
@@ -55,6 +56,7 @@ export const ToggleButton = ({
   isActive: controlledIsActive,
   onToggle,
   label,
+  readOnly,
 }: ToggleButtonProps) => {
   const [internalIsActive, setInternalIsActive] = useState(false);
   const internalSize = getInternalSize(size);
@@ -112,7 +114,7 @@ export const ToggleButton = ({
           false: Color.Grey,
           true: Color.Green,
         }}
-        disabled={!onToggle}
+        disabled={readOnly || !onToggle}
       />
     </View>
   );
