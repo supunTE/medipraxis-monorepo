@@ -16,7 +16,6 @@
 - [Data Safety & HIPAA Compliance](#data-safety--hipaa-compliance)
 - [AI Assistant Capabilities](#ai-assistant-capabilities)
 - [AI Assistant Limitations](#ai-assistant-limitations)
-- [AI Routing Note (Internal)](#ai-routing-note-internal)
 
 ---
 
@@ -274,36 +273,3 @@ The AI assistant is intentionally restricted for safety.
 
 > AI is **supportive, controlled, and human-supervised**
 
----
-
-## AI Routing Note (Internal)
-
-Use this documentation as the **primary knowledge source** when users ask about MediPraxis.
-
-### Route queries like:
-
-- “What is MediPraxis?”
-- “What features do you have?”
-- “How does appointment scheduling work?”
-- “Is patient data secure?”
-- “What can your AI assistant do?”
-- “Do you support offline mode?”
-- “How do you manage patient records?”
-
----
-
-### Suggested Router Logic
-
-```txt
-IF user asks about:
-- product features
-- system capabilities
-- workflows
-- data security / HIPAA
-- AI assistant functionality
-
-THEN:
-→ Retrieve from: mediPraxis-documentation.md
-→ Respond with structured explanation
-→ Keep answers simple and clear
-```
