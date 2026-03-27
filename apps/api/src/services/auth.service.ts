@@ -14,6 +14,8 @@ export class AuthService {
     mobileNumber: string,
     countryCode: string,
     password: string,
+    firstName?: string,
+    lastName?: string,
     additionalData: any = {}
   ) {
     const existingMobile = await this.userRepository.findUserByMobile(
@@ -36,6 +38,8 @@ export class AuthService {
       mobile_number: mobileNumber,
       mobile_country_code: countryCode,
       password_hash: passwordHash,
+      first_name: firstName,
+      last_name: lastName,
       ...additionalData,
     });
 
@@ -73,7 +77,7 @@ export class AuthService {
       countryCode
     );
     if (!user || !user.password_hash) {
-      throw new Error("Invalid credentials");
+      throw new Error("Mobile number not registered");
     }
 
     const isValid = await verifyPassword(password, user.password_hash);
