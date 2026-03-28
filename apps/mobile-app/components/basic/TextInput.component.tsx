@@ -95,6 +95,7 @@ export const TextInput: React.FC<TextInputProps> = ({
     value = "",
     onChangeText,
     placeholder,
+    multiline = false,
     ...restInputField
   } = inputField;
 
@@ -153,7 +154,7 @@ export const TextInput: React.FC<TextInputProps> = ({
           borderWidth: 1,
           borderRadius: 8,
           width: "100%",
-          height: 42,
+          height: multiline ? 128 : 42,
           backgroundColor: inputWrapper.isDisabled
             ? Color.LightGrey
             : Color.White,
@@ -165,6 +166,7 @@ export const TextInput: React.FC<TextInputProps> = ({
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
+          multiline={multiline}
           secureTextEntry={isSecureEntry}
           keyboardType={getKeyboardType(inputType)}
           {...restInputField}
