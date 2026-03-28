@@ -140,11 +140,9 @@ export const authService = {
     });
 
     if (!res.ok) {
-      const errorData = (await res
-        .json()
-        .catch(() => ({
-          error: "Failed to save additional details",
-        }))) as ErrorResponse;
+      const errorData = (await res.json().catch(() => ({
+        error: "Failed to save additional details",
+      }))) as ErrorResponse;
       const errorMessage =
         typeof errorData.error === "string"
           ? errorData.error
