@@ -12,7 +12,10 @@ import {
 } from "@/components/basic";
 import { ChipComponent, ChipVariant } from "@/components/basic/Chip.component";
 import { Icons } from "@/config";
-import { useFetchClientById } from "@/services/clients";
+import {
+  useCreateAppointmentRecord,
+  useFetchClientById,
+} from "@/services/clients";
 import { useFetchActiveForm } from "@/services/forms";
 import { useGetTaskById } from "@/services/tasks/useGetTaskById";
 import { Color, TextSize, TextVariant } from "@repo/config";
@@ -53,6 +56,7 @@ export default function AppointmentDetailsScreen() {
   );
   const [formValues, setFormValues] = useState<Record<string, any>>({});
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     mutate: fetchAppointment,
@@ -74,6 +78,19 @@ export default function AppointmentDetailsScreen() {
     userId,
     FormType.APPOINTMENT_RECORD
   );
+
+  const { mutate: createAppointmentRecord } = useCreateAppointmentRecord({
+    onSuccess: () => {
+      setIsSubmitting(false);
+      Alert.alert("Success", "Appointment record saved successfully");
+      // Optionally navigate back or clear the form
+      // router.back();
+    },
+    onError: (message) => {
+      setIsSubmitting(false);
+      Alert.alert("Error", message);
+    },
+  });
 
   useEffect(() => {
     if (appointmentId) {
@@ -209,36 +226,80 @@ export default function AppointmentDetailsScreen() {
       Alert.alert("Error", "Please fill in all required fields");
       return;
     }
-    console.log("Form values:", formValues);
-    // TODO: Submit form data to API
-    Alert.alert("Success", "Appointment record saved successfully");
+
+    if (!appointmentForm?.form_id) {
+      Alert.alert("Error", "Form configuration not found");
+      return;
+    }
+
+    // Create form config with data
+    const formConfigWithData = sortedFormFields.map((field: FormField) => ({
+      active: field.active,
+      required: field.required,
+      sequence: field.sequence,
+      help_text: field.help_text,
+      shareable: field.shareable,
+      field_type: field.field_type,
+      description: field.description,
+      display_label: field.display_label,
+      data:
+        formValues[field.display_label] !== undefined
+          ? String(formValues[field.display_label])
+          : "",
+    }));
+
+    console.log(
+      "Form config with data:",
+      JSON.stringify(formConfigWithData, null, 2)
+    );
+
+    // Create the payload
+    const payload = {
+      user_id: userId,
+      client_id: id || "",
+      appointment_id: appointmentId || "",
+      form_id: appointmentForm.form_id,
+      appointment_data: formConfigWithData,
+      note: appointment?.note || undefined,
+    };
+
+    console.log("Submitting payload:", JSON.stringify(payload, null, 2));
+
+    setIsSubmitting(true);
+    createAppointmentRecord(payload);
   };
 
   const renderFormField = (field: FormField) => {
     const value = formValues[field.display_label];
     const hasError = !!formErrors[field.display_label];
 
+    // For checkbox and toggle, don't show label at top (it's shown next to the control)
+    const showTopLabel =
+      field.field_type !== "checkbox" && field.field_type !== "toggle";
+
     return (
       <View key={field.sequence} className="mb-5">
-        <View className="flex-row items-center mb-2">
-          <TextComponent
-            variant={TextVariant.Body}
-            size={TextSize.Medium}
-            color={Color.Black}
-          >
-            {field.display_label}
-          </TextComponent>
-          {field.required && (
+        {showTopLabel && (
+          <View className="flex-row items-center mb-2">
             <TextComponent
               variant={TextVariant.Body}
               size={TextSize.Medium}
-              color={Color.Danger}
-              className="ml-1"
+              color={Color.Black}
             >
-              *
+              {field.display_label}
             </TextComponent>
-          )}
-        </View>
+            {field.required && (
+              <TextComponent
+                variant={TextVariant.Body}
+                size={TextSize.Medium}
+                color={Color.Danger}
+                className="ml-1"
+              >
+                *
+              </TextComponent>
+            )}
+          </View>
+        )}
 
         {field.field_type === "single-text" && (
           <>
@@ -319,13 +380,25 @@ export default function AppointmentDetailsScreen() {
                 handleFieldChange(field.display_label, checked)
               }
             />
-            <TextComponent
-              variant={TextVariant.Body}
-              size={TextSize.Medium}
-              color={Color.Black}
-            >
-              {field.display_label}
-            </TextComponent>
+            <View className="flex-row items-center">
+              <TextComponent
+                variant={TextVariant.Body}
+                size={TextSize.Medium}
+                color={Color.Black}
+              >
+                {field.display_label}
+              </TextComponent>
+              {field.required && (
+                <TextComponent
+                  variant={TextVariant.Body}
+                  size={TextSize.Medium}
+                  color={Color.Danger}
+                  className="ml-1"
+                >
+                  *
+                </TextComponent>
+              )}
+            </View>
           </View>
         )}
 
@@ -337,13 +410,25 @@ export default function AppointmentDetailsScreen() {
                 handleFieldChange(field.display_label, toggled)
               }
             />
-            <TextComponent
-              variant={TextVariant.Body}
-              size={TextSize.Medium}
-              color={Color.Black}
-            >
-              {field.display_label}
-            </TextComponent>
+            <View className="flex-row items-center">
+              <TextComponent
+                variant={TextVariant.Body}
+                size={TextSize.Medium}
+                color={Color.Black}
+              >
+                {field.display_label}
+              </TextComponent>
+              {field.required && (
+                <TextComponent
+                  variant={TextVariant.Body}
+                  size={TextSize.Medium}
+                  color={Color.Danger}
+                  className="ml-1"
+                >
+                  *
+                </TextComponent>
+              )}
+            </View>
           </View>
         )}
 
@@ -485,14 +570,14 @@ export default function AppointmentDetailsScreen() {
                 renderFormField(field)
               )}
 
-              <View className="mb-8">
+              <View className="mb-20">
                 <ButtonComponent
                   size={ButtonSize.Medium}
                   buttonColor={Color.Black}
                   textColor={Color.White}
-                  onPress={handleSubmit}
+                  onPress={isSubmitting ? undefined : handleSubmit}
                 >
-                  Save Record
+                  {isSubmitting ? "Saving..." : "Save Record"}
                 </ButtonComponent>
               </View>
             </>
