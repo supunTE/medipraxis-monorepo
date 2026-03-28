@@ -112,13 +112,13 @@ export function AIAssistantButton({
         onPressOut={handlePressOut}
       >
         <Animated.View
-          className="w-20 h-20 bg-mp-white rounded-full justify-center items-center shadow-lg border-2 border-mp-green"
+          className="w-20 h-20 bg-mp-white rounded-full justify-center items-center border-2 border-mp-green"
           style={{
             transform: [{ scale: scaleAnim }],
             shadowColor: "#000",
-            shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: 0.1,
-            shadowRadius: 1,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.15,
+            shadowRadius: 6,
             elevation: 4,
           }}
         >
