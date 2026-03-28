@@ -247,8 +247,7 @@ export function CalendarComponent({
       <View
         className="flex-row justify-end items-center pr-4 gap-2"
         style={{
-          marginTop: isExpanded ? 8 : 4,
-          marginBottom: isExpanded ? 8 : 2,
+          marginTop: 8,
         }}
       >
         <TouchableOpacity
