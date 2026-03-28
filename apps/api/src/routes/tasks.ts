@@ -15,41 +15,51 @@ import { TaskController } from "../controllers";
 import { authMiddleware } from "../middleware/auth";
 
 const tasks = new Hono()
-  .use("*", authMiddleware)
-  .post("/", zValidator("json", createTaskSchema), TaskController.createTask)
+  // Mobile-only endpoints (require auth)
+  .post(
+    "/",
+    authMiddleware,
+    zValidator("json", createTaskSchema),
+    TaskController.createTask
+  )
   .get(
     "/",
+    authMiddleware,
     zValidator("query", getAllTasksQuerySchema),
     TaskController.getAllTasksByUserId
   )
-
   .get(
     "/summary",
+    authMiddleware,
     zValidator("query", getTaskSummaryQuerySchema),
     TaskController.getTaskSummaryByUserId
   )
   .get(
     "/upcoming",
+    authMiddleware,
     zValidator("query", getTaskSummaryQuerySchema),
     TaskController.getUpcomingTasksByUserId
   )
   .get(
     "/appointments/client",
+    authMiddleware,
     zValidator("query", getAppointmentsByClientQuerySchema),
     TaskController.getAppointmentsByClientId
   )
   .get(
     "/:id",
+    authMiddleware,
     zValidator("param", getTaskParamSchema),
     TaskController.getTaskById
   )
   .put(
     "/:id",
+    authMiddleware,
     zValidator("param", updateTaskParamSchema),
     zValidator("json", updateTaskSchema),
     TaskController.updateTask
   )
-  // Appointment reservation routes
+  // Web app endpoints (no auth)
   .post(
     "/appointments/reserve",
     zValidator("json", reserveAppointmentByClientSchema),
@@ -57,6 +67,7 @@ const tasks = new Hono()
   )
   .post(
     "/appointments/reserve/practitioner",
+    authMiddleware,
     zValidator("json", reserveAppointmentByClientSchema),
     TaskController.reserveAppointmentByPractitioner
   )
