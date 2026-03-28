@@ -118,7 +118,7 @@ function EventCard({
         backgroundColor: Color.White,
         borderRadius: 14,
         borderWidth: 1,
-        borderColor: "#E8E8E8",
+        borderColor: "#F2F2F2",
         paddingVertical: 12,
         paddingHorizontal: 14,
         shadowColor: "#000",
