@@ -35,7 +35,7 @@ export default function RegisterScreen() {
       const success = await register.submit();
       if (success) {
         router.replace({
-          pathname: "/auth/additional-info"
+          pathname: "/auth/additional-info",
         });
       }
     } catch (e: any) {
