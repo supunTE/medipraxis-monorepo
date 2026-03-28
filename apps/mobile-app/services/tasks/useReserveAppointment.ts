@@ -16,9 +16,10 @@ export const useReserveAppointment = (
 ) => {
   return useMutation({
     mutationFn: async (payload: ReserveAppointmentPayload) => {
-      const res = await apiClient.api.tasks.appointments.reserve.$post({
-        json: payload,
-      });
+      const res =
+        await apiClient.api.tasks.appointments.reserve.practitioner.$post({
+          json: payload,
+        });
 
       if (!res.ok) {
         const errorData = (await res.json().catch(() => ({}))) as any;
