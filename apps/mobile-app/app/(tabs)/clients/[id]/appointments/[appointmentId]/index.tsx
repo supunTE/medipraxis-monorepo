@@ -55,13 +55,6 @@ export default function AppointmentDetailsScreen() {
     }
   }, [appointmentData]);
 
-  // Debug logs
-  console.log("Appointment Data:", appointmentData);
-  console.log("Appointment:", appointment);
-  console.log("Client:", client);
-  console.log("isLoadingAppointment:", isLoadingAppointment);
-  console.log("isLoadingClient:", isLoadingClient);
-
   const formatDate = (dateString: string): string => {
     return new Date(dateString).toLocaleDateString("en-GB", {
       day: "2-digit",
@@ -165,10 +158,10 @@ export default function AppointmentDetailsScreen() {
           </View>
 
           {/* Patient Info Section */}
-          <View className="flex-row items-center gap-4 mb-6">
-            {/* Avatar */}
-            <View className="bg-[#E8F5A8] w-[120px] h-[120px] rounded-full justify-center items-center overflow-hidden">
-              <Icons.User size={60} color={Color.Grey} />
+          <View className="flex-row items-center gap-4 mb-4">
+            {/* Avatar - smaller circle */}
+            <View className="bg-[#E8F5A8] w-[80px] h-[80px] rounded-full justify-center items-center overflow-hidden">
+              <Icons.User size={40} color={Color.Grey} />
             </View>
 
             {/* Patient Details */}
@@ -198,110 +191,107 @@ export default function AppointmentDetailsScreen() {
               )}
             </View>
           </View>
-        </View>
 
-        {/* Appointment Details Section */}
-        <View className="px-5 py-4 bg-[#F5F5F5] flex-1">
-          <View className="bg-white rounded-2xl p-5 border border-[#E5E5E5]">
-            {/* Title and Status */}
-            <View className="flex-row justify-between items-center mb-4">
-              <TextComponent
-                variant={TextVariant.Title}
-                size={TextSize.Medium}
-                color={Color.Black}
-              >
-                Appointment Details
-              </TextComponent>
-              <ChipComponent
-                text={chipConfig.label}
-                variant={chipConfig.variant}
-              />
-            </View>
-
-            {/* Appointment Title */}
-            {appointment.task_title && (
-              <View className="mb-4">
-                <TextComponent
-                  variant={TextVariant.Title}
-                  size={TextSize.Small}
-                  color={Color.Black}
-                  className="mb-1"
-                >
-                  {appointment.task_title}
-                </TextComponent>
-              </View>
-            )}
-
-            {/* Date */}
-            <View className="flex-row items-center gap-3 mb-3">
-              <CalendarBlankIcon
-                size={20}
-                color={Color.Grey}
-                weight="regular"
-              />
-              <TextComponent
-                variant={TextVariant.Body}
-                size={TextSize.Medium}
-                color={Color.Grey}
-              >
-                {formatDate(appointment.start_date)}
-              </TextComponent>
-            </View>
-
-            {/* Time */}
-            <View className="flex-row items-center gap-3 mb-5">
-              <ClockIcon size={20} color={Color.Grey} weight="regular" />
-              <TextComponent
-                variant={TextVariant.Body}
-                size={TextSize.Medium}
-                color={Color.Grey}
-              >
-                {formatTime(appointment.start_date)} -{" "}
-                {formatTime(appointment.end_date)}
-              </TextComponent>
-            </View>
-
-            {/* Notes */}
-            {appointment.note && (
-              <View className="mb-5 pt-4 border-t border-[#E5E5E5]">
-                <TextComponent
-                  variant={TextVariant.Title}
-                  size={TextSize.Small}
-                  color={Color.Black}
-                  className="mb-2"
-                >
-                  Notes
-                </TextComponent>
-                <TextComponent
-                  variant={TextVariant.Body}
-                  size={TextSize.Medium}
-                  color={Color.Grey}
-                >
-                  {appointment.note}
-                </TextComponent>
-              </View>
-            )}
-
-            {/* Start Button */}
-            {isNotStarted && (
-              <View className="mt-2">
-                <ButtonComponent
-                  size={ButtonSize.Medium}
-                  leftIcon={PlayIcon}
-                  buttonColor={Color.Black}
-                  textColor={Color.White}
-                  iconColor={Color.White}
-                  onPress={() => {
-                    console.log("Start appointment:", appointmentId);
-                    // TODO: Implement start appointment logic
-                  }}
-                >
-                  Start
-                </ButtonComponent>
-              </View>
-            )}
+          {/* Appointment Date with icon */}
+          <View className="flex-row items-center gap-2 mb-2">
+            <CalendarBlankIcon size={20} color={Color.Grey} weight="regular" />
+            <TextComponent
+              variant={TextVariant.Body}
+              size={TextSize.Medium}
+              color={Color.Grey}
+            >
+              {formatDate(appointment.start_date)}
+            </TextComponent>
           </View>
+
+          {/* Appointment Time with icon */}
+          <View className="flex-row items-center gap-2 mb-4">
+            <ClockIcon size={20} color={Color.Grey} weight="regular" />
+            <TextComponent
+              variant={TextVariant.Body}
+              size={TextSize.Medium}
+              color={Color.Grey}
+            >
+              {formatTime(appointment.start_date)} -{" "}
+              {formatTime(appointment.end_date)}
+            </TextComponent>
+          </View>
+
+          {/* Status Chip */}
+          <View className="mb-3">
+            <ChipComponent
+              text={chipConfig.label}
+              variant={chipConfig.variant}
+            />
+          </View>
+
+          {/* Start Button - aligned to right, auto width */}
+          {isNotStarted && (
+            <View className="items-end">
+              <ButtonComponent
+                size={ButtonSize.Small}
+                leftIcon={PlayIcon}
+                buttonColor={Color.Black}
+                textColor={Color.White}
+                iconColor={Color.White}
+                onPress={() => {
+                  console.log("Start appointment:", appointmentId);
+                  // TODO: Implement start appointment logic
+                }}
+              >
+                Start
+              </ButtonComponent>
+            </View>
+          )}
         </View>
+
+        {/* Appointment Title and Notes Section */}
+        {(appointment.task_title || appointment.note) && (
+          <View className="px-5 py-4 bg-[#F5F5F5] flex-1">
+            <View className="bg-white rounded-2xl p-5 border border-[#E5E5E5]">
+              {/* Appointment Title */}
+              {appointment.task_title && (
+                <View className="mb-4">
+                  <TextComponent
+                    variant={TextVariant.Title}
+                    size={TextSize.Small}
+                    color={Color.Black}
+                    className="mb-1"
+                  >
+                    {appointment.task_title}
+                  </TextComponent>
+                </View>
+              )}
+
+              {/* Notes */}
+              {appointment.note && (
+                <View
+                  className={
+                    appointment.task_title
+                      ? "pt-4 border-t border-[#E5E5E5]"
+                      : ""
+                  }
+                >
+                  <TextComponent
+                    variant={TextVariant.Title}
+                    size={TextSize.Small}
+                    color={Color.Black}
+                    className="mb-2"
+                  >
+                    Notes
+                  </TextComponent>
+                  <TextComponent
+                    variant={TextVariant.Body}
+                    size={TextSize.Medium}
+                    color={Color.Grey}
+                  >
+                    {appointment.note}
+                  </TextComponent>
+                </View>
+              )}
+            </View>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
