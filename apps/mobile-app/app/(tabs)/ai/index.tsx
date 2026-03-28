@@ -209,7 +209,10 @@ export default function AIAssistantModal({
                           size={TextSize.Small}
                           color={Color.TextGreen}
                         >
-                          {getGreeting()}{userProfile?.first_name ? `, ${userProfile.first_name}` : ""}
+                          {getGreeting()}
+                          {userProfile?.first_name
+                            ? `, ${userProfile.first_name}`
+                            : ""}
                         </TextComponent>
                       </View>
                     </View>
