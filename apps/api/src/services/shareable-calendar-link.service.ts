@@ -1,27 +1,43 @@
 import type {
+  ShareableCalendarLink,
   ShareableCalendarLinkWithSlotWindows,
   SlotWindowForClient,
 } from "@repo/models";
 import { TaskStatus, TaskType } from "@repo/models";
 import type {
+  ClientRepository,
   ShareableCalendarLinkRepository,
   SlotWindowRepository,
   TaskRepository,
+  UserRepository,
 } from "../repositories";
+import type { SmsService } from "./sms.service";
 
 export class ShareableCalendarLinkService {
   private shareableCalendarLinkRepository: ShareableCalendarLinkRepository;
   private slotWindowRepository: SlotWindowRepository;
   private taskRepository: TaskRepository;
+  private userRepository: UserRepository;
+  private clientRepository: ClientRepository;
+  private smsService: SmsService;
+  private webAppUrl: string;
 
   constructor(
     shareableCalendarLinkRepository: ShareableCalendarLinkRepository,
     slotWindowRepository: SlotWindowRepository,
-    taskRepository: TaskRepository
+    taskRepository: TaskRepository,
+    userRepository: UserRepository,
+    clientRepository: ClientRepository,
+    smsService: SmsService,
+    webAppUrl: string
   ) {
     this.shareableCalendarLinkRepository = shareableCalendarLinkRepository;
     this.slotWindowRepository = slotWindowRepository;
     this.taskRepository = taskRepository;
+    this.userRepository = userRepository;
+    this.clientRepository = clientRepository;
+    this.smsService = smsService;
+    this.webAppUrl = webAppUrl;
   }
 
   async getShareableCalendarLinkWithSlotWindows(
@@ -117,5 +133,94 @@ export class ShareableCalendarLinkService {
       clientReservedSlotWindowIds,
       clientReservedAppointments,
     };
+  }
+
+  async getShareableCalendarLinkByUserId(
+    userId: string
+  ): Promise<ShareableCalendarLink | null> {
+    const link =
+      await this.shareableCalendarLinkRepository.findByUserId(userId);
+    return link;
+  }
+
+  async createOrUpdateShareableCalendarLink(data: {
+    user_id: string;
+    client_id: string;
+    visible_days_ahead: number;
+    expiry_date?: string;
+    notification_type: {
+      whatsapp: boolean;
+      text: boolean;
+      email: boolean;
+    };
+  }): Promise<ShareableCalendarLink> {
+    // Create or update the shareable calendar link
+    const link = await this.shareableCalendarLinkRepository.createOrUpdate({
+      user_id: data.user_id,
+      visible_days_ahead: data.visible_days_ahead,
+      expiry_date: data.expiry_date,
+    });
+
+    // Send notifications based on notification_type
+    if (data.notification_type.text) {
+      await this.sendSmsNotification(
+        data.user_id,
+        data.client_id,
+        link.link_id
+      );
+    }
+
+    return link;
+  }
+
+  async sendSmsNotification(
+    user_id: string,
+    client_id: string,
+    link_id: string
+  ) {
+    try {
+      const client = await this.clientRepository.findById(client_id);
+      if (!client) {
+        console.error("Client not found for SMS notification");
+        return;
+      }
+
+      const contact = await this.clientRepository.findContactInfoById(
+        client.contact_id
+      );
+      if (!contact) {
+        console.error("Contact not found for SMS notification");
+        return;
+      }
+
+      const user = await this.userRepository.findUserById(user_id);
+      if (!user) {
+        console.error("User not found for SMS notification");
+        return;
+      }
+
+      const clientName = [client.first_name ?? "", client.last_name ?? ""]
+        .filter(Boolean)
+        .join(" ")
+        .trim();
+
+      const userName = [user.title, user.first_name, user.last_name]
+        .filter(Boolean)
+        .join(" ")
+        .trim();
+
+      const phoneNumber = `${contact.country_code}${contact.contact_number}`;
+      const link = `${this.webAppUrl}/schedules/${link_id}`;
+
+      const message = `${userName} shared their calendar with ${clientName}. \n\nTo view available appointment slots, visit the link below: \n${link}`;
+
+      const result = await this.smsService.sendSms(phoneNumber, message);
+
+      if (!result.success) {
+        console.error("Failed to send SMS:", result.error);
+      }
+    } catch (error) {
+      console.error("Error sending SMS notification:", error);
+    }
   }
 }

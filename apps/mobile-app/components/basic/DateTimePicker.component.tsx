@@ -25,6 +25,7 @@ interface DateTimePickerProps {
   errorText?: string;
   hideHelperText?: boolean;
   className?: string;
+  minDate?: string;
   /** When true, the calendar opens immediately on mount (used by chip interaction) */
   autoOpen?: boolean;
   /** Called when the modal is dismissed without confirming a selection */
@@ -77,6 +78,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
   errorText,
   hideHelperText = false,
   className,
+  minDate,
   autoOpen = false,
   onDismiss,
 }) => {
@@ -350,6 +352,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
                     key={selectedDateStr}
                     hideArrows={true}
                     renderHeader={() => <View />} // Hide default header, using our custom one above
+                    minDate={minDate}
                     onDayPress={(day) => {
                       const newDate = new Date(day.timestamp);
                       newDate.setHours(tempDate.getHours());

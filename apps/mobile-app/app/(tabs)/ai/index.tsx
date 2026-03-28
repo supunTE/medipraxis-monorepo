@@ -83,7 +83,7 @@ export default function AIAssistantModal({
   const suggestions: SuggestionButton[] = [
     {
       id: "schedule",
-      emoji: "📅",
+      emoji: "📆",
       label: "Schedule an appointment",
     },
     {
@@ -98,7 +98,7 @@ export default function AIAssistantModal({
     },
     {
       id: "appointments",
-      emoji: "🗓️",
+      emoji: "📆",
       label: "When do I have appointments today?",
     },
   ];
