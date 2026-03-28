@@ -54,17 +54,16 @@ function formatTime(dateString: string): string {
 
 function mapTaskToEvent(task: TaskDetailsWithFlatFields): UpcomingEvent {
   const isAppointment = task.task_type_name === "APPOINTMENT";
-  const clientName = [task.client_first_name, task.client_last_name]
-    .filter(Boolean)
-    .join(" ") || null;
+  const clientName =
+    [task.client_first_name, task.client_last_name].filter(Boolean).join(" ") ||
+    null;
 
   return {
     id: task.task_id,
     title: isAppointment ? "Appointment with" : task.task_title,
     time: task.start_date ? formatTime(task.start_date) : "—",
     type: isAppointment ? "appointment" : "task",
-    tagName:
-      isAppointment && clientName ? `#${clientName}` : undefined,
+    tagName: isAppointment && clientName ? `#${clientName}` : undefined,
     clientId: task.client_id ?? undefined,
   };
 }
