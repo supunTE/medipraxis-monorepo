@@ -504,9 +504,8 @@ export default function AppointmentDetailsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <ScrollView className="flex-1">
-        {/* Header Section */}
-        <View className="px-5 pt-3 pb-6 bg-white">
+      <View className="flex-1">
+        <View className="px-5 pt-3 pb-4 bg-white">
           {/* Back Button */}
           <View className="mb-6 self-start">
             <ButtonComponent.BackButton
@@ -585,7 +584,7 @@ export default function AppointmentDetailsScreen() {
 
           {/* Start Button - aligned to right, auto width */}
           {showStartButton && (
-            <View className="items-end mb-6">
+            <View className="items-end">
               <ButtonComponent
                 size={ButtonSize.Small}
                 leftIcon={PlayIcon}
@@ -601,8 +600,9 @@ export default function AppointmentDetailsScreen() {
               </ButtonComponent>
             </View>
           )}
+        </View>
 
-          {/* Appointment Log Form */}
+        <ScrollView className="flex-1 px-5">
           {sortedFormFields.length > 0 && (
             <>
               {sortedFormFields.map((field: FormField) =>
@@ -624,8 +624,8 @@ export default function AppointmentDetailsScreen() {
               {hasExistingRecord && <View className="mb-32" />}
             </>
           )}
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
