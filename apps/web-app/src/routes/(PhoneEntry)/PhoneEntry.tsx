@@ -44,10 +44,11 @@ export function PhoneEntry() {
   });
 
   const sendOtpMutation = useSendOtp({
-    onSuccess: (contactId) => {
+    onSuccess: (contactId, userId) => {
       sessionStorage.setItem("client_phone_number", phoneNumber);
       sessionStorage.setItem("client_country_code", countryCode);
       sessionStorage.setItem("contact_id", contactId);
+      sessionStorage.setItem("user_id", userId);
 
       setOtpSent(true);
       setTimer(60);
