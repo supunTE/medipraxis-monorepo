@@ -254,10 +254,7 @@ export class SlotWindowRepository {
   ): Promise<SlotWindowTemplate | null> {
     const { data, error } = await this.db
       .from(SLOT_WINDOW_QUERIES.SLOT_WINDOW_TEMPLATE_TABLE)
-      .update({
-        is_active: false,
-        // modified_date will automatically be set in supabase
-      })
+      .update({ is_active: false })
       .eq("slot_window_template_id", slotWindowTemplateId)
       .eq("is_deleted", false)
       .select()
@@ -284,10 +281,7 @@ export class SlotWindowRepository {
   ): Promise<SlotWindowTemplate | null> {
     const { data, error } = await this.db
       .from(SLOT_WINDOW_QUERIES.SLOT_WINDOW_TEMPLATE_TABLE)
-      .update({
-        deleted_date: new Date().toISOString(),
-        // modified_date will automatically be set in supabase
-      })
+      .update({ deleted_date: new Date().toISOString() })
       .eq("slot_window_template_id", slotWindowTemplateId)
       .eq("is_deleted", false)
       .select()
@@ -315,7 +309,7 @@ export class SlotWindowRepository {
     windowData: CreateSlotWindowInput & { task_status_id: string }
   ): Promise<SlotWindow> {
     const data = {
-      template_id: windowData.template_id || null, // slot windows that are non-recurring won't have a template_id
+      template_id: windowData.template_id || null,
       user_id: windowData.user_id,
       start_date: windowData.start_date,
       end_date: windowData.end_date,
@@ -325,7 +319,6 @@ export class SlotWindowRepository {
       is_override: windowData.is_override || false,
       note: windowData.note || null,
       location: windowData.location || null,
-      // created_date and modified_date will automatically be set in supabase
     };
 
     const { data: window, error } = await this.db
@@ -351,10 +344,7 @@ export class SlotWindowRepository {
   ): Promise<SlotWindow | null> {
     const { data, error } = await this.db
       .from(SLOT_WINDOW_QUERIES.SLOT_WINDOW_TABLE)
-      .update({
-        ...windowData,
-        // modified_date will automatically be updated in supabase
-      })
+      .update({ ...windowData })
       .eq("slot_window_id", slotWindowId)
       .select()
       .single();
@@ -438,6 +428,22 @@ export class SlotWindowRepository {
       .from(SLOT_WINDOW_QUERIES.SLOT_WINDOW_TABLE)
       .select(SLOT_WINDOW_QUERIES.SLOT_WINDOW_BASE)
       .eq("template_id", templateId);
+
+    if (error || !data) {
+      return [];
+    }
+
+    return data as SlotWindow[];
+  }
+
+  // Fetch multiple slot windows by their IDs in a single query
+  async findSlotWindowsByIds(ids: string[]): Promise<SlotWindow[]> {
+    if (ids.length === 0) return [];
+
+    const { data, error } = await this.db
+      .from(SLOT_WINDOW_QUERIES.SLOT_WINDOW_TABLE)
+      .select("slot_window_id, location")
+      .in("slot_window_id", ids);
 
     if (error || !data) {
       return [];
