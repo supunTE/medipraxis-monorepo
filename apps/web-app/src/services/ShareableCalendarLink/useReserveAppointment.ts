@@ -129,10 +129,18 @@ export const useReserveAppointment = (
     },
 
     onSettled: (_data, _error, input) => {
-      // Refetch to ensure data is in sync with server
-      void queryClient.invalidateQueries({
-        queryKey: ["shareable-calendar-link", options.linkId, input.client_id],
-      });
+      // The reservation takes ~5s to fully process on the backend,
+      // so we delay invalidation to avoid fetching stale data.
+      // The optimistic update already reflects the change in the UI instantly.
+      setTimeout(() => {
+        void queryClient.invalidateQueries({
+          queryKey: [
+            "shareable-calendar-link",
+            options.linkId,
+            input.client_id,
+          ],
+        });
+      }, 5000);
     },
   });
 };

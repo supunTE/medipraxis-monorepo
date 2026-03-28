@@ -1,5 +1,5 @@
 import { apiClient } from "@/lib/api-client";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export type CreateTaskPayload = {
   task_title: string;
@@ -24,6 +24,8 @@ type UseCreateTaskOptions = {
 };
 
 export const useCreateTask = (options?: UseCreateTaskOptions) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (payload: CreateTaskPayload) => {
       const res = await apiClient.api.tasks.$post({
@@ -40,7 +42,13 @@ export const useCreateTask = (options?: UseCreateTaskOptions) => {
       return res.json();
     },
 
-    onSuccess: () => {
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["appointments"] }),
+        queryClient.invalidateQueries({ queryKey: ["reminders"] }),
+        queryClient.invalidateQueries({ queryKey: ["taskSummary"] }),
+        queryClient.invalidateQueries({ queryKey: ["upcomingTasks"] }),
+      ]);
       options?.onSuccess?.();
     },
 

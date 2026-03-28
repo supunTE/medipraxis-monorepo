@@ -2,11 +2,14 @@ import { TextComponent } from "@/components/basic";
 import { groupReminders } from "@/utils";
 import { Color, TextSize, TextVariant } from "@repo/config";
 import clsx from "clsx";
-import React, { useMemo, useState } from "react";
+import { ArrowsClockwise } from "phosphor-react-native";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
+  Animated,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
   ScrollView,
+  TouchableOpacity,
   View,
 } from "react-native";
 import { AgendaReminderBlock } from "./AgendaReminderBlock.component";
@@ -26,6 +29,8 @@ interface AgendaComponentProps {
   agendaData?: AgendaData;
   compactTopSpacing?: boolean;
   headerRightAction?: React.ReactNode;
+  onRefresh?: () => void;
+  isRefreshing?: boolean;
   onAppointmentPress?: (
     appointment: AgendaBlockContent,
     groupId: string | null
@@ -39,11 +44,30 @@ export function AgendaComponent({
   agendaData,
   compactTopSpacing = false,
   headerRightAction,
+  onRefresh,
+  isRefreshing = false,
   onAppointmentPress,
   onEmptySlotPress,
   onReminderPress,
 }: AgendaComponentProps): React.JSX.Element {
   const [isScrolled, setIsScrolled] = useState(false);
+  const spinAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (isRefreshing) {
+      Animated.loop(
+        Animated.timing(spinAnim, {
+          toValue: 1,
+          duration: 700,
+          useNativeDriver: true,
+        })
+      ).start();
+    } else {
+      spinAnim.stopAnimation();
+      spinAnim.setValue(0);
+    }
+  }, [isRefreshing, spinAnim]);
+
   const [reminderModalVisible, setReminderModalVisible] = useState(false);
   const [selectedReminderGroup, setSelectedReminderGroup] = useState<
     AgendaReminderData[]
@@ -61,15 +85,18 @@ export function AgendaComponent({
     return groupReminders(agendaData.reminders, 15, 30);
   }, [agendaData?.reminders]);
 
-  const formatDate = (dateString: string) => {
+  const formatDateLine = (dateString: string) => {
     const date = new Date(dateString);
-    const options: Intl.DateTimeFormatOptions = {
-      weekday: "long",
+    return date.toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
-    };
-    return date.toLocaleDateString("en-US", options);
+    });
+  };
+
+  const formatDayLine = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", { weekday: "long" });
   };
 
   const getColorByIndex = (index: number) => {
@@ -95,9 +122,44 @@ export function AgendaComponent({
         }}
       >
         <View className="flex-row items-center justify-between gap-3">
-          <TextComponent size={TextSize.Small} variant={TextVariant.Title}>
-            {formatDate(selectedDate)}
-          </TextComponent>
+          <View className="flex-col">
+            <View className="flex-row items-center gap-3">
+              <TextComponent size={TextSize.Small} variant={TextVariant.Title}>
+                {formatDateLine(selectedDate)}
+              </TextComponent>
+              <TouchableOpacity
+                onPress={onRefresh}
+                disabled={isRefreshing}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                className="flex-row items-center gap-1"
+              >
+                <Animated.View
+                  style={{
+                    transform: [
+                      {
+                        rotate: spinAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ["0deg", "360deg"],
+                        }),
+                      },
+                    ],
+                  }}
+                >
+                  <ArrowsClockwise size={13} color={Color.Grey} weight="bold" />
+                </Animated.View>
+                <TextComponent
+                  size={TextSize.Small}
+                  variant={TextVariant.Body}
+                  color={Color.Grey}
+                >
+                  Refresh
+                </TextComponent>
+              </TouchableOpacity>
+            </View>
+            <TextComponent size={TextSize.Small} variant={TextVariant.Body}>
+              {formatDayLine(selectedDate)}
+            </TextComponent>
+          </View>
           {headerRightAction ? <View>{headerRightAction}</View> : null}
         </View>
       </View>
