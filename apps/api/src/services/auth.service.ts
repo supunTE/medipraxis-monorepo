@@ -1,3 +1,4 @@
+import type { RegisterAdditionalDetailsInput } from "@repo/models";
 import { type JwtService } from "../lib/jwt";
 import { hashPassword, verifyPassword } from "../lib/password";
 import type { RefreshTokenRepository, UserRepository } from "../repositories";
@@ -186,5 +187,43 @@ export class AuthService {
 
     // Fallback: If no token matches or no token provided, revoke all tokens for safety/legacy behavior.
     await this.refreshTokenRepository.revokeAllUserTokens(userId);
+  }
+
+  async saveAdditionalDetails(payload: RegisterAdditionalDetailsInput) {
+    const existingUser = await this.userRepository.findUserByMobile(
+      payload.mobile_number,
+      payload.mobile_country_code
+    );
+
+    if (!existingUser) {
+      throw new Error("User not found");
+    }
+
+    const updatedUser =
+      await this.userRepository.updateAdditionalDetailsByMobile(
+        payload.mobile_number,
+        payload.mobile_country_code,
+        {
+          title: payload.title,
+          first_name: payload.first_name,
+          last_name: payload.last_name,
+          role: payload.profession,
+          registration_number: payload.registration_number,
+          specialization: payload.specialization,
+          whatsapp_country_code: payload.different_whatsapp_number
+            ? payload.whatsapp_country_code
+            : undefined,
+          whatsapp_number: payload.different_whatsapp_number
+            ? payload.whatsapp_number
+            : undefined,
+          email_address: payload.email_address,
+        }
+      );
+
+    if (!updatedUser) {
+      throw new Error("User not found");
+    }
+
+    return updatedUser;
   }
 }

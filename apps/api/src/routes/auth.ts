@@ -1,5 +1,10 @@
 import { zValidator } from "@hono/zod-validator";
-import { loginSchema, refreshTokenSchema, registerSchema } from "@repo/models";
+import {
+  loginSchema,
+  refreshTokenSchema,
+  registerAdditionalDetailsSchema,
+  registerSchema,
+} from "@repo/models";
 import { Hono } from "hono";
 import { AuthController } from "../controllers/auth.controller";
 import type { Env } from "../types";
@@ -15,6 +20,11 @@ const auth = new Hono<{ Bindings: Env }>()
       return undefined;
     }),
     AuthController.register
+  )
+  .post(
+    "/register/additional-details",
+    zValidator("json", registerAdditionalDetailsSchema),
+    AuthController.registerAdditionalDetails
   )
   .post("/login", zValidator("json", loginSchema), AuthController.login)
   .post(

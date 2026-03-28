@@ -1,5 +1,6 @@
 import { apiClient } from "@/lib/api-client";
 import { authStorage } from "@/utils/storage";
+import type { RegisterAdditionalDetailsInput } from "@repo/models";
 
 export interface User {
   user_id: string;
@@ -16,6 +17,11 @@ export interface AuthResponse {
 
 export interface ErrorResponse {
   error: string | Record<string, any>;
+}
+
+export interface AdditionalDetailsResponse {
+  message: string;
+  user?: User;
 }
 
 export const authService = {
@@ -122,5 +128,31 @@ export const authService = {
       await authStorage.clearAll();
       return null;
     }
+  },
+
+  async registerAdditionalDetails(
+    payload: RegisterAdditionalDetailsInput
+  ): Promise<AdditionalDetailsResponse> {
+    const res = await (
+      apiClient.api.auth.register["additional-details"] as any
+    ).$post({
+      json: payload,
+    });
+
+    if (!res.ok) {
+      const errorData = (await res
+        .json()
+        .catch(() => ({
+          error: "Failed to save additional details",
+        }))) as ErrorResponse;
+      const errorMessage =
+        typeof errorData.error === "string"
+          ? errorData.error
+          : JSON.stringify(errorData.error) ||
+            "Failed to save additional details";
+      throw new Error(errorMessage);
+    }
+
+    return (await res.json()) as AdditionalDetailsResponse;
   },
 };

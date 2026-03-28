@@ -34,15 +34,12 @@ export default function RegisterScreen() {
     try {
       const success = await register.submit();
       if (success) {
-        const { phoneNumber, countryCode } = register.form.getValues();
         router.replace({
-          pathname: "/auth/key-reveal",
-          params: { phoneNumber, countryCode },
+          pathname: "/auth/additional-info",
         });
       }
     } catch (e: any) {
       console.error("Register Error:", e);
-      Alert.alert("Registration Failed", e.message);
     }
   };
 

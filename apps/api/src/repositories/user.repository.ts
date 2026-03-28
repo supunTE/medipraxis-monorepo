@@ -116,4 +116,36 @@ export class UserRepository {
 
     return data;
   }
+
+  async updateAdditionalDetailsByMobile(
+    mobileNumber: string,
+    countryCode: string,
+    updateData: {
+      title: string;
+      first_name: string;
+      last_name: string;
+      role: string;
+      registration_number: string;
+      specialization: string;
+      whatsapp_country_code?: string;
+      whatsapp_number?: string;
+      email_address: string;
+    }
+  ) {
+    const { data, error } = await this.db
+      .from(USER_QUERIES.USER_TABLE)
+      .update({
+        ...updateData,
+      })
+      .eq("mobile_number", mobileNumber)
+      .eq("mobile_country_code", countryCode)
+      .select()
+      .single();
+
+    if (error && error.code !== "PGRST116") {
+      throw new Error(`Failed to update additional details: ${error.message}`);
+    }
+
+    return data || null;
+  }
 }

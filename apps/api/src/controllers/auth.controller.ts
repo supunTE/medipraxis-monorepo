@@ -43,6 +43,31 @@ export class AuthController {
     }
   }
 
+  static async registerAdditionalDetails(c: APIContext<any>) {
+    const authService = getAuthService(c);
+
+    try {
+      const payload = c.req.valid("json");
+      const user = await authService.saveAdditionalDetails(payload);
+      return c.json(
+        {
+          message: "Additional details saved",
+          user,
+        },
+        201
+      );
+    } catch (e: any) {
+      if (e.message == "User not found") {
+        return c.json({ error: e.message }, 404);
+      }
+
+      return c.json(
+        { error: e.message ?? "Failed to save additional details" },
+        400
+      );
+    }
+  }
+
   static async refresh(c: APIContext<any>) {
     const { refreshToken } = await c.req.json();
     const authService = getAuthService(c);

@@ -471,3 +471,15 @@ const [dateTime, setDateTime] = useState("");
     placeholder="Select Date & Time"
 />
 ```
+
+# FileUpload Component
+
+```ts
+const [photoFileName, setPhotoFileName] = useState("");
+
+<FileUploadComponent
+    title="Photo Upload"
+    fileName={photoFileName}
+    onPress={() => setPhotoFileName("photo_upload.pdf")}
+/>
+```
