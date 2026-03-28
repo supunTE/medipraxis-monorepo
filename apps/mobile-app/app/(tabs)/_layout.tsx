@@ -97,9 +97,7 @@ function CustomTabBar({
               const isFocused =
                 state.index === index ||
                 (route.name.includes("/") &&
-                  currentRouteName.startsWith(
-                    route.name.split("/")[0] + "/"
-                  ));
+                  currentRouteName.startsWith(route.name.split("/")[0] + "/"));
 
               const onPress = () => {
                 const event = navigation.emit({
