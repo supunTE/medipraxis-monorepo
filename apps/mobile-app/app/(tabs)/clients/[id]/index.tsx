@@ -28,7 +28,9 @@ import {
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
+  Linking,
   Modal,
   Platform,
   Pressable,
@@ -516,7 +518,13 @@ export default function ClientDetailScreen() {
                     buttonColor={Color.Black}
                     textColor={Color.White}
                     iconColor={Color.White}
-                    onPress={() => console.log("Call:", client.contact_number)}
+                    onPress={() => {
+                      if (client.contact_number) {
+                        Linking.openURL(`tel:${client.contact_number}`).catch(() => {
+                          Alert.alert("Error", "Unable to open the phone dialler on this device.");
+                        });
+                      }
+                    }}
                   >
                     Call
                   </ButtonComponent>
