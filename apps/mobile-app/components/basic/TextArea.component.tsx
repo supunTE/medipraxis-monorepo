@@ -137,6 +137,8 @@ export const TextAreaComponent: React.FC<TextAreaProps> = ({
           borderWidth: 1,
           borderRadius: 8,
           width: "100%",
+          backgroundColor: isDisabled ? Color.LightGrey : Color.White,
+          opacity: isDisabled ? 0.6 : 1,
         }}
       >
         <TextareaInput
@@ -157,6 +159,7 @@ export const TextAreaComponent: React.FC<TextAreaProps> = ({
             ) as RNTextStyle["fontWeight"],
             textAlign: "left",
             minHeight: 100,
+            color: isDisabled ? Color.Grey : Color.Black,
           }}
         />
       </Textarea>

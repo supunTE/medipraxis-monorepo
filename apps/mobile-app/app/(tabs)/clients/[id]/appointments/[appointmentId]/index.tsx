@@ -14,6 +14,7 @@ import { ChipComponent, ChipVariant } from "@/components/basic/Chip.component";
 import { Icons } from "@/config";
 import {
   useCreateAppointmentRecord,
+  useFetchAppointmentRecord,
   useFetchClientById,
 } from "@/services/clients";
 import { useFetchActiveForm } from "@/services/forms";
@@ -57,6 +58,7 @@ export default function AppointmentDetailsScreen() {
   const [formValues, setFormValues] = useState<Record<string, any>>({});
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasExistingRecord, setHasExistingRecord] = useState(false);
 
   const {
     mutate: fetchAppointment,
@@ -78,6 +80,10 @@ export default function AppointmentDetailsScreen() {
     userId,
     FormType.APPOINTMENT_RECORD
   );
+
+  // Fetch existing appointment record
+  const { data: existingRecord, isLoading: isLoadingRecord } =
+    useFetchAppointmentRecord(id || "", appointmentId || "");
 
   const { mutate: createAppointmentRecord } = useCreateAppointmentRecord({
     onSuccess: () => {
@@ -104,6 +110,23 @@ export default function AppointmentDetailsScreen() {
       setAppointment(appointmentData.task as TaskDetails);
     }
   }, [appointmentData]);
+
+  // Populate form with existing record data if it exists
+  useEffect(() => {
+    if (existingRecord?.appointment_data) {
+      const values: Record<string, any> = {};
+      existingRecord.appointment_data.forEach((field) => {
+        // Convert string values back to appropriate types
+        if (field.field_type === "checkbox" || field.field_type === "toggle") {
+          values[field.display_label] = field.data === "true";
+        } else {
+          values[field.display_label] = field.data;
+        }
+      });
+      setFormValues(values);
+      setHasExistingRecord(true);
+    }
+  }, [existingRecord]);
 
   const formatDate = (dateString: string): string => {
     return new Date(dateString).toLocaleDateString("en-GB", {
@@ -152,7 +175,7 @@ export default function AppointmentDetailsScreen() {
   };
 
   // Show loading while either is loading
-  if (isLoadingAppointment || isLoadingClient) {
+  if (isLoadingAppointment || isLoadingClient || isLoadingRecord) {
     return (
       <SafeAreaView className="flex-1 bg-white">
         <View className="flex-1 justify-center items-center">
@@ -193,6 +216,7 @@ export default function AppointmentDetailsScreen() {
 
   const chipConfig = getChipConfig(appointment.task_status_name);
   const isNotStarted = appointment.task_status_name === "NOT_STARTED";
+  const showStartButton = isNotStarted && !hasExistingRecord;
 
   const sortedFormFields =
     appointmentForm?.form_configuration
@@ -272,6 +296,7 @@ export default function AppointmentDetailsScreen() {
   const renderFormField = (field: FormField) => {
     const value = formValues[field.display_label];
     const hasError = !!formErrors[field.display_label];
+    const isDisabled = hasExistingRecord; // Disable all fields if record exists
 
     // For checkbox and toggle, don't show label at top (it's shown next to the control)
     const showTopLabel =
@@ -305,11 +330,15 @@ export default function AppointmentDetailsScreen() {
           <>
             <TextInputComponent
               inputType={TextInputType.Text}
+              inputWrapper={{
+                isDisabled: isDisabled,
+              }}
               inputField={{
                 value: value || "",
                 onChangeText: (text: string) =>
                   handleFieldChange(field.display_label, text),
                 placeholder: `Enter ${field.display_label.toLowerCase()}`,
+                editable: !isDisabled,
               }}
             />
             {hasError && (
@@ -328,11 +357,15 @@ export default function AppointmentDetailsScreen() {
         {field.field_type === "multi-text" && (
           <>
             <TextAreaComponent
+              inputWrapper={{
+                isDisabled: isDisabled,
+              }}
               inputField={{
                 value: value || "",
                 onChangeText: (text: string) =>
                   handleFieldChange(field.display_label, text),
                 placeholder: `Enter ${field.display_label.toLowerCase()}`,
+                editable: !isDisabled,
               }}
             />
             {hasError && (
@@ -352,11 +385,15 @@ export default function AppointmentDetailsScreen() {
           <>
             <TextInputComponent
               inputType={TextInputType.Number}
+              inputWrapper={{
+                isDisabled: isDisabled,
+              }}
               inputField={{
                 value: value || "",
                 onChangeText: (text: string) =>
                   handleFieldChange(field.display_label, text),
                 placeholder: `Enter ${field.display_label.toLowerCase()}`,
+                editable: !isDisabled,
               }}
             />
             {hasError && (
@@ -377,14 +414,15 @@ export default function AppointmentDetailsScreen() {
             <CheckboxComponent
               isChecked={value || false}
               onChange={(checked: boolean) =>
-                handleFieldChange(field.display_label, checked)
+                !isDisabled && handleFieldChange(field.display_label, checked)
               }
+              isDisabled={isDisabled}
             />
             <View className="flex-row items-center">
               <TextComponent
                 variant={TextVariant.Body}
                 size={TextSize.Medium}
-                color={Color.Black}
+                color={isDisabled ? Color.Grey : Color.Black}
               >
                 {field.display_label}
               </TextComponent>
@@ -407,14 +445,14 @@ export default function AppointmentDetailsScreen() {
             <ToggleButton
               isActive={value || false}
               onToggle={(toggled: boolean) =>
-                handleFieldChange(field.display_label, toggled)
+                !isDisabled && handleFieldChange(field.display_label, toggled)
               }
             />
             <View className="flex-row items-center">
               <TextComponent
                 variant={TextVariant.Body}
                 size={TextSize.Medium}
-                color={Color.Black}
+                color={isDisabled ? Color.Grey : Color.Black}
               >
                 {field.display_label}
               </TextComponent>
@@ -446,6 +484,7 @@ export default function AppointmentDetailsScreen() {
                 handleFieldChange(field.display_label, dateString)
               }
               mode="date"
+              isDisabled={isDisabled}
             />
             {hasError && (
               <TextComponent
@@ -545,7 +584,7 @@ export default function AppointmentDetailsScreen() {
           </View>
 
           {/* Start Button - aligned to right, auto width */}
-          {isNotStarted && (
+          {showStartButton && (
             <View className="items-end mb-6">
               <ButtonComponent
                 size={ButtonSize.Small}
@@ -570,16 +609,19 @@ export default function AppointmentDetailsScreen() {
                 renderFormField(field)
               )}
 
-              <View className="mb-20">
-                <ButtonComponent
-                  size={ButtonSize.Medium}
-                  buttonColor={Color.Black}
-                  textColor={Color.White}
-                  onPress={isSubmitting ? undefined : handleSubmit}
-                >
-                  {isSubmitting ? "Saving..." : "Save Record"}
-                </ButtonComponent>
-              </View>
+              {!hasExistingRecord && (
+                <View className="mb-32">
+                  <ButtonComponent
+                    size={ButtonSize.Medium}
+                    buttonColor={Color.Black}
+                    textColor={Color.White}
+                    onPress={isSubmitting ? undefined : handleSubmit}
+                  >
+                    {isSubmitting ? "Saving..." : "Save Record"}
+                  </ButtonComponent>
+                </View>
+              )}
+              {hasExistingRecord && <View className="mb-32" />}
             </>
           )}
         </View>

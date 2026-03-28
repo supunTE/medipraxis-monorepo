@@ -146,6 +146,48 @@ export const useFetchClientAppointmentRecords = (clientId: string) => {
   });
 };
 
+// Fetch existing appointment record for a specific appointment
+export const useFetchAppointmentRecord = (
+  clientId: string,
+  appointmentId: string
+) => {
+  return useQuery({
+    queryKey: ["appointment-record", clientId, appointmentId],
+    queryFn: async () => {
+      const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+
+      const response = await customFetch(
+        `${API_BASE_URL}/api/appointment-records?client_id=${clientId}&appointment_id=${appointmentId}`
+      );
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          return null; // No record exists yet
+        }
+        throw new Error("Failed to fetch appointment record");
+      }
+
+      const data = (await response.json()) as {
+        record: {
+          appointment_record_id: string;
+          user_id: string;
+          client_id: string;
+          appointment_id: string;
+          form_id: string;
+          appointment_data: AppointmentRecordFieldData[];
+          note: string | null;
+          created_date: string;
+          updated_date: string;
+          deleted: boolean;
+        };
+      };
+
+      return data.record;
+    },
+    enabled: !!clientId && !!appointmentId,
+  });
+};
+
 type UseCreateAppointmentRecordOptions = {
   onSuccess?: () => void;
   onError?: (message: string) => void;
