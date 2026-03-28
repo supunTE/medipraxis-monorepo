@@ -61,7 +61,7 @@ interface MenuOption {
 }
 
 const textLargeStyle = textStyles[TextVariant.Body][TextSize.Large];
-const textButtonMediumStyle = textStyles[TextVariant.Button][TextSize.Medium];
+const textMediumStyle = textStyles[TextVariant.Body][TextSize.Medium];
 
 const NOTIFICATION_ICON_SIZE = 18;
 
@@ -550,7 +550,7 @@ export default function ClientDetailScreen() {
               {/* Tab Buttons */}
               <View className="flex-1 flex-row justify-center gap-2">
                 <TouchableOpacity
-                  className="px-5 py-2.5 rounded-full"
+                  className="px-6 py-2 rounded-lg"
                   style={{
                     backgroundColor:
                       activeTab === ClientDetailTab.Appointments
@@ -564,7 +564,7 @@ export default function ClientDetailScreen() {
                   activeOpacity={0.7}
                 >
                   <TextComponent
-                    variant={TextVariant.Button}
+                    variant={TextVariant.Body}
                     size={TextSize.Medium}
                     color={Color.Black}
                   >
@@ -573,7 +573,7 @@ export default function ClientDetailScreen() {
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  className="px-5 py-2.5 rounded-full"
+                  className="px-6 py-2 rounded-lg"
                   style={{
                     backgroundColor:
                       activeTab === ClientDetailTab.Reports
@@ -584,7 +584,7 @@ export default function ClientDetailScreen() {
                   activeOpacity={0.7}
                 >
                   <TextComponent
-                    variant={TextVariant.Button}
+                    variant={TextVariant.Body}
                     size={TextSize.Medium}
                     color={Color.Black}
                   >
@@ -642,12 +642,12 @@ export default function ClientDetailScreen() {
                             style={{
                               color: Color.Black,
                               fontFamily:
-                                textButtonMediumStyle.fontFamily === Font.DMsans
+                                textMediumStyle.fontFamily === Font.DMsans
                                   ? "DMSans_400Regular"
                                   : "Inter_400Regular",
-                              fontSize: textButtonMediumStyle.fontSize,
+                              fontSize: textMediumStyle.fontSize,
                               fontWeight: String(
-                                textButtonMediumStyle.fontWeight
+                                textMediumStyle.fontWeight
                               ) as RNTextStyle["fontWeight"],
                             }}
                           >
