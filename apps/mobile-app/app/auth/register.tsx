@@ -4,7 +4,6 @@ import { Link, useRouter } from "expo-router";
 import React from "react";
 import { Controller } from "react-hook-form";
 import {
-  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
