@@ -4,6 +4,7 @@ import { Link, useRouter } from "expo-router";
 import React from "react";
 import { Controller } from "react-hook-form";
 import {
+  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -34,11 +35,12 @@ export default function RegisterScreen() {
       const success = await register.submit();
       if (success) {
         router.replace({
-          pathname: "/auth/additional-info",
+          pathname: "/auth/additional-info"
         });
       }
     } catch (e: any) {
       console.error("Register Error:", e);
+      Alert.alert("Registration Failed", e.message);
     }
   };
 
