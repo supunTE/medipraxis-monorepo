@@ -185,39 +185,39 @@ export default function ReportsScreen() {
             elevation: isScrolled ? 2 : 0,
           }}
         >
-        <TouchableOpacity
-          onPress={() => setActiveTab("completed")}
-          className="px-6 py-2 rounded-lg"
-          style={{
-            backgroundColor:
-              activeTab === "completed" ? Color.Green : "transparent",
-          }}
-        >
-          <TextComponent
-            variant={TextVariant.Body}
-            size={TextSize.Medium}
-            color={Color.Black}
+          <TouchableOpacity
+            onPress={() => setActiveTab("completed")}
+            className="px-6 py-2 rounded-lg"
+            style={{
+              backgroundColor:
+                activeTab === "completed" ? Color.Green : "transparent",
+            }}
           >
-            Completed
-          </TextComponent>
-        </TouchableOpacity>
+            <TextComponent
+              variant={TextVariant.Body}
+              size={TextSize.Medium}
+              color={Color.Black}
+            >
+              Completed
+            </TextComponent>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => setActiveTab("pending")}
-          className="px-6 py-2 rounded-lg"
-          style={{
-            backgroundColor:
-              activeTab === "pending" ? Color.Green : "transparent",
-          }}
-        >
-          <TextComponent
-            variant={TextVariant.Body}
-            size={TextSize.Medium}
-            color={Color.Black}
+          <TouchableOpacity
+            onPress={() => setActiveTab("pending")}
+            className="px-6 py-2 rounded-lg"
+            style={{
+              backgroundColor:
+                activeTab === "pending" ? Color.Green : "transparent",
+            }}
           >
-            Pending
-          </TextComponent>
-        </TouchableOpacity>
+            <TextComponent
+              variant={TextVariant.Body}
+              size={TextSize.Medium}
+              color={Color.Black}
+            >
+              Pending
+            </TextComponent>
+          </TouchableOpacity>
         </View>
       </View>
 

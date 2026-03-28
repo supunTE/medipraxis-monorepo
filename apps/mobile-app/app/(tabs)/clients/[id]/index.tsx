@@ -522,9 +522,14 @@ export default function ClientDetailScreen() {
                     iconColor={Color.White}
                     onPress={() => {
                       if (client.contact_number) {
-                        Linking.openURL(`tel:${client.contact_number}`).catch(() => {
-                          Alert.alert("Error", "Unable to open the phone dialler on this device.");
-                        });
+                        Linking.openURL(`tel:${client.contact_number}`).catch(
+                          () => {
+                            Alert.alert(
+                              "Error",
+                              "Unable to open the phone dialler on this device."
+                            );
+                          }
+                        );
                       }
                     }}
                   >

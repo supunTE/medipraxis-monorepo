@@ -5,7 +5,14 @@ import { Color, TextSize, TextVariant, textStyles } from "@repo/config";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View, type NativeSyntheticEvent, type NativeScrollEvent } from "react-native";
+import {
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  type NativeSyntheticEvent,
+  type NativeScrollEvent,
+} from "react-native";
 
 import TaskForm from "@/components/advanced/taskPanel/TaskForm";
 import { HomeCard } from "./home/HomeCard.component";

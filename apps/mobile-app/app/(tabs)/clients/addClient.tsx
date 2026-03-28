@@ -12,12 +12,7 @@ import { Color, TextSize, TextVariant } from "@repo/config";
 import React, { useState } from "react";
 import type { NativeSyntheticEvent, NativeScrollEvent } from "react-native";
 import { Controller, useForm } from "react-hook-form";
-import {
-  Modal,
-  Pressable,
-  ScrollView,
-  View,
-} from "react-native";
+import { Modal, Pressable, ScrollView, View } from "react-native";
 import { z } from "zod";
 import type { CreateClientInput } from "../../../services/clients";
 
@@ -228,8 +223,23 @@ export const AddClient: React.FC<AddClientProps> = ({
         onRequestClose={handleClose}
       >
         {/* Pseudo wrapper — transparent so overlay shows through padding gaps */}
-        <View style={{ flex: 1, justifyContent: "center", padding: 12, paddingTop: 24, backgroundColor: "transparent" }}>
-        <View style={{ flex: 1, backgroundColor: "white", borderRadius: 20, overflow: "hidden" }}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            padding: 12,
+            paddingTop: 24,
+            backgroundColor: "transparent",
+          }}
+        >
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: "white",
+              borderRadius: 20,
+              overflow: "hidden",
+            }}
+          >
             <View
               className="px-5 pt-4 pb-3"
               style={{
@@ -533,10 +543,18 @@ export const AddClient: React.FC<AddClientProps> = ({
             <View className="absolute bottom-0 w-full bg-[#EAF8C9] p-4 flex-row justify-end gap-x-2.5 border-t border-gray-100">
               <Pressable
                 className="flex-row items-center py-2.5 px-6 rounded-lg"
-                style={{ backgroundColor: Color.LightCream, borderWidth: 1, borderColor: Color.LightGrey }}
+                style={{
+                  backgroundColor: Color.LightCream,
+                  borderWidth: 1,
+                  borderColor: Color.LightGrey,
+                }}
                 onPress={handleClose}
               >
-                <TextComponent variant={TextVariant.Body} size={TextSize.Medium} color={Color.Black}>
+                <TextComponent
+                  variant={TextVariant.Body}
+                  size={TextSize.Medium}
+                  color={Color.Black}
+                >
                   Close
                 </TextComponent>
               </Pressable>
@@ -545,12 +563,16 @@ export const AddClient: React.FC<AddClientProps> = ({
                 onPress={() => void handleSubmit(onSubmit)()}
               >
                 <Icons.Check size={18} color="white" weight="bold" />
-                <TextComponent variant={TextVariant.Body} size={TextSize.Medium} color={Color.White}>
+                <TextComponent
+                  variant={TextVariant.Body}
+                  size={TextSize.Medium}
+                  color={Color.White}
+                >
                   Save
                 </TextComponent>
               </Pressable>
             </View>
-        </View>
+          </View>
         </View>
       </Modal>
     </>
