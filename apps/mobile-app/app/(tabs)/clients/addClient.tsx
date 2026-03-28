@@ -10,13 +10,11 @@ import { Icons } from "@/config";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Color, TextSize, TextVariant } from "@repo/config";
 import React, { useState } from "react";
+import type { NativeSyntheticEvent, NativeScrollEvent } from "react-native";
 import { Controller, useForm } from "react-hook-form";
 import {
-  KeyboardAvoidingView,
   Modal,
-  Platform,
   Pressable,
-  SafeAreaView,
   ScrollView,
   View,
 } from "react-native";
@@ -134,6 +132,11 @@ export const AddClient: React.FC<AddClientProps> = ({
 }) => {
   const [conditions, setConditions] = useState<string[]>([]);
   const [conditionInput, setConditionInput] = useState("");
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    setIsScrolled(e.nativeEvent.contentOffset.y > 0);
+  };
 
   const MAX_CONDITIONS = 5;
 
@@ -206,28 +209,39 @@ export const AddClient: React.FC<AddClientProps> = ({
   };
 
   return (
-    <Modal
-      visible={visible}
-      transparent={false}
-      animationType="slide"
-      onRequestClose={handleClose}
-    >
-      <SafeAreaView style={{ flex: 1, backgroundColor: Color.White }}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === "ios" ? "padding" : "height"}
-          style={{ flex: 1 }}
-        >
-          <View className="flex-1" style={{ backgroundColor: Color.White }}>
+    <>
+      {/* Overlay modal — covers status bar */}
+      <Modal
+        visible={visible}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+      >
+        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }} />
+      </Modal>
+
+      {/* Form modal */}
+      <Modal
+        visible={visible}
+        animationType="slide"
+        transparent
+        onRequestClose={handleClose}
+      >
+        {/* Pseudo wrapper — transparent so overlay shows through padding gaps */}
+        <View style={{ flex: 1, justifyContent: "center", padding: 12, paddingTop: 24, backgroundColor: "transparent" }}>
+        <View style={{ flex: 1, backgroundColor: "white", borderRadius: 20, overflow: "hidden" }}>
             <View
-              className="px-5 pt-3 pb-4"
-              style={{ backgroundColor: Color.White }}
+              className="px-5 pt-4 pb-3"
+              style={{
+                backgroundColor: Color.White,
+                shadowColor: "#0000007b",
+                shadowOffset: { width: 0, height: 8 },
+                shadowOpacity: isScrolled ? 0.05 : 0,
+                shadowRadius: 4,
+                elevation: isScrolled ? 2 : 0,
+                zIndex: 1,
+              }}
             >
-              <View className="mb-4" style={{ alignSelf: "flex-start" }}>
-                <ButtonComponent.BackButton
-                  size={ButtonSize.Small}
-                  onPress={handleClose}
-                />
-              </View>
               <TextComponent variant={TextVariant.Title} size={TextSize.Large}>
                 Add Client Details
               </TextComponent>
@@ -237,6 +251,8 @@ export const AddClient: React.FC<AddClientProps> = ({
               className="flex-1 px-5"
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 120 }}
+              onScroll={handleScroll}
+              scrollEventThrottle={16}
             >
               <View className="mb-3">
                 <TextComponent
@@ -513,29 +529,30 @@ export const AddClient: React.FC<AddClientProps> = ({
               </View>
             </ScrollView>
 
-            <View
-              className="px-5 pb-8 pt-4"
-              style={{
-                backgroundColor: Color.White,
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: -2 },
-                shadowOpacity: 0.1,
-                shadowRadius: 4,
-                elevation: 5,
-              }}
-            >
-              <ButtonComponent
-                size={ButtonSize.Large}
-                buttonColor={Color.Black}
-                textColor={Color.White}
+            {/* Action Footer */}
+            <View className="absolute bottom-0 w-full bg-[#EAF8C9] p-4 flex-row justify-end gap-x-2.5 border-t border-gray-100">
+              <Pressable
+                className="flex-row items-center py-2.5 px-6 rounded-lg"
+                style={{ backgroundColor: Color.LightCream, borderWidth: 1, borderColor: Color.LightGrey }}
+                onPress={handleClose}
+              >
+                <TextComponent variant={TextVariant.Body} size={TextSize.Medium} color={Color.Black}>
+                  Close
+                </TextComponent>
+              </Pressable>
+              <Pressable
+                className="flex-row items-center bg-slate-900 py-2.5 px-6 rounded-lg gap-x-2"
                 onPress={() => void handleSubmit(onSubmit)()}
               >
-                Save
-              </ButtonComponent>
+                <Icons.Check size={18} color="white" weight="bold" />
+                <TextComponent variant={TextVariant.Body} size={TextSize.Medium} color={Color.White}>
+                  Save
+                </TextComponent>
+              </Pressable>
             </View>
-          </View>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </Modal>
+        </View>
+        </View>
+      </Modal>
+    </>
   );
 };
