@@ -1,25 +1,75 @@
+import { apiClient } from "@/lib";
 import { DaySelector, SlotWindow } from "@/routes/schedules";
 import { useCancelAppointment } from "@/services/ShareableCalendarLink/useCancelAppointment";
 import { useReserveAppointment } from "@/services/ShareableCalendarLink/useReserveAppointment";
 import { useShareableCalendarLink } from "@/services/ShareableCalendarLink/useShareableCalendarLink";
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/schedules/$id")({
   component: ScheduleDetail,
+  beforeLoad: ({ location }) => {
+    // Check if user is authenticated (has contact_id in sessionStorage)
+    const contactId = sessionStorage.getItem("contact_id");
+
+    if (!contactId) {
+      // Store the current URL for redirect after login
+      const redirectUrl = location.pathname;
+
+      // Redirect to phone entry page with redirect parameter
+      throw redirect({
+        to: "/",
+        search: {
+          redirect: redirectUrl,
+        },
+      });
+    }
+  },
 });
 
 function ScheduleDetail() {
   const { id } = Route.useParams();
   const [selectedDay, setSelectedDay] = useState(0); // Start with today (index 0)
+  const [clientId, setClientId] = useState<string | null>(null);
 
-  // TODO: Get client_id from authentication context or local storage
-  // For now, using a placeholder. This should be replaced with actual client authentication
-  const clientId = "4231411e-efa4-4a1c-8e05-bf16f93c542d";
+  // Get contact_id from sessionStorage and fetch client_id
+  useEffect(() => {
+    const fetchClientId = async () => {
+      const contactId = sessionStorage.getItem("contact_id");
+      if (!contactId) {
+        return;
+      }
+
+      try {
+        // Fetch clients associated with this contact
+        const response = await apiClient.api.clients["contact-id"][":id"].$get({
+          param: {
+            id: contactId,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          // Use the first client for this contact
+          // TODO: If multiple clients exist for a contact, add a client selection UI
+          if (data.clients && data.clients.length > 0 && data.clients[0]) {
+            setClientId(data.clients[0].client_id);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch client_id:", error);
+      }
+    };
+
+    fetchClientId();
+  }, []);
 
   // Fetch shareable calendar link data with slot windows
-  const { data, isLoading, error } = useShareableCalendarLink(id, clientId);
+  const { data, isLoading, error } = useShareableCalendarLink(
+    id,
+    clientId ?? ""
+  );
 
   // Reserve appointment mutation
   const reserveAppointment = useReserveAppointment({
@@ -35,7 +85,7 @@ function ScheduleDetail() {
   // Cancel appointment mutation
   const cancelAppointment = useCancelAppointment({
     linkId: id,
-    clientId,
+    clientId: clientId ?? "",
     onSuccess: () => {
       toast.success("Your appointment has been cancelled successfully.");
     },
@@ -107,7 +157,7 @@ function ScheduleDetail() {
     });
   };
 
-  if (isLoading) {
+  if (!clientId || isLoading) {
     return (
       <div className="min-h-screen bg-mp-white px-6 py-8 max-w-2xl mx-auto">
         <div className="text-center text-mp-dark-green font-dm-sans">

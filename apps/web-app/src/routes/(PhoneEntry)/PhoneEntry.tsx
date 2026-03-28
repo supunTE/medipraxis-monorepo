@@ -13,7 +13,11 @@ const countryOptions = [
   { code: "+61", abbr: "AU", name: "Australia" },
 ];
 
-export function PhoneEntry() {
+interface PhoneEntryProps {
+  redirect?: string;
+}
+
+export function PhoneEntry({ redirect }: PhoneEntryProps) {
   const navigate = useNavigate();
   const [countryCode, setCountryCode] = useState("+94");
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -23,6 +27,13 @@ export function PhoneEntry() {
   const [timer, setTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // Store redirect URL in sessionStorage when component mounts
+  useEffect(() => {
+    if (redirect) {
+      sessionStorage.setItem("redirect_after_login", redirect);
+    }
+  }, [redirect]);
 
   const checkPhoneMutation = useCheckPhone({
     onSuccess: (exists) => {
@@ -61,7 +72,18 @@ export function PhoneEntry() {
 
   const verifyOtpMutation = useVerifyOtp({
     onSuccess: () => {
-      navigate({ to: "/dashboard" });
+      // Check if there's a redirect URL stored
+      const redirectUrl = sessionStorage.getItem("redirect_after_login");
+
+      if (redirectUrl) {
+        // Clear the redirect URL from storage
+        sessionStorage.removeItem("redirect_after_login");
+        // Navigate to the stored redirect URL
+        window.location.href = redirectUrl;
+      } else {
+        // Default redirect to dashboard
+        navigate({ to: "/dashboard" });
+      }
     },
     onError: (message) => {
       setError(message);
