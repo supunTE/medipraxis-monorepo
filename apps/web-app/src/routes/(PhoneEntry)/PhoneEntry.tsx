@@ -95,6 +95,7 @@ export function PhoneEntry() {
     const newOtp = [...otp];
     newOtp[index] = value.slice(-1);
     setOtp(newOtp);
+    if (error) setError("");
 
     // Auto-focus next input
     if (value && index < 4) {
@@ -216,6 +217,7 @@ export function PhoneEntry() {
                     const value = e.target.value.replace(/\D/g, "");
                     if (value.length <= 10) {
                       setPhoneNumber(value);
+                      if (error) setError("");
                     }
                   }}
                   placeholder="07XXXXXXXX"
