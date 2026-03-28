@@ -100,13 +100,15 @@ export const AppointmentTile: React.FC<AppointmentTileProps> = ({
 
   return (
     <View
-      className="bg-white rounded-2xl p-4 mb-3 border border-[#E5E5E5]"
+      className="bg-white rounded-2xl p-4 mb-3"
       style={{
+        borderWidth: 1,
+        borderColor: "#F0F0F0",
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.06,
-        shadowRadius: 4,
-        elevation: 2,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.04,
+        shadowRadius: 6,
+        elevation: 1,
       }}
     >
       <View className="flex-row justify-between items-center mb-4">

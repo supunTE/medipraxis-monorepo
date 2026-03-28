@@ -618,7 +618,7 @@ export default function ClientDetailScreen() {
 
                 {showOptionsMenu && (
                   <View
-                    className="absolute top-10 right-0 min-w-[240px] bg-white rounded-xl overflow-hidden z-50"
+                    className="absolute top-10 right-0 min-w-[180px] bg-white rounded-xl overflow-hidden z-50"
                     style={{
                       shadowColor: "#000",
                       shadowOffset: { width: 0, height: 2 },
@@ -634,7 +634,7 @@ export default function ClientDetailScreen() {
                         <Pressable
                           key={option.value}
                           onPress={() => handleOptionSelect(option.value)}
-                          className="flex-row items-center px-4 py-4 gap-3"
+                          className="flex-row items-center px-4 py-3 gap-2"
                           style={{
                             borderBottomWidth: isLast ? 0 : 1,
                             borderBottomColor: "#F0F0F0",
@@ -642,7 +642,7 @@ export default function ClientDetailScreen() {
                           android_ripple={{ color: "#F5F5F5" }}
                         >
                           <IconComponent
-                            size={20}
+                            size={16}
                             color={Color.Black}
                             weight="regular"
                           />
@@ -653,10 +653,8 @@ export default function ClientDetailScreen() {
                                 textButtonMediumStyle.fontFamily === Font.DMsans
                                   ? "DMSans_400Regular"
                                   : "Inter_400Regular",
-                              fontSize: textButtonMediumStyle.fontSize,
-                              fontWeight: String(
-                                textButtonMediumStyle.fontWeight
-                              ) as RNTextStyle["fontWeight"],
+                              fontSize: 13,
+                              fontWeight: "400",
                             }}
                           >
                             {option.label}
@@ -747,6 +745,13 @@ export default function ClientDetailScreen() {
                         className="w-[31%] bg-white rounded-xl p-3 mb-3 justify-between"
                         style={{
                           minHeight: 140,
+                          borderWidth: 1,
+                          borderColor: "#F0F0F0",
+                          shadowColor: "#000",
+                          shadowOffset: { width: 0, height: 2 },
+                          shadowOpacity: 0.04,
+                          shadowRadius: 6,
+                          elevation: 1,
                         }}
                         onPress={() =>
                           router.push(`/reports/${report.report_id}` as any)
