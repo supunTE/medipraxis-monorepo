@@ -1,6 +1,6 @@
 import { z } from "genkit";
 import { apiClient } from "../../api-client";
-import { getUserId } from "../../context";
+import { getClientIds, getUserId } from "../../context";
 import { ai } from "../../models";
 
 export const searchClientsByName = ai.defineTool(
@@ -25,10 +25,6 @@ export const searchClientsByName = ai.defineTool(
   },
   async (input) => {
     const userId = getUserId();
-    console.log("[TOOL] searchClientsByName called with:", {
-      ...input,
-      userId,
-    });
 
     const res = await apiClient.api.clients.name.$get(
       {
@@ -82,10 +78,6 @@ export const getAvailableSlots = ai.defineTool(
   },
   async (input) => {
     const userId = getUserId();
-    console.log("[TOOL] getAvailableSlots called with:", {
-      ...input,
-      userId,
-    });
 
     const res = await apiClient.api["slot-windows"].$get(
       {
@@ -141,10 +133,6 @@ export const reserveAppointment = ai.defineTool(
   },
   async (input) => {
     const userId = getUserId();
-    console.log("[TOOL] reserveAppointment called with:", {
-      ...input,
-      userId,
-    });
 
     const res = await apiClient.api.tasks.appointments.reserve.practitioner.$post(
       {
@@ -203,10 +191,6 @@ export const getAllAppointments = ai.defineTool(
   },
   async (input) => {
     const userId = getUserId();
-    console.log("[TOOL] getAllAppointments called with:", {
-      ...input,
-      userId,
-    });
 
     const res = await apiClient.api.tasks.$get(
       {
@@ -293,8 +277,9 @@ export const createAppointment = ai.defineTool(
         ),
       endDateTime: z
         .string()
+        .optional()
         .describe(
-          "The appointment end date and time in ISO 8601 format (e.g. 2026-03-21T09:30:00)"
+          "The appointment end date and time in ISO 8601 format (e.g. 2026-03-21T09:30:00). Defaults to 30 minutes after startDateTime if not provided."
         ),
       title: z
         .string()
@@ -307,6 +292,7 @@ export const createAppointment = ai.defineTool(
       success: z.boolean(),
       message: z.string(),
       appointmentId: z.string().optional(),
+      resolvedClientName: z.string().optional(),
       multipleClients: z
         .array(
           z.object({
@@ -322,42 +308,57 @@ export const createAppointment = ai.defineTool(
   },
   async (input) => {
     const userId = getUserId();
-    console.log("[TOOL] createAppointment called with:", { ...input, userId });
+    const contextClientIds = getClientIds();
 
-    // Search for client by name
-    const searchRes = await apiClient.api.clients.name.$get(
-      { query: { name: input.clientName, user_id: userId } },
-      { headers: { "x-ai-engine-api-key": process.env.AI_ENGINE_API_KEY || "" } }
-    );
+    let clientId: string;
+    let resolvedClientName: string = input.clientName;
 
-    if (!searchRes.ok) {
-      const errorText = await searchRes.text();
-      console.error("[TOOL] Failed to search clients:", searchRes.status, errorText);
-      return { success: false, message: errorText };
+    if (contextClientIds?.length) {
+      clientId = contextClientIds[0]!;
+    } else {
+      // Search for client by name
+      const searchRes = await apiClient.api.clients.name.$get(
+        { query: { name: input.clientName, user_id: userId } },
+        { headers: { "x-ai-engine-api-key": process.env.AI_ENGINE_API_KEY || "" } }
+      );
+
+      if (!searchRes.ok) {
+        const errorText = await searchRes.text();
+        return { success: false, message: errorText };
+      }
+
+      const searchData = await searchRes.json();
+
+      const clients = searchData.clients.map((client) => ({
+        clientId: client.client_id,
+        title: client.title,
+        firstName: client.first_name,
+        lastName: client.last_name,
+        contactNumber: client.contact_number ?? undefined,
+      }));
+
+      if (clients.length === 0) {
+        return { success: false, message: `No clients found matching "${input.clientName}".` };
+      }
+
+      if (clients.length > 1) {
+        return {
+          success: false,
+          message: `Multiple clients found matching "${input.clientName}". Please specify which client.`,
+          multipleClients: clients,
+        };
+      }
+
+      clientId = clients[0]!.clientId;
+      resolvedClientName = `${clients[0]!.title} ${clients[0]!.firstName} ${clients[0]!.lastName}`.trim();
     }
 
-    const searchData = await searchRes.json();
-    const clients = searchData.clients.map((client) => ({
-      clientId: client.client_id,
-      title: client.title,
-      firstName: client.first_name,
-      lastName: client.last_name,
-      contactNumber: client.contact_number ?? undefined,
-    }));
-
-    if (clients.length === 0) {
-      return { success: false, message: `No clients found matching "${input.clientName}".` };
-    }
-
-    if (clients.length > 1) {
-      return {
-        success: false,
-        message: `Multiple clients found matching "${input.clientName}". Please specify which client.`,
-        multipleClients: clients,
-      };
-    }
-
-    const client = clients[0]!;
+    // Default endDateTime to 30 minutes after startDateTime if not provided
+    const endDateTime: string = input.endDateTime ?? (() => {
+      const start = new Date(input.startDateTime);
+      start.setMinutes(start.getMinutes() + 30);
+      return start.toISOString().slice(0, 19);
+    })();
 
     // Create the appointment
     const res = await apiClient.api.tasks.$post(
@@ -365,10 +366,10 @@ export const createAppointment = ai.defineTool(
         json: {
           task_title: input.title || "Appointment",
           user_id: userId,
-          client_id: client.clientId,
+          client_id: clientId,
           task_type_id: APPOINTMENT_TASK_TYPE_ID,
           start_date: input.startDateTime,
-          end_date: input.endDateTime,
+          end_date: endDateTime,
           created_by: "PRACTITIONER",
         },
       },
@@ -388,6 +389,7 @@ export const createAppointment = ai.defineTool(
       success: true,
       message: "Appointment created successfully.",
       appointmentId: data.task?.task_id,
+      resolvedClientName,
     };
   }
 );

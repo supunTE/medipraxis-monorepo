@@ -7,9 +7,10 @@ import { runAgent } from "./nodes";
 async function _processAppointments(
   query: string,
   history: ChatMessage[],
-  userId: string
+  userId: string,
+  clientIds?: string[]
 ): Promise<{ message: string }> {
-  return requestContext.run({ userId }, () => runAgent(query, history));
+  return requestContext.run({ userId, clientIds: clientIds?.length ? clientIds : undefined }, () => runAgent(query, history));
 }
 
 export const processAppointments = ai.defineFlow(
@@ -23,11 +24,12 @@ export const processAppointments = ai.defineFlow(
         )
         .optional(),
       userId: z.string(),
+      clientIds: z.array(z.string()).optional(),
     }),
     outputSchema: z.object({
       message: z.string(),
     }),
   },
-  ({ query, history = [], userId }) =>
-    _processAppointments(query, history, userId)
+  ({ query, history = [], userId, clientIds }) =>
+    _processAppointments(query, history, userId, clientIds)
 );

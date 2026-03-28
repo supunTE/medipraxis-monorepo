@@ -76,10 +76,10 @@ export function fuzzyMatch(
 
   for (const client of clients) {
     const fullScore = jaroWinkler(name, client.name);
-    // Also compare against first name alone
-    const firstName = client.name.split(" ")[0] ?? "";
-    const firstScore = jaroWinkler(name, firstName);
-    const score = Math.max(fullScore, firstScore);
+    // Compare against each individual name part (first, last, etc.)
+    const nameParts = client.name.split(" ");
+    const partScores = nameParts.map((part) => jaroWinkler(name, part));
+    const score = Math.max(fullScore, ...partScores);
 
     if (score > (best?.score ?? 0)) {
       best = { client, score };
