@@ -10,7 +10,10 @@ async function _processAppointments(
   userId: string,
   clientIds?: string[]
 ): Promise<{ message: string }> {
-  return requestContext.run({ userId, clientIds: clientIds?.length ? clientIds : undefined }, () => runAgent(query, history));
+  return requestContext.run(
+    { userId, clientIds: clientIds?.length ? clientIds : undefined },
+    () => runAgent(query, history)
+  );
 }
 
 export const processAppointments = ai.defineFlow(

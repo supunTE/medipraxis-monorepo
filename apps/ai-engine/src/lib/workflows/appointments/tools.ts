@@ -9,7 +9,9 @@ export const searchClientsByName = ai.defineTool(
     description:
       "Search for clients by name. Use this when the user wants to create an appointment and provides a client name. Returns a list of matching clients so the user can pick the correct one.",
     inputSchema: z.object({
-      name: z.string().describe("The client name (or partial name) to search for"),
+      name: z
+        .string()
+        .describe("The client name (or partial name) to search for"),
     }),
     outputSchema: z.object({
       clients: z.array(
@@ -118,9 +120,7 @@ export const reserveAppointment = ai.defineTool(
     description:
       "Reserve an appointment for a client in a specific slot window. Use this after the practitioner has confirmed the client and the time slot.",
     inputSchema: z.object({
-      slotWindowId: z
-        .string()
-        .describe("The ID of the slot window to book"),
+      slotWindowId: z.string().describe("The ID of the slot window to book"),
       clientId: z
         .string()
         .describe("The ID of the client to book the appointment for"),
@@ -134,21 +134,28 @@ export const reserveAppointment = ai.defineTool(
   async (input) => {
     const userId = getUserId();
 
-    const res = await apiClient.api.tasks.appointments.reserve.practitioner.$post(
-      {
-        json: {
-          slot_window_id: input.slotWindowId,
-          client_id: input.clientId,
+    const res =
+      await apiClient.api.tasks.appointments.reserve.practitioner.$post(
+        {
+          json: {
+            slot_window_id: input.slotWindowId,
+            client_id: input.clientId,
+          },
         },
-      },
-      {
-        headers: { "x-ai-engine-api-key": process.env.AI_ENGINE_API_KEY || "" },
-      }
-    );
+        {
+          headers: {
+            "x-ai-engine-api-key": process.env.AI_ENGINE_API_KEY || "",
+          },
+        }
+      );
 
     if (!res.ok) {
       const errorText = await res.text();
-      console.error("[TOOL] Failed to reserve appointment:", res.status, errorText);
+      console.error(
+        "[TOOL] Failed to reserve appointment:",
+        res.status,
+        errorText
+      );
       return {
         success: false,
         message: `Failed to reserve appointment: ${errorText}`,
@@ -269,7 +276,11 @@ export const createAppointment = ai.defineTool(
     description:
       "Search for a client by name and create an appointment for them. First searches for the client — if multiple matches are found, returns them so the practitioner can pick one. If exactly one match is found, proceeds to create the appointment. If no end time is provided, defaults to 30 minutes after the start time.",
     inputSchema: z.object({
-      clientName: z.string().describe("The name (or partial name) of the client to search for and book"),
+      clientName: z
+        .string()
+        .describe(
+          "The name (or partial name) of the client to search for and book"
+        ),
       startDateTime: z
         .string()
         .describe(
@@ -319,7 +330,11 @@ export const createAppointment = ai.defineTool(
       // Search for client by name
       const searchRes = await apiClient.api.clients.name.$get(
         { query: { name: input.clientName, user_id: userId } },
-        { headers: { "x-ai-engine-api-key": process.env.AI_ENGINE_API_KEY || "" } }
+        {
+          headers: {
+            "x-ai-engine-api-key": process.env.AI_ENGINE_API_KEY || "",
+          },
+        }
       );
 
       if (!searchRes.ok) {
@@ -338,7 +353,10 @@ export const createAppointment = ai.defineTool(
       }));
 
       if (clients.length === 0) {
-        return { success: false, message: `No clients found matching "${input.clientName}".` };
+        return {
+          success: false,
+          message: `No clients found matching "${input.clientName}".`,
+        };
       }
 
       if (clients.length > 1) {
@@ -350,15 +368,18 @@ export const createAppointment = ai.defineTool(
       }
 
       clientId = clients[0]!.clientId;
-      resolvedClientName = `${clients[0]!.title} ${clients[0]!.firstName} ${clients[0]!.lastName}`.trim();
+      resolvedClientName =
+        `${clients[0]!.title} ${clients[0]!.firstName} ${clients[0]!.lastName}`.trim();
     }
 
     // Default endDateTime to 30 minutes after startDateTime if not provided
-    const endDateTime: string = input.endDateTime ?? (() => {
-      const start = new Date(input.startDateTime);
-      start.setMinutes(start.getMinutes() + 30);
-      return start.toISOString().slice(0, 19);
-    })();
+    const endDateTime: string =
+      input.endDateTime ??
+      (() => {
+        const start = new Date(input.startDateTime);
+        start.setMinutes(start.getMinutes() + 30);
+        return start.toISOString().slice(0, 19);
+      })();
 
     // Create the appointment
     const res = await apiClient.api.tasks.$post(
@@ -380,7 +401,11 @@ export const createAppointment = ai.defineTool(
 
     if (!res.ok) {
       const errorText = await res.text();
-      console.error("[TOOL] Failed to create appointment:", res.status, errorText);
+      console.error(
+        "[TOOL] Failed to create appointment:",
+        res.status,
+        errorText
+      );
       return { success: false, message: errorText };
     }
 

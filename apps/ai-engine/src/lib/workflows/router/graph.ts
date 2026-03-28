@@ -106,7 +106,8 @@ export const processAIQuery = ai.defineFlow(
       guardRailViolation: z.string().optional(),
     }),
   },
-  ({ query, history = [], userId, clientIds }) => _processAIQuery(query, history, userId, clientIds)
+  ({ query, history = [], userId, clientIds }) =>
+    _processAIQuery(query, history, userId, clientIds)
 );
 
 export { VALID_TASKS };
