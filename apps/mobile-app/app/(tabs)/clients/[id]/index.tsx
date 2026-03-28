@@ -1,4 +1,5 @@
 import { useAuth } from "@/auth/AuthContext";
+import TaskForm from "@/components/advanced/taskPanel/TaskForm";
 import {
   ButtonComponent,
   ButtonSize,
@@ -99,6 +100,7 @@ export default function ClientDetailScreen() {
   const [showLeftShadow, setShowLeftShadow] = useState(false);
   const [showRightShadow, setShowRightShadow] = useState(true);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [showTaskForm, setShowTaskForm] = useState(false);
   const [showShareCalendarModal, setShowShareCalendarModal] = useState(false);
   const [visibleDaysAhead, setVisibleDaysAhead] = useState(7);
   const [expiryDate, setExpiryDate] = useState("");
@@ -343,7 +345,7 @@ export default function ClientDetailScreen() {
     setShowOptionsMenu(false);
     switch (value) {
       case "schedule_appointment":
-        console.log("Schedule appointment for:", client?.client_id);
+        setShowTaskForm(true);
         break;
       case "request_report":
         router.push(`/reports/request-report/${client?.client_id}` as any);
@@ -963,6 +965,13 @@ export default function ClientDetailScreen() {
         type={messagePopupType}
         message={messagePopupText}
         onClose={() => setShowMessagePopup(false)}
+      />
+
+      {/* Schedule Appointment Form */}
+      <TaskForm
+        visible={showTaskForm}
+        onClose={() => setShowTaskForm(false)}
+        initialClientId={client?.client_id}
       />
     </View>
   );

@@ -26,9 +26,10 @@ import { Alert, Modal, ScrollView, TouchableOpacity, View } from "react-native";
 type Props = {
   visible: boolean;
   onClose: () => void;
+  initialClientId?: string;
 };
 
-export default function TaskForm({ visible, onClose }: Props) {
+export default function TaskForm({ visible, onClose, initialClientId }: Props) {
   const eventTypes = [
     EVENT_TYPES.APPOINTMENT_SLOT_WINDOW,
     EVENT_TYPES.APPOINTMENT,
@@ -59,6 +60,13 @@ export default function TaskForm({ visible, onClose }: Props) {
       Alert.alert("Error", error);
     }
   }, [error]);
+
+  useEffect(() => {
+    if (visible && initialClientId) {
+      switchEventType(EVENT_TYPES.APPOINTMENT);
+      setField("client", initialClientId);
+    }
+  }, [visible, initialClientId]);
 
   const [showEndDateTime, setShowEndDateTime] = useState(false);
 
