@@ -1,5 +1,7 @@
+import { useAuth } from "@/auth/AuthContext";
 import { TextComponent, TextInputComponent } from "@/components/basic";
 import { useAIChat } from "@/services/ai";
+import { useFetchUser } from "@/services/user";
 import { NotoColorEmoji_400Regular } from "@expo-google-fonts/noto-color-emoji";
 import { Color, TextSize, TextVariant } from "@repo/config";
 import { AIChatRole, type UIChatMessage } from "@repo/models";
@@ -35,6 +37,13 @@ const botAvatar =
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   require("@/assets/images/ai/bot-eye-opened.png") as ImageSourcePropType;
 
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good Morning";
+  if (hour < 18) return "Good Afternoon";
+  return "Good Evening";
+}
+
 interface AIAssistantModalProps {
   visible: boolean;
   onClose: () => void;
@@ -53,6 +62,10 @@ export default function AIAssistantModal({
   const [fontsLoaded] = useFonts({
     NotoColorEmoji_400Regular,
   });
+
+  const { user: authUser } = useAuth();
+  const userId = authUser?.user_id ?? "";
+  const { data: userProfile } = useFetchUser(userId);
 
   const [inputText, setInputText] = useState("");
   const { messages, isLoading, sendMessage, clearMessages } = useAIChat();
@@ -196,7 +209,7 @@ export default function AIAssistantModal({
                           size={TextSize.Small}
                           color={Color.TextGreen}
                         >
-                          Good Evening, Katherine
+                          {getGreeting()}{userProfile?.first_name ? `, ${userProfile.first_name}` : ""}
                         </TextComponent>
                       </View>
                     </View>
