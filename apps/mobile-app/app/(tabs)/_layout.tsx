@@ -69,15 +69,15 @@ function CustomTabBar({
     <View className="absolute bottom-8 left-0 right-0 flex-row items-center justify-center gap-4">
       {/* Tabs Container */}
       <View
-          className="rounded-[22px]"
-          style={{
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.15,
-            shadowRadius: 6,
-            elevation: 4,
-          }}
-        >
+        className="rounded-[22px]"
+        style={{
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.15,
+          shadowRadius: 6,
+          elevation: 4,
+        }}
+      >
         <LinearGradient
           colors={[Color.Green, "#D1FD22"]}
           start={{ x: 0, y: 0 }}
