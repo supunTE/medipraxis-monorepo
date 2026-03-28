@@ -11,7 +11,7 @@ import { ViewClient } from "../clients/viewClient";
 
 const CalendarIcon = Icons.CalendarBlank;
 const CalendarCheckIcon = Icons.CalendarCheckIcon;
-const DotsIcon = Icons.DotsThreeVertical;
+// const DotsIcon = Icons.DotsThreeVertical;
 
 export type EventType = "appointment" | "task" | "other";
 
@@ -103,7 +103,7 @@ function EventCard({
   type,
   tagName,
   clientId,
-  onOptionsPress,
+  // onOptionsPress,
   onClientPress,
   onTimePress,
 }: UpcomingEvent) {
@@ -201,9 +201,9 @@ function EventCard({
       </View>
 
       {/* Options menu */}
-      <TouchableOpacity onPress={onOptionsPress} hitSlop={8}>
+      {/* <TouchableOpacity onPress={onOptionsPress} hitSlop={8}>
         <DotsIcon size={18} color={Color.Grey} />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 }
