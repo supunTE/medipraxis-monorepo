@@ -1,22 +1,48 @@
-import { ButtonComponent, ButtonSize, TextComponent } from "@/components/basic";
+import { useAuth } from "@/auth/AuthContext";
+import {
+  ButtonComponent,
+  ButtonSize,
+  CheckboxComponent,
+  DateTimePickerComponent,
+  TextAreaComponent,
+  TextComponent,
+  TextInputComponent,
+  TextInputType,
+  ToggleButton,
+} from "@/components/basic";
 import { ChipComponent, ChipVariant } from "@/components/basic/Chip.component";
 import { Icons } from "@/config";
 import { useFetchClientById } from "@/services/clients";
+import { useFetchActiveForm } from "@/services/forms";
 import { useGetTaskById } from "@/services/tasks/useGetTaskById";
 import { Color, TextSize, TextVariant } from "@repo/config";
-import type { TaskDetails } from "@repo/models";
+import { FormType, type TaskDetails } from "@repo/models";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { CalendarBlankIcon, ClockIcon, PlayIcon } from "phosphor-react-native";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   SafeAreaView,
   ScrollView,
   View,
 } from "react-native";
 
+interface FormField {
+  field_type: string;
+  display_label: string;
+  description: string;
+  help_text: string;
+  active: boolean;
+  required: boolean;
+  shareable: boolean;
+  sequence: number;
+}
+
 export default function AppointmentDetailsScreen() {
   const router = useRouter();
+  const { user } = useAuth();
+  const userId = user?.user_id ?? "";
   const { appointmentId, id } = useLocalSearchParams<{
     appointmentId: string;
     id: string;
@@ -25,6 +51,8 @@ export default function AppointmentDetailsScreen() {
   const [appointment, setAppointment] = useState<TaskDetails | undefined>(
     undefined
   );
+  const [formValues, setFormValues] = useState<Record<string, any>>({});
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const {
     mutate: fetchAppointment,
@@ -40,6 +68,11 @@ export default function AppointmentDetailsScreen() {
 
   const { data: client, isLoading: isLoadingClient } = useFetchClientById(
     id || ""
+  );
+
+  const { data: appointmentForm } = useFetchActiveForm(
+    userId,
+    FormType.APPOINTMENT_RECORD
   );
 
   useEffect(() => {
@@ -144,6 +177,207 @@ export default function AppointmentDetailsScreen() {
   const chipConfig = getChipConfig(appointment.task_status_name);
   const isNotStarted = appointment.task_status_name === "NOT_STARTED";
 
+  const sortedFormFields =
+    appointmentForm?.form_configuration
+      ?.filter((field: FormField) => field.active)
+      ?.sort((a: FormField, b: FormField) => a.sequence - b.sequence) || [];
+
+  const handleFieldChange = (fieldLabel: string, value: any) => {
+    setFormValues((prev) => ({ ...prev, [fieldLabel]: value }));
+    // Clear error when field is updated
+    if (formErrors[fieldLabel]) {
+      setFormErrors((prev) => {
+        const { [fieldLabel]: removed, ...rest } = prev;
+        return rest;
+      });
+    }
+  };
+
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+    sortedFormFields.forEach((field: FormField) => {
+      if (field.required && !formValues[field.display_label]) {
+        errors[field.display_label] = `${field.display_label} is required`;
+      }
+    });
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = () => {
+    if (!validateForm()) {
+      Alert.alert("Error", "Please fill in all required fields");
+      return;
+    }
+    console.log("Form values:", formValues);
+    // TODO: Submit form data to API
+    Alert.alert("Success", "Appointment record saved successfully");
+  };
+
+  const renderFormField = (field: FormField) => {
+    const value = formValues[field.display_label];
+    const hasError = !!formErrors[field.display_label];
+
+    return (
+      <View key={field.sequence} className="mb-5">
+        <View className="flex-row items-center mb-2">
+          <TextComponent
+            variant={TextVariant.Body}
+            size={TextSize.Medium}
+            color={Color.Black}
+          >
+            {field.display_label}
+          </TextComponent>
+          {field.required && (
+            <TextComponent
+              variant={TextVariant.Body}
+              size={TextSize.Medium}
+              color={Color.Danger}
+              className="ml-1"
+            >
+              *
+            </TextComponent>
+          )}
+        </View>
+
+        {field.field_type === "single-text" && (
+          <>
+            <TextInputComponent
+              inputType={TextInputType.Text}
+              inputField={{
+                value: value || "",
+                onChangeText: (text: string) =>
+                  handleFieldChange(field.display_label, text),
+                placeholder: `Enter ${field.display_label.toLowerCase()}`,
+              }}
+            />
+            {hasError && (
+              <TextComponent
+                variant={TextVariant.Body}
+                size={TextSize.Small}
+                color={Color.Danger}
+                className="mt-1"
+              >
+                {formErrors[field.display_label]}
+              </TextComponent>
+            )}
+          </>
+        )}
+
+        {field.field_type === "multi-text" && (
+          <>
+            <TextAreaComponent
+              inputField={{
+                value: value || "",
+                onChangeText: (text: string) =>
+                  handleFieldChange(field.display_label, text),
+                placeholder: `Enter ${field.display_label.toLowerCase()}`,
+              }}
+            />
+            {hasError && (
+              <TextComponent
+                variant={TextVariant.Body}
+                size={TextSize.Small}
+                color={Color.Danger}
+                className="mt-1"
+              >
+                {formErrors[field.display_label]}
+              </TextComponent>
+            )}
+          </>
+        )}
+
+        {field.field_type === "numeric" && (
+          <>
+            <TextInputComponent
+              inputType={TextInputType.Number}
+              inputField={{
+                value: value || "",
+                onChangeText: (text: string) =>
+                  handleFieldChange(field.display_label, text),
+                placeholder: `Enter ${field.display_label.toLowerCase()}`,
+              }}
+            />
+            {hasError && (
+              <TextComponent
+                variant={TextVariant.Body}
+                size={TextSize.Small}
+                color={Color.Danger}
+                className="mt-1"
+              >
+                {formErrors[field.display_label]}
+              </TextComponent>
+            )}
+          </>
+        )}
+
+        {field.field_type === "checkbox" && (
+          <View className="flex-row items-center gap-3">
+            <CheckboxComponent
+              isChecked={value || false}
+              onChange={(checked: boolean) =>
+                handleFieldChange(field.display_label, checked)
+              }
+            />
+            <TextComponent
+              variant={TextVariant.Body}
+              size={TextSize.Medium}
+              color={Color.Black}
+            >
+              {field.display_label}
+            </TextComponent>
+          </View>
+        )}
+
+        {field.field_type === "toggle" && (
+          <View className="flex-row items-center gap-3">
+            <ToggleButton
+              isActive={value || false}
+              onToggle={(toggled: boolean) =>
+                handleFieldChange(field.display_label, toggled)
+              }
+            />
+            <TextComponent
+              variant={TextVariant.Body}
+              size={TextSize.Medium}
+              color={Color.Black}
+            >
+              {field.display_label}
+            </TextComponent>
+          </View>
+        )}
+
+        {field.field_type === "date" && (
+          <>
+            <DateTimePickerComponent
+              value={
+                value
+                  ? typeof value === "string"
+                    ? value
+                    : value.toISOString().split("T")[0]
+                  : new Date().toISOString().split("T")[0]
+              }
+              onChange={(dateString: string) =>
+                handleFieldChange(field.display_label, dateString)
+              }
+              mode="date"
+            />
+            {hasError && (
+              <TextComponent
+                variant={TextVariant.Body}
+                size={TextSize.Small}
+                color={Color.Danger}
+                className="mt-1"
+              >
+                {formErrors[field.display_label]}
+              </TextComponent>
+            )}
+          </>
+        )}
+      </View>
+    );
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <ScrollView className="flex-1">
@@ -227,7 +461,7 @@ export default function AppointmentDetailsScreen() {
 
           {/* Start Button - aligned to right, auto width */}
           {isNotStarted && (
-            <View className="items-end">
+            <View className="items-end mb-6">
               <ButtonComponent
                 size={ButtonSize.Small}
                 leftIcon={PlayIcon}
@@ -243,55 +477,27 @@ export default function AppointmentDetailsScreen() {
               </ButtonComponent>
             </View>
           )}
-        </View>
 
-        {/* Appointment Title and Notes Section */}
-        {(appointment.task_title || appointment.note) && (
-          <View className="px-5 py-4 bg-[#F5F5F5] flex-1">
-            <View className="bg-white rounded-2xl p-5 border border-[#E5E5E5]">
-              {/* Appointment Title */}
-              {appointment.task_title && (
-                <View className="mb-4">
-                  <TextComponent
-                    variant={TextVariant.Title}
-                    size={TextSize.Small}
-                    color={Color.Black}
-                    className="mb-1"
-                  >
-                    {appointment.task_title}
-                  </TextComponent>
-                </View>
+          {/* Appointment Log Form */}
+          {sortedFormFields.length > 0 && (
+            <>
+              {sortedFormFields.map((field: FormField) =>
+                renderFormField(field)
               )}
 
-              {/* Notes */}
-              {appointment.note && (
-                <View
-                  className={
-                    appointment.task_title
-                      ? "pt-4 border-t border-[#E5E5E5]"
-                      : ""
-                  }
+              <View className="mb-8">
+                <ButtonComponent
+                  size={ButtonSize.Medium}
+                  buttonColor={Color.Black}
+                  textColor={Color.White}
+                  onPress={handleSubmit}
                 >
-                  <TextComponent
-                    variant={TextVariant.Title}
-                    size={TextSize.Small}
-                    color={Color.Black}
-                    className="mb-2"
-                  >
-                    Notes
-                  </TextComponent>
-                  <TextComponent
-                    variant={TextVariant.Body}
-                    size={TextSize.Medium}
-                    color={Color.Grey}
-                  >
-                    {appointment.note}
-                  </TextComponent>
-                </View>
-              )}
-            </View>
-          </View>
-        )}
+                  Save Record
+                </ButtonComponent>
+              </View>
+            </>
+          )}
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
