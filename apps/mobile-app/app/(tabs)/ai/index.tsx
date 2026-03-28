@@ -7,7 +7,7 @@ import { NotoColorEmoji_400Regular } from "@expo-google-fonts/noto-color-emoji";
 import { Color, TextSize, TextVariant } from "@repo/config";
 import { AIChatRole, type UIChatMessage } from "@repo/models";
 import clsx from "clsx";
-import Markdown, { type RenderRules } from "react-native-markdown-display";
+import Markdown from "react-native-markdown-display";
 import { useFonts } from "expo-font";
 import { LinearGradient } from "expo-linear-gradient";
 import {
