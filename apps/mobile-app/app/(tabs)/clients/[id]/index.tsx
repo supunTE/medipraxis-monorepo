@@ -40,8 +40,8 @@ import {
   type NativeSyntheticEvent,
   type TextStyle as RNTextStyle,
 } from "react-native";
-import { AppointmentsList } from "./AppointmentList.component";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AppointmentsList } from "./AppointmentList.component";
 
 enum ClientDetailTab {
   Appointments = "Appointments",
@@ -730,7 +730,7 @@ export default function ClientDetailScreen() {
                     style={{
                       flexDirection: "row",
                       flexWrap: "wrap",
-                      justifyContent: "space-between",
+                      gap: 10,
                     }}
                   >
                     {filteredReports.map((report: ClientReport) => (
