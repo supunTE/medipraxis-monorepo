@@ -24,6 +24,7 @@ import {
   type NativeSyntheticEvent,
   type TextStyle as RNTextStyle,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AddClient } from "./addClient";
 import { ClientCardComponent } from "./ClientCard.component";
 
@@ -35,6 +36,7 @@ const NAV_BAR_HEIGHT = Platform.OS === "ios" ? 83 : 60;
 const CIRCLE_SIZE = 18;
 
 export default function ClientsScreen() {
+  const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const userId = user?.user_id ?? "";
   const [searchQuery, setSearchQuery] = useState("");
@@ -159,7 +161,7 @@ export default function ClientsScreen() {
   // Empty state - no clients loaded
   if (clients?.length === 0) {
     return (
-      <View className="flex-1 pt-5">
+      <View className="flex-1" style={{ paddingTop: insets.top + 20 }}>
         {/* Header */}
         <View className="flex-row justify-between items-center px-5 mb-5">
           <TextComponent variant={TextVariant.Title} size={TextSize.Large}>
@@ -187,7 +189,7 @@ export default function ClientsScreen() {
               borderWidth: 1.5,
               borderRadius: 12,
               width: "100%",
-              height: 56,
+              height: 54,
               backgroundColor: Color.White,
             }}
           >
@@ -247,7 +249,7 @@ export default function ClientsScreen() {
   let globalIndex = 0;
 
   return (
-    <View className="flex-1 pt-5">
+    <View className="flex-1" style={{ paddingTop: insets.top + 20 }}>
       {/* Header */}
       <View className="flex-row justify-between items-center px-5 mb-5">
         <TextComponent variant={TextVariant.Title} size={TextSize.Large}>
@@ -275,7 +277,7 @@ export default function ClientsScreen() {
             borderWidth: 1.5,
             borderRadius: 12,
             width: "100%",
-            height: 56,
+            height: 54,
             backgroundColor: Color.White,
           }}
         >

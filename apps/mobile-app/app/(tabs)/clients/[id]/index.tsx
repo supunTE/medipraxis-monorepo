@@ -14,7 +14,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  SafeAreaView,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -23,6 +22,7 @@ import {
   type NativeSyntheticEvent,
   type TextStyle as RNTextStyle,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 enum ClientDetailTab {
   Appointments = "Appointments",
@@ -45,6 +45,7 @@ const textLargeStyle = textStyles[TextVariant.Body][TextSize.Large];
 const textButtonMediumStyle = textStyles[TextVariant.Button][TextSize.Medium];
 
 export default function ClientDetailScreen() {
+  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
 
@@ -251,15 +252,21 @@ export default function ClientDetailScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-white justify-center items-center">
+      <View
+        className="flex-1 bg-white justify-center items-center"
+        style={{ paddingTop: insets.top }}
+      >
         <ActivityIndicator size="large" color={Color.Green} />
-      </SafeAreaView>
+      </View>
     );
   }
 
   if (!client) {
     return (
-      <SafeAreaView className="flex-1 bg-white justify-center items-center gap-4">
+      <View
+        className="flex-1 bg-white justify-center items-center gap-4"
+        style={{ paddingTop: insets.top }}
+      >
         <TextComponent
           variant={TextVariant.Body}
           size={TextSize.Medium}
@@ -271,7 +278,7 @@ export default function ClientDetailScreen() {
           size={ButtonSize.Small}
           onPress={() => router.push("/clients" as any)}
         />
-      </SafeAreaView>
+      </View>
     );
   }
 
@@ -292,7 +299,7 @@ export default function ClientDetailScreen() {
   const displayName = titlePrefix ? `${titlePrefix} ${fullName}` : fullName;
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         className="flex-1"
@@ -657,6 +664,6 @@ export default function ClientDetailScreen() {
           activeOpacity={1}
         />
       )}
-    </SafeAreaView>
+    </View>
   );
 }
