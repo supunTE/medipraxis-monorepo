@@ -4,6 +4,8 @@ import {
   ButtonSize,
   CheckboxComponent,
   DateTimePickerComponent,
+  MessagePopup,
+  MessageType,
   TextAreaComponent,
   TextComponent,
   TextInputComponent,
@@ -26,7 +28,6 @@ import { CalendarBlankIcon, ClockIcon } from "phosphor-react-native";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   SafeAreaView,
   ScrollView,
   View,
@@ -59,6 +60,9 @@ export default function AppointmentDetailsScreen() {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasExistingRecord, setHasExistingRecord] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupType, setPopupType] = useState<MessageType>(MessageType.Success);
+  const [popupMessage, setPopupMessage] = useState("");
 
   const {
     mutate: fetchAppointment,
@@ -88,13 +92,17 @@ export default function AppointmentDetailsScreen() {
   const { mutate: createAppointmentRecord } = useCreateAppointmentRecord({
     onSuccess: () => {
       setIsSubmitting(false);
-      Alert.alert("Success", "Appointment record saved successfully");
-      // Optionally navigate back or clear the form
-      // router.back();
+      setPopupType(MessageType.Success);
+      setPopupMessage("Appointment record saved successfully!");
+      setShowPopup(true);
     },
     onError: (message) => {
       setIsSubmitting(false);
-      Alert.alert("Error", message);
+      setPopupType(MessageType.Error);
+      setPopupMessage(
+        message || "Failed to save appointment record. Please try again."
+      );
+      setShowPopup(true);
     },
   });
 
@@ -245,12 +253,16 @@ export default function AppointmentDetailsScreen() {
 
   const handleSubmit = () => {
     if (!validateForm()) {
-      Alert.alert("Error", "Please fill in all required fields");
+      setPopupType(MessageType.Error);
+      setPopupMessage("Please fill in all required fields");
+      setShowPopup(true);
       return;
     }
 
     if (!appointmentForm?.form_id) {
-      Alert.alert("Error", "Form configuration not found");
+      setPopupType(MessageType.Error);
+      setPopupMessage("Form configuration not found");
+      setShowPopup(true);
       return;
     }
 
@@ -605,6 +617,15 @@ export default function AppointmentDetailsScreen() {
           )}
         </ScrollView>
       </View>
+
+      <MessagePopup
+        visible={showPopup}
+        type={popupType}
+        message={popupMessage}
+        onClose={() => {
+          setShowPopup(false);
+        }}
+      />
     </SafeAreaView>
   );
 }
