@@ -477,10 +477,23 @@ export class SlotWindowRepository {
     userId: string,
     date?: string
   ): Promise<SlotWindow[]> {
+    const { data: statusData } = await this.db
+      .from(SLOT_WINDOW_QUERIES.TASK_STATUS_TABLE)
+      .select("task_status_id")
+      .eq("task_status_name", TaskStatus.CANCELLED)
+      .single();
+
     let query = this.db
       .from(SLOT_WINDOW_QUERIES.SLOT_WINDOW_TABLE)
       .select(SLOT_WINDOW_QUERIES.SLOT_WINDOW_BASE)
       .eq("user_id", userId);
+
+    if (statusData?.task_status_id) {
+      query = query.neq(
+        SLOT_WINDOW_QUERIES.TASK_STATUS_ID,
+        statusData.task_status_id
+      );
+    }
 
     if (date) {
       const startOfDayUtc = new Date(`${date}T00:00:00Z`);
