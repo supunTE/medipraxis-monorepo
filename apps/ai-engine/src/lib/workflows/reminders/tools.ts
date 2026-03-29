@@ -86,12 +86,12 @@ export const createReminder = ai.defineTool(
         .boolean()
         .optional()
         .describe("Whether an alarm should be enabled"),
-    //   client_id: z
-    //     .string()
-    //     .optional()
-    //     .describe(
-    //       "Optional client identifier from user input. This will be converted into note text and will not be attached as client_id."
-    //     ),
+      //   client_id: z
+      //     .string()
+      //     .optional()
+      //     .describe(
+      //       "Optional client identifier from user input. This will be converted into note text and will not be attached as client_id."
+      //     ),
     }),
     outputSchema: z.object({
       success: z.boolean(),
