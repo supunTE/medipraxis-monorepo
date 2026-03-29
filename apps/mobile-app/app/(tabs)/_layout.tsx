@@ -158,7 +158,7 @@ export default function TabLayout() {
   }, []);
 
   return (
-    <View className="flex-1 h-full">
+    <View className="flex-1 h-full mb-6">
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,

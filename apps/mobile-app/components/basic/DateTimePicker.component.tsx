@@ -25,6 +25,7 @@ interface DateTimePickerProps {
   errorText?: string;
   hideHelperText?: boolean;
   className?: string;
+  minDate?: string;
 }
 
 const textLargeStyle = textStyles[TextVariant.Body][TextSize.Large];
@@ -73,6 +74,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
   errorText,
   hideHelperText = false,
   className,
+  minDate,
 }) => {
   const [showModal, setShowModal] = useState(false);
 
@@ -338,6 +340,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
                     key={selectedDateStr}
                     hideArrows={true}
                     renderHeader={() => <View />} // Hide default header, using our custom one above
+                    minDate={minDate}
                     onDayPress={(day) => {
                       const newDate = new Date(day.timestamp);
                       newDate.setHours(tempDate.getHours());
