@@ -68,9 +68,14 @@ export class AuthController {
     }
   }
 
-  static async uploadProfilePicture(c: APIContext<any>) {
+  static async uploadProfilePicture(
+    c: APIContext<{
+      form: { file: File; mobile_number: string; mobile_country_code: string };
+    }>
+  ) {
     try {
       const body = await c.req.parseBody();
+
       const file = body["file"];
       const mobileNumber = body["mobile_number"];
       const countryCode = body["mobile_country_code"];
@@ -87,6 +92,7 @@ export class AuthController {
       }
 
       const authService = getAuthService(c);
+
       const result = await authService.uploadProfilePicture(
         file,
         mobileNumber,
@@ -106,9 +112,14 @@ export class AuthController {
     }
   }
 
-  static async uploadSeal(c: APIContext<any>) {
+  static async uploadSeal(
+    c: APIContext<{
+      form: { file: File; mobile_number: string; mobile_country_code: string };
+    }>
+  ) {
     try {
       const body = await c.req.parseBody();
+
       const file = body["file"];
       const mobileNumber = body["mobile_number"];
       const countryCode = body["mobile_country_code"];

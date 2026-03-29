@@ -1,6 +1,9 @@
 import { apiClient } from "@/lib/api-client";
 import { authStorage } from "@/utils/storage";
 import type { RegisterAdditionalDetailsInput } from "@repo/models";
+import type { File as ExpoFile } from "expo-file-system";
+import { Paths } from "expo-file-system";
+import { copyAsync } from "expo-file-system/legacy";
 
 export interface User {
   user_id: string;
@@ -162,19 +165,28 @@ export const authService = {
   },
 
   async uploadProfilePicture(
-    file: Blob,
+    file: ExpoFile,
     mobileNumber: string,
     countryCode: string
   ): Promise<UploadUserAssetResponse> {
+    const normalizedCountryCode = countryCode.replace("+", "");
+
+    const localUri = `${Paths.cache.uri}${file.name}`;
+    await copyAsync({ from: file.uri, to: localUri });
+
     const res = await (
       apiClient.api.auth.register["additional-details"][
         "profile-picture"
       ] as any
     ).$post({
       form: {
-        file,
+        file: {
+          uri: localUri,
+          type: file.type || "image/jpeg",
+          name: file.name || "profile.jpg",
+        } as unknown as Blob,
         mobile_number: mobileNumber,
-        mobile_country_code: countryCode,
+        mobile_country_code: normalizedCountryCode,
       },
     });
 
@@ -194,17 +206,26 @@ export const authService = {
   },
 
   async uploadSeal(
-    file: Blob,
+    file: ExpoFile,
     mobileNumber: string,
     countryCode: string
   ): Promise<UploadUserAssetResponse> {
+    const normalizedCountryCode = countryCode.replace("+", "");
+
+    const localUri = `${Paths.cache.uri}${file.name}`;
+    await copyAsync({ from: file.uri, to: localUri });
+
     const res = await (
-      apiClient.api.auth.register["additional-details"].seal as any
+      apiClient.api.auth.register["additional-details"]["seal"] as any
     ).$post({
       form: {
-        file,
+        file: {
+          uri: localUri,
+          type: file.type || "image/jpeg",
+          name: file.name || "profile.jpg",
+        } as unknown as Blob,
         mobile_number: mobileNumber,
-        mobile_country_code: countryCode,
+        mobile_country_code: normalizedCountryCode,
       },
     });
 

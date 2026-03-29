@@ -20,9 +20,9 @@ import {
   TextComponent,
   TextInputComponent,
   TextInputType,
-} from "../../components/basic";
+} from "@/components/basic";
 import { Controller, useForm } from "react-hook-form";
-import { authService } from "../../services/auth";
+import { authService } from "@/services/auth";
 
 type AdditionalInfoForm = {
   title: string;
@@ -160,6 +160,7 @@ export default function AdditionalInfoScreen() {
           );
         }
       } catch (uploadError: any) {
+        console.error("uploadError", uploadError);
         Alert.alert(
           "Partial Success",
           `Details saved, but file upload failed: ${uploadError?.message ?? "Unknown error"}`
