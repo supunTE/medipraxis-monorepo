@@ -13,7 +13,9 @@ export const useDeactivateSlotWindowTemplate = (
 
   return useMutation({
     mutationFn: async (templateId: string) => {
-      const res = await apiClient.api["slot-windows"].templates[":id"].deactivate.$post({
+      const res = await apiClient.api["slot-windows"].templates[
+        ":id"
+      ].deactivate.$post({
         param: { id: templateId },
       });
 
@@ -31,7 +33,9 @@ export const useDeactivateSlotWindowTemplate = (
 
     onSuccess: () => {
       options?.onSuccess?.();
-      void queryClient.invalidateQueries({ queryKey: ["slot-window-templates"] });
+      void queryClient.invalidateQueries({
+        queryKey: ["slot-window-templates"],
+      });
       void queryClient.invalidateQueries({ queryKey: ["slot-windows"] });
     },
 

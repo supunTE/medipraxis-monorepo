@@ -58,26 +58,62 @@ const taskFormSchema = z
   .superRefine((data, ctx) => {
     if (data.eventType === "task") {
       if (!data.taskTitle)
-        ctx.addIssue({ code: "custom", path: ["taskTitle"], message: "Title is required" });
+        ctx.addIssue({
+          code: "custom",
+          path: ["taskTitle"],
+          message: "Title is required",
+        });
       if (!data.startDate)
-        ctx.addIssue({ code: "custom", path: ["startDate"], message: "Start date is required" });
+        ctx.addIssue({
+          code: "custom",
+          path: ["startDate"],
+          message: "Start date is required",
+        });
     }
 
     if (data.eventType === "slot_window") {
       if (!data.location)
-        ctx.addIssue({ code: "custom", path: ["location"], message: "Location is required" });
+        ctx.addIssue({
+          code: "custom",
+          path: ["location"],
+          message: "Location is required",
+        });
       if (!data.totalSlots || data.totalSlots < 1)
-        ctx.addIssue({ code: "custom", path: ["totalSlots"], message: "Must be at least 1 slot" });
+        ctx.addIssue({
+          code: "custom",
+          path: ["totalSlots"],
+          message: "Must be at least 1 slot",
+        });
       if (!data.startDate)
-        ctx.addIssue({ code: "custom", path: ["startDate"], message: "Start time is required" });
+        ctx.addIssue({
+          code: "custom",
+          path: ["startDate"],
+          message: "Start time is required",
+        });
       if (!data.endDate)
-        ctx.addIssue({ code: "custom", path: ["endDate"], message: "End time is required" });
+        ctx.addIssue({
+          code: "custom",
+          path: ["endDate"],
+          message: "End time is required",
+        });
       if (!data.isRecurring && !data.slotDate)
-        ctx.addIssue({ code: "custom", path: ["slotDate"], message: "Date is required" });
+        ctx.addIssue({
+          code: "custom",
+          path: ["slotDate"],
+          message: "Date is required",
+        });
       if (data.isRecurring && data.repeatDays.length === 0)
-        ctx.addIssue({ code: "custom", path: ["repeatDays"], message: "Select at least one day" });
+        ctx.addIssue({
+          code: "custom",
+          path: ["repeatDays"],
+          message: "Select at least one day",
+        });
       if (data.isRecurring && !data.repeatUntil)
-        ctx.addIssue({ code: "custom", path: ["repeatUntil"], message: "Repeat until date is required" });
+        ctx.addIssue({
+          code: "custom",
+          path: ["repeatUntil"],
+          message: "Repeat until date is required",
+        });
     }
 
     // Cross-field: end date must be after start date (when both present)
@@ -85,23 +121,47 @@ const taskFormSchema = z
       const start = new Date(data.startDate);
       const end = new Date(data.endDate);
       if (end <= start) {
-        ctx.addIssue({ code: "custom", path: ["endDate"], message: "End date & time must be after start date & time" });
+        ctx.addIssue({
+          code: "custom",
+          path: ["endDate"],
+          message: "End date & time must be after start date & time",
+        });
       }
     }
 
     if (data.eventType === "appointment") {
       if (data.attachToSlot) {
         if (!data.slotWindow)
-          ctx.addIssue({ code: "custom", path: ["slotWindow"], message: "Select a slot window" });
+          ctx.addIssue({
+            code: "custom",
+            path: ["slotWindow"],
+            message: "Select a slot window",
+          });
         if (!data.client)
-          ctx.addIssue({ code: "custom", path: ["client"], message: "Select a client" });
+          ctx.addIssue({
+            code: "custom",
+            path: ["client"],
+            message: "Select a client",
+          });
       } else {
         if (!data.taskTitle)
-          ctx.addIssue({ code: "custom", path: ["taskTitle"], message: "Title is required" });
+          ctx.addIssue({
+            code: "custom",
+            path: ["taskTitle"],
+            message: "Title is required",
+          });
         if (!data.startDate)
-          ctx.addIssue({ code: "custom", path: ["startDate"], message: "Start date is required" });
+          ctx.addIssue({
+            code: "custom",
+            path: ["startDate"],
+            message: "Start date is required",
+          });
         if (!data.endDate)
-          ctx.addIssue({ code: "custom", path: ["endDate"], message: "End date is required" });
+          ctx.addIssue({
+            code: "custom",
+            path: ["endDate"],
+            message: "End date is required",
+          });
       }
     }
   });
@@ -203,7 +263,12 @@ export const useTaskHandler = (onClose: () => void) => {
   const watchedTotalSlots = watch("totalSlots");
 
   const averageMinutesPerSlot = useMemo(() => {
-    if (!watchedStartDate || !watchedEndDate || !watchedTotalSlots || watchedTotalSlots <= 0)
+    if (
+      !watchedStartDate ||
+      !watchedEndDate ||
+      !watchedTotalSlots ||
+      watchedTotalSlots <= 0
+    )
       return null;
     const start = new Date(watchedStartDate);
     const end = new Date(watchedEndDate);
@@ -223,14 +288,15 @@ export const useTaskHandler = (onClose: () => void) => {
     onError: (message) => Alert.alert("Error", message),
   });
 
-  const { mutate: createAppointment, isPending: isAppointmentPending } = useCreateTask({
-    onSuccess: () => {
-      Alert.alert("Success", "Appointment created successfully");
-      reset(DEFAULT_FORM_VALUES);
-      onClose();
-    },
-    onError: (message) => Alert.alert("Error", message),
-  });
+  const { mutate: createAppointment, isPending: isAppointmentPending } =
+    useCreateTask({
+      onSuccess: () => {
+        Alert.alert("Success", "Appointment created successfully");
+        reset(DEFAULT_FORM_VALUES);
+        onClose();
+      },
+      onError: (message) => Alert.alert("Error", message),
+    });
 
   const { mutate: createAppointmentSlot, isPending: isAppointmentSlotPending } =
     useCreateAppointmentSlot({
@@ -242,14 +308,15 @@ export const useTaskHandler = (onClose: () => void) => {
       onError: (message) => Alert.alert("Error", message),
     });
 
-  const { mutate: reserveAppointment, isPending: isReservePending } = useReserveAppointment({
-    onSuccess: () => {
-      Alert.alert("Success", "Appointment reserved successfully");
-      reset(DEFAULT_FORM_VALUES);
-      onClose();
-    },
-    onError: (message) => Alert.alert("Error", message),
-  });
+  const { mutate: reserveAppointment, isPending: isReservePending } =
+    useReserveAppointment({
+      onSuccess: () => {
+        Alert.alert("Success", "Appointment reserved successfully");
+        reset(DEFAULT_FORM_VALUES);
+        onClose();
+      },
+      onError: (message) => Alert.alert("Error", message),
+    });
 
   /* ── Submit handler ── */
 
@@ -271,8 +338,18 @@ export const useTaskHandler = (onClose: () => void) => {
     if (data.eventType === EVENT_TYPES.APPOINTMENT_SLOT_WINDOW) {
       const isRecurring = data.repeatDays.length > 0;
       if (isRecurring) {
-        const DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"];
-        const day_of_week = data.repeatDays.map((d) => DAYS[d] as unknown as DayOfWeek);
+        const DAYS = [
+          "MONDAY",
+          "TUESDAY",
+          "WEDNESDAY",
+          "THURSDAY",
+          "FRIDAY",
+          "SATURDAY",
+          "SUNDAY",
+        ];
+        const day_of_week = data.repeatDays.map(
+          (d) => DAYS[d] as unknown as DayOfWeek
+        );
         createAppointmentSlot({
           is_recurring: true,
           user_id: userId,
@@ -333,13 +410,20 @@ export const useTaskHandler = (onClose: () => void) => {
       location: watch("location"),
     };
 
-    const base: TaskFormData = { ...DEFAULT_FORM_VALUES, eventType: newType, note: current.note };
+    const base: TaskFormData = {
+      ...DEFAULT_FORM_VALUES,
+      eventType: newType,
+      note: current.note,
+    };
 
     if (newType === EVENT_TYPES.APPOINTMENT || newType === EVENT_TYPES.TASK) {
       base.taskTitle = current.taskTitle;
       base.client = current.client;
     }
-    if (newType === EVENT_TYPES.APPOINTMENT || newType === EVENT_TYPES.APPOINTMENT_SLOT_WINDOW) {
+    if (
+      newType === EVENT_TYPES.APPOINTMENT ||
+      newType === EVENT_TYPES.APPOINTMENT_SLOT_WINDOW
+    ) {
       base.location = current.location;
     }
 
@@ -382,6 +466,10 @@ export const useTaskHandler = (onClose: () => void) => {
     toggleRecurring,
     averageMinutesPerSlot,
     userId,
-    isPending: isTaskPending || isAppointmentPending || isAppointmentSlotPending || isReservePending,
+    isPending:
+      isTaskPending ||
+      isAppointmentPending ||
+      isAppointmentSlotPending ||
+      isReservePending,
   };
 };

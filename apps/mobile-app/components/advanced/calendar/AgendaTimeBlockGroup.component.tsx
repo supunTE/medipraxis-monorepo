@@ -5,7 +5,13 @@ import { Color, TextSize, TextVariant } from "@repo/config";
 import clsx from "clsx";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRef, useState } from "react";
-import { Alert, Animated, Pressable, useWindowDimensions, View } from "react-native";
+import {
+  Alert,
+  Animated,
+  Pressable,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { AgendaBlockModal } from "./AgendaBlockModal.component";
 import {
   AGENDA_COLORS,

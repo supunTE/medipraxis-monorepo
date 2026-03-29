@@ -20,7 +20,13 @@ import { Color, TextSize, TextVariant } from "@repo/config";
 import type { SlotWindow } from "@repo/models";
 import React, { useEffect, useMemo, useState } from "react";
 import { Controller } from "react-hook-form";
-import { Modal, Pressable, ScrollView, TouchableOpacity, View } from "react-native";
+import {
+  Modal,
+  Pressable,
+  ScrollView,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 type Props = {
   visible: boolean;
@@ -30,7 +36,13 @@ type Props = {
   slotWindows?: SlotWindow[];
 };
 
-export default function TaskForm({ visible, onClose, initialClientId, initialSlotWindowId, slotWindows = [] }: Props) {
+export default function TaskForm({
+  visible,
+  onClose,
+  initialClientId,
+  initialSlotWindowId,
+  slotWindows = [],
+}: Props) {
   const eventTypes = [
     EVENT_TYPES.APPOINTMENT_SLOT_WINDOW,
     EVENT_TYPES.APPOINTMENT,
@@ -99,10 +111,14 @@ export default function TaskForm({ visible, onClose, initialClientId, initialSlo
   const getOrdinalSuffix = (day: number) => {
     if (day > 3 && day < 21) return "th";
     switch (day % 10) {
-      case 1: return "st";
-      case 2: return "nd";
-      case 3: return "rd";
-      default: return "th";
+      case 1:
+        return "st";
+      case 2:
+        return "nd";
+      case 3:
+        return "rd";
+      default:
+        return "th";
     }
   };
 
@@ -132,18 +148,43 @@ export default function TaskForm({ visible, onClose, initialClientId, initialSlo
   return (
     <>
       {/* Overlay modal — covers status bar with dark background */}
-      <Modal visible={visible} transparent animationType="fade" statusBarTranslucent>
+      <Modal
+        visible={visible}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+      >
         <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }} />
       </Modal>
 
       {/* Form modal */}
       <Modal visible={visible} animationType="slide" transparent>
         {/* Pseudo wrapper — transparent so overlay shows through the padding gaps */}
-        <View style={{ flex: 1, justifyContent: "center", padding: 12, backgroundColor: "transparent" }}>
-          <View style={{ backgroundColor: "white", borderRadius: 20, overflow: "hidden", maxHeight: "92%" }}>
-
-            <ScrollView contentContainerClassName="p-5 pb-[150px]" keyboardShouldPersistTaps="handled">
-              <TextComponent variant={TextVariant.Title} size={TextSize.Large} className="mb-5">
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            padding: 12,
+            backgroundColor: "transparent",
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: "white",
+              borderRadius: 20,
+              overflow: "hidden",
+              maxHeight: "92%",
+            }}
+          >
+            <ScrollView
+              contentContainerClassName="p-5 pb-[150px]"
+              keyboardShouldPersistTaps="handled"
+            >
+              <TextComponent
+                variant={TextVariant.Title}
+                size={TextSize.Large}
+                className="mb-5"
+              >
                 Schedule New Event
               </TextComponent>
 
@@ -155,7 +196,10 @@ export default function TaskForm({ visible, onClose, initialClientId, initialSlo
                   <RadioGroupComponent
                     value={value}
                     onChange={(val) => switchEventType(val as EventType)}
-                    options={eventTypes.map((type) => ({ label: EVENT_TYPE_LABELS[type], value: type }))}
+                    options={eventTypes.map((type) => ({
+                      label: EVENT_TYPE_LABELS[type],
+                      value: type,
+                    }))}
                     className="mb-4 gap-3 flex-col"
                   />
                 )}
@@ -164,7 +208,11 @@ export default function TaskForm({ visible, onClose, initialClientId, initialSlo
               {/* ── APPOINTMENT SLOT WINDOW ── */}
               {eventType === EVENT_TYPES.APPOINTMENT_SLOT_WINDOW && (
                 <>
-                  <ToggleButton label="Recurring" isActive={isRecurring} onToggle={toggleRecurring} />
+                  <ToggleButton
+                    label="Recurring"
+                    isActive={isRecurring}
+                    onToggle={toggleRecurring}
+                  />
 
                   <View className="gap-4 mt-2.5">
                     <Controller
@@ -173,7 +221,11 @@ export default function TaskForm({ visible, onClose, initialClientId, initialSlo
                       render={({ field: { onChange, value } }) => (
                         <TextInputComponent
                           label="Location"
-                          inputField={{ value, onChangeText: onChange, placeholder: "Care - Medical Centre" }}
+                          inputField={{
+                            value,
+                            onChangeText: onChange,
+                            placeholder: "Care - Medical Centre",
+                          }}
                           inputType={TextInputType.Text}
                           errorText={errors.location?.message}
                         />
@@ -192,7 +244,11 @@ export default function TaskForm({ visible, onClose, initialClientId, initialSlo
                             placeholder: "10",
                           }}
                           inputType={TextInputType.Number}
-                          helperText={averageMinutesPerSlot ? `Average ${averageMinutesPerSlot}mins per slot` : ""}
+                          helperText={
+                            averageMinutesPerSlot
+                              ? `Average ${averageMinutesPerSlot}mins per slot`
+                              : ""
+                          }
                           errorText={errors.totalSlots?.message}
                         />
                       )}
@@ -263,11 +319,19 @@ export default function TaskForm({ visible, onClose, initialClientId, initialSlo
                         />
 
                         <View>
-                          <TextComponent variant={TextVariant.Body} size={TextSize.Large} className="mb-2">
+                          <TextComponent
+                            variant={TextVariant.Body}
+                            size={TextSize.Large}
+                            className="mb-2"
+                          >
                             Repeat
                           </TextComponent>
                           {errors.repeatDays && (
-                            <TextComponent variant={TextVariant.Body} size={TextSize.Small} color={Color.Danger}>
+                            <TextComponent
+                              variant={TextVariant.Body}
+                              size={TextSize.Small}
+                              color={Color.Danger}
+                            >
                               {errors.repeatDays.message}
                             </TextComponent>
                           )}
@@ -277,12 +341,20 @@ export default function TaskForm({ visible, onClose, initialClientId, initialSlo
                                 key={index}
                                 onPress={() => toggleDay(index)}
                                 className="w-9 h-9 rounded-full items-center justify-center mr-2 bg-[#FFF8E1]"
-                                style={repeatDays.includes(index) ? { backgroundColor: Color.Green } : undefined}
+                                style={
+                                  repeatDays.includes(index)
+                                    ? { backgroundColor: Color.Green }
+                                    : undefined
+                                }
                               >
                                 <TextComponent
                                   variant={TextVariant.Body}
                                   size={TextSize.Medium}
-                                  color={repeatDays.includes(index) ? Color.White : Color.Black}
+                                  color={
+                                    repeatDays.includes(index)
+                                      ? Color.White
+                                      : Color.Black
+                                  }
                                   className="font-bold"
                                 >
                                   {day}
@@ -308,15 +380,26 @@ export default function TaskForm({ visible, onClose, initialClientId, initialSlo
                         render={({ field: { onChange, value } }) => (
                           <TextInputComponent
                             label="Enter the title"
-                            inputField={{ value, onChangeText: onChange, placeholder: "Enter the title" }}
+                            inputField={{
+                              value,
+                              onChangeText: onChange,
+                              placeholder: "Enter the title",
+                            }}
                             inputType={TextInputType.Text}
                             errorText={errors.taskTitle?.message}
                           />
                         )}
                       />
 
-                      <TouchableOpacity className="my-1.5" onPress={() => toggleAttachToSlot(true)}>
-                        <TextComponent variant={TextVariant.Body} size={TextSize.Medium} className="text-[#666] font-medium">
+                      <TouchableOpacity
+                        className="my-1.5"
+                        onPress={() => toggleAttachToSlot(true)}
+                      >
+                        <TextComponent
+                          variant={TextVariant.Body}
+                          size={TextSize.Medium}
+                          className="text-[#666] font-medium"
+                        >
                           + Attach to an Appointment slot window
                         </TextComponent>
                       </TouchableOpacity>
@@ -327,7 +410,11 @@ export default function TaskForm({ visible, onClose, initialClientId, initialSlo
                         render={({ field: { onChange, value } }) => (
                           <TextInputComponent
                             label="Location"
-                            inputField={{ value, onChangeText: onChange, placeholder: "Care - Medical Centre" }}
+                            inputField={{
+                              value,
+                              onChangeText: onChange,
+                              placeholder: "Care - Medical Centre",
+                            }}
                             inputType={TextInputType.Text}
                           />
                         )}
@@ -395,8 +482,16 @@ export default function TaskForm({ visible, onClose, initialClientId, initialSlo
                         )}
                       />
 
-                      <TouchableOpacity className="my-1.5" onPress={() => toggleAttachToSlot(false)}>
-                        <TextComponent variant={TextVariant.Body} size={TextSize.Medium} color={Color.Danger} className="font-medium">
+                      <TouchableOpacity
+                        className="my-1.5"
+                        onPress={() => toggleAttachToSlot(false)}
+                      >
+                        <TextComponent
+                          variant={TextVariant.Body}
+                          size={TextSize.Medium}
+                          color={Color.Danger}
+                          className="font-medium"
+                        >
                           - Remove Appointment Slot
                         </TextComponent>
                       </TouchableOpacity>
@@ -429,7 +524,11 @@ export default function TaskForm({ visible, onClose, initialClientId, initialSlo
                     render={({ field: { onChange, value } }) => (
                       <TextInputComponent
                         label="Enter the title"
-                        inputField={{ value, onChangeText: onChange, placeholder: "Enter the title" }}
+                        inputField={{
+                          value,
+                          onChangeText: onChange,
+                          placeholder: "Enter the title",
+                        }}
                         inputType={TextInputType.Text}
                         errorText={errors.taskTitle?.message}
                       />
@@ -466,8 +565,15 @@ export default function TaskForm({ visible, onClose, initialClientId, initialSlo
                   />
 
                   {!showEndDateTime ? (
-                    <TouchableOpacity className="my-1.5" onPress={() => setShowEndDateTime(true)}>
-                      <TextComponent variant={TextVariant.Body} size={TextSize.Medium} className="text-[#666] font-medium">
+                    <TouchableOpacity
+                      className="my-1.5"
+                      onPress={() => setShowEndDateTime(true)}
+                    >
+                      <TextComponent
+                        variant={TextVariant.Body}
+                        size={TextSize.Medium}
+                        className="text-[#666] font-medium"
+                      >
                         + Add End Date & time
                       </TextComponent>
                     </TouchableOpacity>
@@ -488,9 +594,17 @@ export default function TaskForm({ visible, onClose, initialClientId, initialSlo
                       />
                       <TouchableOpacity
                         className="my-1.5"
-                        onPress={() => { setShowEndDateTime(false); setValue("endDate", ""); }}
+                        onPress={() => {
+                          setShowEndDateTime(false);
+                          setValue("endDate", "");
+                        }}
                       >
-                        <TextComponent variant={TextVariant.Body} size={TextSize.Medium} color={Color.Danger} className="font-medium">
+                        <TextComponent
+                          variant={TextVariant.Body}
+                          size={TextSize.Medium}
+                          color={Color.Danger}
+                          className="font-medium"
+                        >
                           - Remove End Date & time
                         </TextComponent>
                       </TouchableOpacity>
@@ -541,10 +655,21 @@ export default function TaskForm({ visible, onClose, initialClientId, initialSlo
             <View className="absolute bottom-0 w-full bg-[#EAF8C9] p-4 flex-row justify-end gap-x-2.5 border-t border-gray-100">
               <Pressable
                 className="flex-row items-center py-2.5 px-6 rounded-lg"
-                style={{ backgroundColor: Color.LightCream, borderWidth: 1, borderColor: Color.LightGrey }}
-                onPress={() => { resetForm(); onClose(); }}
+                style={{
+                  backgroundColor: Color.LightCream,
+                  borderWidth: 1,
+                  borderColor: Color.LightGrey,
+                }}
+                onPress={() => {
+                  resetForm();
+                  onClose();
+                }}
               >
-                <TextComponent variant={TextVariant.Body} size={TextSize.Medium} color={Color.Black}>
+                <TextComponent
+                  variant={TextVariant.Body}
+                  size={TextSize.Medium}
+                  color={Color.Black}
+                >
                   Close
                 </TextComponent>
               </Pressable>
@@ -554,12 +679,15 @@ export default function TaskForm({ visible, onClose, initialClientId, initialSlo
                 disabled={isPending}
               >
                 <Icons.Check size={18} color="white" weight="bold" />
-                <TextComponent variant={TextVariant.Body} size={TextSize.Medium} color={Color.White}>
+                <TextComponent
+                  variant={TextVariant.Body}
+                  size={TextSize.Medium}
+                  color={Color.White}
+                >
                   {isPending ? "Saving..." : "Save"}
                 </TextComponent>
               </Pressable>
             </View>
-
           </View>
         </View>
       </Modal>

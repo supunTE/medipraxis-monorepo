@@ -208,7 +208,11 @@ export function AgendaBlockModal({
               onPress={onCancelSlotWindow}
             >
               <Icons.Trash size={18} color="white" weight="bold" />
-              <Text darkColor="white" lightColor="white" className="font-semibold text-sm">
+              <Text
+                darkColor="white"
+                lightColor="white"
+                className="font-semibold text-sm"
+              >
                 Cancel Slot Window
               </Text>
             </Pressable>
@@ -216,7 +220,11 @@ export function AgendaBlockModal({
               className="flex-row items-center bg-slate-900 py-2.5 px-4 rounded-lg gap-x-2"
               onPress={onClose}
             >
-              <Text darkColor="white" lightColor="white" className="font-semibold text-sm">
+              <Text
+                darkColor="white"
+                lightColor="white"
+                className="font-semibold text-sm"
+              >
                 Close
               </Text>
             </Pressable>

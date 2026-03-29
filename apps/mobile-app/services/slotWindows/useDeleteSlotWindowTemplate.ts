@@ -31,7 +31,9 @@ export const useDeleteSlotWindowTemplate = (
 
     onSuccess: () => {
       options?.onSuccess?.();
-      void queryClient.invalidateQueries({ queryKey: ["slot-window-templates"] });
+      void queryClient.invalidateQueries({
+        queryKey: ["slot-window-templates"],
+      });
       void queryClient.invalidateQueries({ queryKey: ["slot-windows"] });
     },
 

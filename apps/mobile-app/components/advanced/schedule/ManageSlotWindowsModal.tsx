@@ -160,7 +160,8 @@ function RecurringItem({
   onInstancePress: (sw: SlotWindow) => void;
 }) {
   const sortedInstances = [...instances].sort(
-    (a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
+    (a, b) =>
+      new Date(a.start_date).getTime() - new Date(b.start_date).getTime()
   );
 
   return (
@@ -185,7 +186,9 @@ function RecurringItem({
         </TextComponent>
         <ChipComponent
           text={template.is_active ? "Active" : "Inactive"}
-          variant={template.is_active ? ChipVariant.LightGreen : ChipVariant.LightGrey}
+          variant={
+            template.is_active ? ChipVariant.LightGreen : ChipVariant.LightGrey
+          }
         />
       </View>
 
@@ -197,7 +200,8 @@ function RecurringItem({
           size={TextSize.Small}
           color={Color.Grey}
         >
-          {formatTimePart(template.start_time)} – {formatTimePart(template.end_time)}
+          {formatTimePart(template.start_time)} –{" "}
+          {formatTimePart(template.end_time)}
         </TextComponent>
       </View>
 
@@ -263,7 +267,11 @@ function RecurringItem({
             onPress={onDeactivate}
           >
             <Icons.CalendarBlank size={14} color="white" weight="bold" />
-            <Text lightColor="white" darkColor="white" className="text-xs font-semibold">
+            <Text
+              lightColor="white"
+              darkColor="white"
+              className="text-xs font-semibold"
+            >
               Deactivate
             </Text>
           </Pressable>
@@ -273,7 +281,11 @@ function RecurringItem({
           onPress={onDelete}
         >
           <Icons.Trash size={14} color="white" weight="bold" />
-          <Text lightColor="white" darkColor="white" className="text-xs font-semibold">
+          <Text
+            lightColor="white"
+            darkColor="white"
+            className="text-xs font-semibold"
+          >
             Delete
           </Text>
         </Pressable>
@@ -328,7 +340,8 @@ function AdHocItem({
           size={TextSize.Small}
           color={Color.Grey}
         >
-          {formatISOTime(slotWindow.start_date)} – {formatISOTime(slotWindow.end_date)}
+          {formatISOTime(slotWindow.start_date)} –{" "}
+          {formatISOTime(slotWindow.end_date)}
         </TextComponent>
       </View>
 
@@ -384,7 +397,9 @@ export function ManageSlotWindowsModal({
   useEffect(() => {
     if (visible) {
       void Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["slot-window-templates", userId] }),
+        queryClient.invalidateQueries({
+          queryKey: ["slot-window-templates", userId],
+        }),
         queryClient.invalidateQueries({ queryKey: ["slot-windows", userId] }),
         queryClient.invalidateQueries({ queryKey: ["appointments", userId] }),
       ]);
@@ -424,7 +439,9 @@ export function ManageSlotWindowsModal({
     return map;
   }, [appointments]);
 
-  const getContentsForSlotWindow = (sw: SlotWindow): (AgendaBlockContent | null)[] => {
+  const getContentsForSlotWindow = (
+    sw: SlotWindow
+  ): (AgendaBlockContent | null)[] => {
     const base = Array.from<AgendaBlockContent | null>(
       { length: sw.total_slots },
       () => null
@@ -615,14 +632,22 @@ export function ManageSlotWindowsModal({
                 <TextComponent
                   variant={TextVariant.Title}
                   size={TextSize.Medium}
-                  style={{ marginTop: 16, color: Color.Grey, textAlign: "center" }}
+                  style={{
+                    marginTop: 16,
+                    color: Color.Grey,
+                    textAlign: "center",
+                  }}
                 >
                   No Recurring Slot Windows
                 </TextComponent>
                 <TextComponent
                   variant={TextVariant.Body}
                   size={TextSize.Small}
-                  style={{ marginTop: 8, color: Color.Grey, textAlign: "center" }}
+                  style={{
+                    marginTop: 8,
+                    color: Color.Grey,
+                    textAlign: "center",
+                  }}
                 >
                   Create a recurring slot window from the schedule to set up
                   repeating appointment windows.
@@ -642,10 +667,16 @@ export function ManageSlotWindowsModal({
                     key={template.slot_window_template_id}
                     template={template}
                     instances={
-                      instancesByTemplateId.get(template.slot_window_template_id) ?? []
+                      instancesByTemplateId.get(
+                        template.slot_window_template_id
+                      ) ?? []
                     }
-                    onDeactivate={() => handleDeactivate(template.slot_window_template_id)}
-                    onDelete={() => handleDelete(template.slot_window_template_id)}
+                    onDeactivate={() =>
+                      handleDeactivate(template.slot_window_template_id)
+                    }
+                    onDelete={() =>
+                      handleDelete(template.slot_window_template_id)
+                    }
                     onInstancePress={handleSlotWindowPress}
                   />
                 ))}
@@ -661,7 +692,11 @@ export function ManageSlotWindowsModal({
               <TextComponent
                 variant={TextVariant.Title}
                 size={TextSize.Medium}
-                style={{ marginTop: 16, color: Color.Grey, textAlign: "center" }}
+                style={{
+                  marginTop: 16,
+                  color: Color.Grey,
+                  textAlign: "center",
+                }}
               >
                 No Ad-hoc Slot Windows
               </TextComponent>
