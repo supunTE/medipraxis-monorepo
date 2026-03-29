@@ -137,6 +137,20 @@ describe("Auth Controller Flow", () => {
         401
       );
     });
+
+    it("should return mobile number not registered error", async () => {
+      mockContext.req.json.mockResolvedValue({});
+      mockAuthService.login.mockRejectedValue(
+        new Error("Mobile number not registered")
+      );
+
+      await AuthController.login(mockContext as APIContext<any>);
+
+      expect(mockContext.json).toHaveBeenCalledWith(
+        { error: "Mobile number not registered" },
+        401
+      );
+    });
   });
 
   describe("refresh", () => {

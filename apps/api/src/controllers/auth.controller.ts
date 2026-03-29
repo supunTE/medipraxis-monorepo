@@ -47,6 +47,9 @@ export class AuthController {
       );
       return c.json(result);
     } catch (e: any) {
+      if (e.message === "Mobile number not registered") {
+        return c.json({ error: e.message }, 401);
+      }
       return c.json({ error: "Invalid credentials" }, 401);
     }
   }

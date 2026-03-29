@@ -90,7 +90,8 @@ export const useAuthHandler = (initialValues?: {
       } else if (
         message.toLowerCase().includes("phone") ||
         message.toLowerCase().includes("number") ||
-        message.toLowerCase().includes("not found")
+        message.toLowerCase().includes("not found") ||
+        message === "Mobile number not registered"
       ) {
         loginForm.setError("phoneNumber", { message });
         return; // Don't re-throw
