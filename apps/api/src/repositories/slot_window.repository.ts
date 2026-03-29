@@ -9,6 +9,7 @@ import type {
   UpdateSlotWindowInput,
   UpdateSlotWindowTemplateInput,
 } from "@repo/models";
+import { TaskStatus } from "@repo/models";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 // Day of week conversion utilities
@@ -600,12 +601,26 @@ export class SlotWindowRepository {
     endDate: string,
     excludeSlotWindowId?: string
   ): Promise<boolean> {
+    // Look up the CANCELLED status ID so we can exclude cancelled slot windows
+    const { data: statusData } = await this.db
+      .from(SLOT_WINDOW_QUERIES.TASK_STATUS_TABLE)
+      .select("task_status_id")
+      .eq("task_status_name", TaskStatus.CANCELLED)
+      .single();
+
     let query = this.db
       .from(SLOT_WINDOW_QUERIES.SLOT_WINDOW_TABLE)
       .select("slot_window_id", { count: "exact", head: true })
       .eq("user_id", userId)
       .lt("start_date", endDate)
       .gt("end_date", startDate);
+
+    if (statusData?.task_status_id) {
+      query = query.neq(
+        SLOT_WINDOW_QUERIES.TASK_STATUS_ID,
+        statusData.task_status_id
+      );
+    }
 
     if (excludeSlotWindowId) {
       query = query.neq("slot_window_id", excludeSlotWindowId);
