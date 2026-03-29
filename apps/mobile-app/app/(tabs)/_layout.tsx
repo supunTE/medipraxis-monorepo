@@ -93,7 +93,11 @@ function CustomTabBar({
               // Skip routes without a tab icon (hidden routes)
               if (!options.tabBarIcon) return null;
 
-              const isFocused = state.index === index;
+              const currentRouteName = state.routes[state.index]?.name ?? "";
+              const isFocused =
+                state.index === index ||
+                (route.name.includes("/") &&
+                  currentRouteName.startsWith(route.name.split("/")[0] + "/"));
 
               const onPress = () => {
                 const event = navigation.emit({
