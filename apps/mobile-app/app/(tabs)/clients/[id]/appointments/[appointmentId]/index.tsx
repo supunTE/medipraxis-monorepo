@@ -22,7 +22,7 @@ import { useGetTaskById } from "@/services/tasks/useGetTaskById";
 import { Color, TextSize, TextVariant } from "@repo/config";
 import { FormType, type TaskDetails } from "@repo/models";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { CalendarBlankIcon, ClockIcon, PlayIcon } from "phosphor-react-native";
+import { CalendarBlankIcon, ClockIcon } from "phosphor-react-native";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -215,8 +215,6 @@ export default function AppointmentDetailsScreen() {
       : null;
 
   const chipConfig = getChipConfig(appointment.task_status_name);
-  const isNotStarted = appointment.task_status_name === "NOT_STARTED";
-  const showStartButton = isNotStarted && !hasExistingRecord;
 
   const sortedFormFields =
     appointmentForm?.form_configuration
@@ -581,25 +579,6 @@ export default function AppointmentDetailsScreen() {
               variant={chipConfig.variant}
             />
           </View>
-
-          {/* Start Button - aligned to right, auto width */}
-          {showStartButton && (
-            <View className="items-end">
-              <ButtonComponent
-                size={ButtonSize.Small}
-                leftIcon={PlayIcon}
-                buttonColor={Color.Black}
-                textColor={Color.White}
-                iconColor={Color.White}
-                onPress={() => {
-                  console.log("Start appointment:", appointmentId);
-                  // TODO: Implement start appointment logic
-                }}
-              >
-                Start
-              </ButtonComponent>
-            </View>
-          )}
         </View>
 
         <ScrollView className="flex-1 px-5">
