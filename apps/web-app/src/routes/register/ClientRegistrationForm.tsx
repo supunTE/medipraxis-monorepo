@@ -1,4 +1,8 @@
-import { CheckIcon, CircleNotchIcon } from "@phosphor-icons/react";
+import {
+  ArrowLeftIcon,
+  CheckIcon,
+  CircleNotchIcon,
+} from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -41,6 +45,7 @@ type Props = {
   isPending: boolean;
   serverMessage: ServerMessage | null;
   onClearMessage: () => void;
+  onBack: () => void;
 };
 
 const ClientRegistrationForm = ({
@@ -49,6 +54,7 @@ const ClientRegistrationForm = ({
   isPending,
   serverMessage,
   onClearMessage,
+  onBack,
 }: Props) => {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
@@ -190,7 +196,16 @@ const ClientRegistrationForm = ({
           </Form>
         </CardContent>
 
-        <CardFooter className="flex justify-end bg-[#E3F0AF] h-16 rounded-b-2xl">
+        <CardFooter className="flex justify-between bg-[#E3F0AF] h-16 rounded-b-2xl">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onBack}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeftIcon className="h-4 w-4" />
+            Back
+          </Button>
           <Button
             type="submit"
             form="patient-form"
