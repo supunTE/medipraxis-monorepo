@@ -1,4 +1,5 @@
 import type { AIActionType } from "@repo/models";
+import nlp from "compromise";
 
 const INTENT_KEYWORDS: Partial<Record<AIActionType, string[]>> = {
   appointment: [
@@ -87,8 +88,13 @@ export function classifyIntent(text: string): AIActionType {
     }
   }
 
-  const words = lower.split(/\s+/);
-  if (words.some((w) => APPOINTMENT_VERBS.has(w))) {
+  const verbs: string[] = (
+    nlp(text) as { verbs: () => { out: (fmt: string) => string[] } }
+  )
+    .verbs()
+    .out("array");
+
+  if (verbs.some((v) => APPOINTMENT_VERBS.has(v.toLowerCase()))) {
     return "appointment";
   }
 

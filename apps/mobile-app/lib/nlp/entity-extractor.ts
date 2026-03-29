@@ -28,11 +28,6 @@ export interface ExtractedEntities {
   times: TimeEntity[];
 }
 
-interface CompromiseOffset {
-  text: string;
-  offset: { start: number; length: number; index: number };
-}
-
 function pad(n: number): string {
   return n.toString().padStart(2, "0");
 }
@@ -53,6 +48,11 @@ function buildDisplayText(date: Date): string {
     month: "short",
     day: "numeric",
   });
+}
+
+interface CompromiseOffset {
+  text: string;
+  offset: { start: number; length: number; index: number };
 }
 
 export function extractEntities(text: string): ExtractedEntities {
