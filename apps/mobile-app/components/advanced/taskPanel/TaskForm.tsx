@@ -1,6 +1,4 @@
 import {
-  ButtonComponent,
-  ButtonSize,
   CheckboxComponent,
   DateTimePickerComponent,
   DropdownComponent,
@@ -21,14 +19,22 @@ import {
 } from "@/services/tasks/useTaskHandler";
 import { Color, TextSize, TextVariant } from "@repo/config";
 import React, { useEffect, useMemo, useState } from "react";
-import { Alert, Modal, ScrollView, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  Modal,
+  Pressable,
+  ScrollView,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 type Props = {
   visible: boolean;
   onClose: () => void;
+  initialClientId?: string;
 };
 
-export default function TaskForm({ visible, onClose }: Props) {
+export default function TaskForm({ visible, onClose, initialClientId }: Props) {
   const eventTypes = [
     EVENT_TYPES.APPOINTMENT_SLOT_WINDOW,
     EVENT_TYPES.APPOINTMENT,
@@ -59,6 +65,13 @@ export default function TaskForm({ visible, onClose }: Props) {
       Alert.alert("Error", error);
     }
   }, [error]);
+
+  useEffect(() => {
+    if (visible && initialClientId) {
+      switchEventType(EVENT_TYPES.APPOINTMENT);
+      setField("client", initialClientId);
+    }
+  }, [visible, initialClientId]);
 
   const [showEndDateTime, setShowEndDateTime] = useState(false);
 
@@ -150,181 +163,278 @@ export default function TaskForm({ visible, onClose }: Props) {
   };
 
   return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-    >
-      <View className="flex-1 bg-white">
-        <ScrollView
-          contentContainerClassName="p-5 pb-[150px]"
-          keyboardShouldPersistTaps="handled"
+    <>
+      {/* Overlay modal — covers status bar with dark background */}
+      <Modal
+        visible={visible}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+      >
+        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }} />
+      </Modal>
+
+      {/* Form modal */}
+      <Modal visible={visible} animationType="slide" transparent>
+        {/* Pseudo wrapper — transparent so overlay shows through the padding gaps */}
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            padding: 12,
+            backgroundColor: "transparent",
+          }}
         >
-          <TextComponent
-            variant={TextVariant.Title}
-            size={TextSize.Large}
-            className="mb-5"
+          <View
+            style={{
+              backgroundColor: "white",
+              borderRadius: 20,
+              overflow: "hidden",
+              maxHeight: "92%",
+            }}
           >
-            Schedule New Event
-          </TextComponent>
+            <ScrollView
+              contentContainerClassName="p-5 pb-[150px]"
+              keyboardShouldPersistTaps="handled"
+            >
+              <TextComponent
+                variant={TextVariant.Title}
+                size={TextSize.Large}
+                className="mb-5"
+              >
+                Schedule New Event
+              </TextComponent>
 
-          {/* Event Type Radio Group */}
-          <RadioGroupComponent
-            value={eventType}
-            onChange={(val) => switchEventType(val as EventType)}
-            options={eventTypes.map((type) => ({
-              label: EVENT_TYPE_LABELS[type],
-              value: type,
-            }))}
-            className="mb-4 gap-3 flex-col"
-          />
-
-          {eventType === EVENT_TYPES.APPOINTMENT_SLOT_WINDOW && (
-            <ToggleButton
-              label="Recurring"
-              isActive={isRecurring}
-              onToggle={toggleRecurring}
-            />
-          )}
-
-          {/* 1. APPOINTMENT SLOT WINDOW SPECIFIC FIELDS */}
-          {eventType === EVENT_TYPES.APPOINTMENT_SLOT_WINDOW && (
-            <View className="gap-4 mt-2.5">
-              <TextInputComponent
-                label="Location"
-                inputField={{
-                  value: location,
-                  onChangeText: (v) => setField("location", v),
-                  placeholder: "Care - Medical Centre",
-                }}
-                inputType={TextInputType.Text}
+              {/* Event Type Radio Group */}
+              <RadioGroupComponent
+                value={eventType}
+                onChange={(val) => switchEventType(val as EventType)}
+                options={eventTypes.map((type) => ({
+                  label: EVENT_TYPE_LABELS[type],
+                  value: type,
+                }))}
+                className="mb-4 gap-3 flex-col"
               />
 
-              <TextInputComponent
-                label="Number of Slots"
-                inputField={{
-                  value: totalSlots !== undefined ? String(totalSlots) : "",
-                  onChangeText: (v) => setField("totalSlots", Number(v)),
-                  placeholder: "10",
-                }}
-                inputType={TextInputType.Number}
-                helperText={
-                  averageMinutesPerSlot
-                    ? `Average ${averageMinutesPerSlot}mins per slot`
-                    : ""
-                }
-              />
-
-              {!isRecurring && (
-                <DateTimePickerComponent
-                  label="Date"
-                  value={slotDate}
-                  onChange={(v) => setField("slotDate", v)}
-                  placeholder="Nov 15, 2025"
-                  mode="date"
+              {eventType === EVENT_TYPES.APPOINTMENT_SLOT_WINDOW && (
+                <ToggleButton
+                  label="Recurring"
+                  isActive={isRecurring}
+                  onToggle={toggleRecurring}
                 />
               )}
 
-              <DateTimePickerComponent
-                label="Start time"
-                value={startDate}
-                onChange={(v) => setField("startDate", v)}
-                placeholder="08:00 am"
-                mode="time"
-              />
-
-              <DateTimePickerComponent
-                label="End time"
-                value={endDate}
-                onChange={(v) => setField("endDate", v)}
-                placeholder="11:30 am"
-                mode="time"
-              />
-
-              {isRecurring && (
-                <>
-                  <DateTimePickerComponent
-                    label="Repeat Until"
-                    value={repeatUntil}
-                    onChange={(v) => setField("repeatUntil", v)}
-                    placeholder="Nov 15, 2025"
-                    mode="date"
-                  />
-
-                  <View>
-                    <TextComponent
-                      variant={TextVariant.Body}
-                      size={TextSize.Large}
-                      className="mb-2"
-                    >
-                      Repeat
-                    </TextComponent>
-                    <View className="flex-row mt-1.5">
-                      {days.map((day, index) => (
-                        <TouchableOpacity
-                          key={index}
-                          onPress={() => toggleDay(index)}
-                          className="w-9 h-9 rounded-full items-center justify-center mr-2 bg-[#FFF8E1]"
-                          style={
-                            repeatDays.includes(index)
-                              ? { backgroundColor: Color.Green }
-                              : undefined
-                          }
-                        >
-                          <TextComponent
-                            variant={TextVariant.Body}
-                            size={TextSize.Medium}
-                            color={
-                              repeatDays.includes(index)
-                                ? Color.White
-                                : Color.Black
-                            }
-                            className="font-bold"
-                          >
-                            {day}
-                          </TextComponent>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  </View>
-                </>
-              )}
-            </View>
-          )}
-
-          {/* 2. APPOINTMENT SPECIFIC FIELDS */}
-          {eventType === EVENT_TYPES.APPOINTMENT && (
-            <View className="gap-4 mt-2.5">
-              {!attachToSlot ? (
-                <>
-                  <TextInputComponent
-                    label="Enter the title"
-                    inputField={{
-                      value: taskTitle,
-                      onChangeText: (v) => setField("taskTitle", v),
-                      placeholder: "Enter the title",
-                    }}
-                    inputType={TextInputType.Text}
-                  />
-                  <TouchableOpacity
-                    className="my-1.5"
-                    onPress={() => toggleAttachToSlot(true)}
-                  >
-                    <TextComponent
-                      variant={TextVariant.Body}
-                      size={TextSize.Medium}
-                      className="text-[#666] font-medium"
-                    >
-                      + Attach to an Appointment slot window
-                    </TextComponent>
-                  </TouchableOpacity>
-
+              {/* 1. APPOINTMENT SLOT WINDOW SPECIFIC FIELDS */}
+              {eventType === EVENT_TYPES.APPOINTMENT_SLOT_WINDOW && (
+                <View className="gap-4 mt-2.5">
                   <TextInputComponent
                     label="Location"
                     inputField={{
                       value: location,
                       onChangeText: (v) => setField("location", v),
                       placeholder: "Care - Medical Centre",
+                    }}
+                    inputType={TextInputType.Text}
+                  />
+
+                  <TextInputComponent
+                    label="Number of Slots"
+                    inputField={{
+                      value: totalSlots !== undefined ? String(totalSlots) : "",
+                      onChangeText: (v) => setField("totalSlots", Number(v)),
+                      placeholder: "10",
+                    }}
+                    inputType={TextInputType.Number}
+                    helperText={
+                      averageMinutesPerSlot
+                        ? `Average ${averageMinutesPerSlot}mins per slot`
+                        : ""
+                    }
+                  />
+
+                  {!isRecurring && (
+                    <DateTimePickerComponent
+                      label="Date"
+                      value={slotDate}
+                      onChange={(v) => setField("slotDate", v)}
+                      placeholder="Nov 15, 2025"
+                      mode="date"
+                    />
+                  )}
+
+                  <DateTimePickerComponent
+                    label="Start time"
+                    value={startDate}
+                    onChange={(v) => setField("startDate", v)}
+                    placeholder="08:00 am"
+                    mode="time"
+                  />
+
+                  <DateTimePickerComponent
+                    label="End time"
+                    value={endDate}
+                    onChange={(v) => setField("endDate", v)}
+                    placeholder="11:30 am"
+                    mode="time"
+                  />
+
+                  {isRecurring && (
+                    <>
+                      <DateTimePickerComponent
+                        label="Repeat Until"
+                        value={repeatUntil}
+                        onChange={(v) => setField("repeatUntil", v)}
+                        placeholder="Nov 15, 2025"
+                        mode="date"
+                      />
+
+                      <View>
+                        <TextComponent
+                          variant={TextVariant.Body}
+                          size={TextSize.Large}
+                          className="mb-2"
+                        >
+                          Repeat
+                        </TextComponent>
+                        <View className="flex-row mt-1.5">
+                          {days.map((day, index) => (
+                            <TouchableOpacity
+                              key={index}
+                              onPress={() => toggleDay(index)}
+                              className="w-9 h-9 rounded-full items-center justify-center mr-2 bg-[#FFF8E1]"
+                              style={
+                                repeatDays.includes(index)
+                                  ? { backgroundColor: Color.Green }
+                                  : undefined
+                              }
+                            >
+                              <TextComponent
+                                variant={TextVariant.Body}
+                                size={TextSize.Medium}
+                                color={
+                                  repeatDays.includes(index)
+                                    ? Color.White
+                                    : Color.Black
+                                }
+                                className="font-bold"
+                              >
+                                {day}
+                              </TextComponent>
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+                      </View>
+                    </>
+                  )}
+                </View>
+              )}
+
+              {/* 2. APPOINTMENT SPECIFIC FIELDS */}
+              {eventType === EVENT_TYPES.APPOINTMENT && (
+                <View className="gap-4 mt-2.5">
+                  {!attachToSlot ? (
+                    <>
+                      <TextInputComponent
+                        label="Enter the title"
+                        inputField={{
+                          value: taskTitle,
+                          onChangeText: (v) => setField("taskTitle", v),
+                          placeholder: "Enter the title",
+                        }}
+                        inputType={TextInputType.Text}
+                      />
+                      <TouchableOpacity
+                        className="my-1.5"
+                        onPress={() => toggleAttachToSlot(true)}
+                      >
+                        <TextComponent
+                          variant={TextVariant.Body}
+                          size={TextSize.Medium}
+                          className="text-[#666] font-medium"
+                        >
+                          + Attach to an Appointment slot window
+                        </TextComponent>
+                      </TouchableOpacity>
+
+                      <TextInputComponent
+                        label="Location"
+                        inputField={{
+                          value: location,
+                          onChangeText: (v) => setField("location", v),
+                          placeholder: "Care - Medical Centre",
+                        }}
+                        inputType={TextInputType.Text}
+                      />
+
+                      <DropdownComponent
+                        label="Client Details"
+                        value={client || ""}
+                        onValueChange={(v) => setField("client", v)}
+                        options={clientOptions}
+                        placeholder="Select Client"
+                      />
+
+                      <DateTimePickerComponent
+                        label="Start Date & time"
+                        value={startDate}
+                        onChange={(v) => setField("startDate", v)}
+                        placeholder="Nov 15, 2025  08:00 am"
+                        mode="datetime"
+                      />
+
+                      <DateTimePickerComponent
+                        label="End Date & time"
+                        value={endDate}
+                        onChange={(v) => setField("endDate", v)}
+                        placeholder="Nov 15, 2025  11:30 am"
+                        mode="datetime"
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <DropdownComponent
+                        label="Slot Window"
+                        value={slotWindow || ""}
+                        onValueChange={(v) => setField("slotWindow", v)}
+                        options={slotWindowOptions}
+                        placeholder="Select Slot Window"
+                        helperText="First available slot number will be reserved"
+                      />
+                      <TouchableOpacity
+                        className="my-1.5"
+                        onPress={() => toggleAttachToSlot(false)}
+                      >
+                        <TextComponent
+                          variant={TextVariant.Body}
+                          size={TextSize.Medium}
+                          color={Color.Danger}
+                          className="font-medium"
+                        >
+                          - Remove Appointment Slot
+                        </TextComponent>
+                      </TouchableOpacity>
+
+                      <DropdownComponent
+                        label="Client Details"
+                        value={client || ""}
+                        onValueChange={(v) => setField("client", v)}
+                        options={clientOptions}
+                        placeholder="Select Client"
+                      />
+                    </>
+                  )}
+                </View>
+              )}
+
+              {/* 3. REMINDER/TASK SPECIFIC FIELDS */}
+              {eventType === EVENT_TYPES.TASK && (
+                <View className="gap-4 mt-2.5">
+                  <TextInputComponent
+                    label="Enter the title"
+                    inputField={{
+                      value: taskTitle,
+                      onChangeText: (v) => setField("taskTitle", v),
+                      placeholder: "Enter the title",
                     }}
                     inputType={TextInputType.Text}
                   />
@@ -345,180 +455,115 @@ export default function TaskForm({ visible, onClose }: Props) {
                     mode="datetime"
                   />
 
-                  <DateTimePickerComponent
-                    label="End Date & time"
-                    value={endDate}
-                    onChange={(v) => setField("endDate", v)}
-                    placeholder="Nov 15, 2025  11:30 am"
-                    mode="datetime"
-                  />
-                </>
-              ) : (
-                <>
-                  <DropdownComponent
-                    label="Slot Window"
-                    value={slotWindow || ""}
-                    onValueChange={(v) => setField("slotWindow", v)}
-                    options={slotWindowOptions}
-                    placeholder="Select Slot Window"
-                    helperText="First available slot number will be reserved"
-                  />
-                  <TouchableOpacity
-                    className="my-1.5"
-                    onPress={() => toggleAttachToSlot(false)}
-                  >
-                    <TextComponent
-                      variant={TextVariant.Body}
-                      size={TextSize.Medium}
-                      color={Color.Danger}
-                      className="font-medium"
+                  {!showEndDateTime ? (
+                    <TouchableOpacity
+                      className="my-1.5"
+                      onPress={() => setShowEndDateTime(true)}
                     >
-                      - Remove Appointment Slot
-                    </TextComponent>
-                  </TouchableOpacity>
-
-                  <DropdownComponent
-                    label="Client Details"
-                    value={client || ""}
-                    onValueChange={(v) => setField("client", v)}
-                    options={clientOptions}
-                    placeholder="Select Client"
-                  />
-                </>
-              )}
-            </View>
-          )}
-
-          {/* 3. REMINDER/TASK SPECIFIC FIELDS */}
-          {eventType === EVENT_TYPES.TASK && (
-            <View className="gap-4 mt-2.5">
-              <TextInputComponent
-                label="Enter the title"
-                inputField={{
-                  value: taskTitle,
-                  onChangeText: (v) => setField("taskTitle", v),
-                  placeholder: "Enter the title",
-                }}
-                inputType={TextInputType.Text}
-              />
-
-              <DropdownComponent
-                label="Client Details"
-                value={client || ""}
-                onValueChange={(v) => setField("client", v)}
-                options={clientOptions}
-                placeholder="Select Client"
-              />
-
-              <DateTimePickerComponent
-                label="Start Date & time"
-                value={startDate}
-                onChange={(v) => setField("startDate", v)}
-                placeholder="Nov 15, 2025  08:00 am"
-                mode="datetime"
-              />
-
-              {!showEndDateTime ? (
-                <TouchableOpacity
-                  className="my-1.5"
-                  onPress={() => setShowEndDateTime(true)}
-                >
-                  <TextComponent
-                    variant={TextVariant.Body}
-                    size={TextSize.Medium}
-                    className="text-[#666] font-medium"
-                  >
-                    + Add End Date & time
-                  </TextComponent>
-                </TouchableOpacity>
-              ) : (
-                <View>
-                  <DateTimePickerComponent
-                    label="End Date & time"
-                    value={endDate}
-                    onChange={(v) => setField("endDate", v)}
-                    placeholder="Nov 15, 2025  08:00 am"
-                    mode="datetime"
-                  />
-                  <TouchableOpacity
-                    className="my-1.5"
-                    onPress={() => {
-                      setShowEndDateTime(false);
-                      setField("endDate", "");
-                    }}
-                  >
-                    <TextComponent
-                      variant={TextVariant.Body}
-                      size={TextSize.Medium}
-                      color={Color.Danger}
-                      className="font-medium"
-                    >
-                      - Remove End Date & time
-                    </TextComponent>
-                  </TouchableOpacity>
+                      <TextComponent
+                        variant={TextVariant.Body}
+                        size={TextSize.Medium}
+                        className="text-[#666] font-medium"
+                      >
+                        + Add End Date & time
+                      </TextComponent>
+                    </TouchableOpacity>
+                  ) : (
+                    <View>
+                      <DateTimePickerComponent
+                        label="End Date & time"
+                        value={endDate}
+                        onChange={(v) => setField("endDate", v)}
+                        placeholder="Nov 15, 2025  08:00 am"
+                        mode="datetime"
+                      />
+                      <TouchableOpacity
+                        className="my-1.5"
+                        onPress={() => {
+                          setShowEndDateTime(false);
+                          setField("endDate", "");
+                        }}
+                      >
+                        <TextComponent
+                          variant={TextVariant.Body}
+                          size={TextSize.Medium}
+                          color={Color.Danger}
+                          className="font-medium"
+                        >
+                          - Remove End Date & time
+                        </TextComponent>
+                      </TouchableOpacity>
+                    </View>
+                  )}
                 </View>
               )}
-            </View>
-          )}
 
-          {/* Note Field */}
-          {!(eventType === EVENT_TYPES.APPOINTMENT && attachToSlot) && (
-            <View className="gap-4 mt-4">
-              <TextAreaComponent
-                label="Note"
-                inputField={{
-                  value: note,
-                  onChangeText: (v) => setField("note", v),
-                  placeholder: "Type additional notes here",
+              {/* Note Field */}
+              {!(eventType === EVENT_TYPES.APPOINTMENT && attachToSlot) && (
+                <View className="gap-4 mt-4">
+                  <TextAreaComponent
+                    label="Note"
+                    inputField={{
+                      value: note,
+                      onChangeText: (v) => setField("note", v),
+                      placeholder: "Type additional notes here",
+                    }}
+                  />
+                </View>
+              )}
+
+              {/* Alarm - only for Reminder/Task */}
+              {eventType === EVENT_TYPES.TASK && (
+                <View className="mt-2.5 flex-row items-center">
+                  <CheckboxComponent
+                    label="Do you want to set an alarm"
+                    isChecked={alarm}
+                    onChange={(checked) => setField("alarm", checked)}
+                  />
+                </View>
+              )}
+            </ScrollView>
+
+            {/* Action Footer */}
+            <View className="absolute bottom-0 w-full bg-[#EAF8C9] p-4 flex-row justify-end gap-x-2.5 border-t border-gray-100">
+              <Pressable
+                className="flex-row items-center py-2.5 px-6 rounded-lg"
+                style={{
+                  backgroundColor: Color.LightCream,
+                  borderWidth: 1,
+                  borderColor: Color.LightGrey,
                 }}
-              />
-            </View>
-          )}
-
-          {/* Alarm - only for Reminder/Task */}
-          {eventType === EVENT_TYPES.TASK && (
-            <View className="mt-2.5 flex-row items-center">
-              <CheckboxComponent
-                label="Do you want to set an alarm"
-                isChecked={alarm}
-                onChange={(checked) => setField("alarm", checked)}
-              />
-            </View>
-          )}
-        </ScrollView>
-
-        {/* Updated Action Footer using ButtonComponent */}
-        <View className="absolute bottom-0 w-full bg-[#e3f0af] p-[15px] pb-[30px] justify-between">
-          <View className="flex-row justify-between w-full">
-            <View style={{ flex: 1, marginRight: 8 }}>
-              <ButtonComponent
-                size={ButtonSize.Large}
-                buttonColor={Color.LightCream}
-                textColor={Color.Grey}
                 onPress={() => {
                   resetForm();
                   onClose();
                 }}
               >
-                Close
-              </ButtonComponent>
-            </View>
-            <View style={{ flex: 1, marginLeft: 8 }}>
-              <ButtonComponent
-                size={ButtonSize.Large}
-                leftIcon={Icons.Check}
-                buttonColor={Color.Black}
-                textColor={Color.White}
-                iconColor={Color.White}
+                <TextComponent
+                  variant={TextVariant.Body}
+                  size={TextSize.Medium}
+                  color={Color.Black}
+                >
+                  Close
+                </TextComponent>
+              </Pressable>
+              <Pressable
+                className="flex-row items-center bg-slate-900 py-2.5 px-6 rounded-lg gap-x-2"
                 onPress={handleSave}
                 disabled={isPending}
               >
-                {isPending ? "Saving..." : "Save"}
-              </ButtonComponent>
+                <Icons.Check size={18} color="white" weight="bold" />
+                <TextComponent
+                  variant={TextVariant.Body}
+                  size={TextSize.Medium}
+                  color={Color.White}
+                >
+                  {isPending ? "Saving..." : "Save"}
+                </TextComponent>
+              </Pressable>
             </View>
           </View>
         </View>
-      </View>
-    </Modal>
+      </Modal>
+    </>
   );
 }

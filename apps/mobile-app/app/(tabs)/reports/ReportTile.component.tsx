@@ -71,8 +71,16 @@ export const ReportTile: React.FC<ReportTileProps> = ({
 
   return (
     <View
-      className="bg-white rounded-2xl p-4 shadow-sm"
-      style={{ borderWidth: 1, borderColor: Color.LightGrey }}
+      className="bg-white rounded-2xl p-4"
+      style={{
+        borderWidth: 1,
+        borderColor: "#F0F0F0",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.04,
+        shadowRadius: 6,
+        elevation: 1,
+      }}
     >
       {/* Header: Client Name and View Client Button */}
       <View className="flex-row justify-between items-center mb-3">

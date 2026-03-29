@@ -1,4 +1,5 @@
 import { useAuth } from "@/auth/AuthContext";
+import TaskForm from "@/components/advanced/taskPanel/TaskForm";
 import {
   ButtonComponent,
   ButtonSize,
@@ -28,7 +29,9 @@ import {
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
+  Linking,
   Modal,
   Platform,
   Pressable,
@@ -97,6 +100,7 @@ export default function ClientDetailScreen() {
   const [showLeftShadow, setShowLeftShadow] = useState(false);
   const [showRightShadow, setShowRightShadow] = useState(true);
   const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [showTaskForm, setShowTaskForm] = useState(false);
   const [showShareCalendarModal, setShowShareCalendarModal] = useState(false);
   const [visibleDaysAhead, setVisibleDaysAhead] = useState(7);
   const [expiryDate, setExpiryDate] = useState("");
@@ -341,7 +345,7 @@ export default function ClientDetailScreen() {
     setShowOptionsMenu(false);
     switch (value) {
       case "schedule_appointment":
-        console.log("Schedule appointment for:", client?.client_id);
+        setShowTaskForm(true);
         break;
       case "request_report":
         router.push(`/reports/request-report/${client?.client_id}` as any);
@@ -516,7 +520,18 @@ export default function ClientDetailScreen() {
                     buttonColor={Color.Black}
                     textColor={Color.White}
                     iconColor={Color.White}
-                    onPress={() => console.log("Call:", client.contact_number)}
+                    onPress={() => {
+                      if (client.contact_number) {
+                        Linking.openURL(`tel:${client.contact_number}`).catch(
+                          () => {
+                            Alert.alert(
+                              "Error",
+                              "Unable to open the phone dialler on this device."
+                            );
+                          }
+                        );
+                      }
+                    }}
                   >
                     Call
                   </ButtonComponent>
@@ -610,7 +625,7 @@ export default function ClientDetailScreen() {
 
                 {showOptionsMenu && (
                   <View
-                    className="absolute top-10 right-0 min-w-[240px] bg-white rounded-xl overflow-hidden z-50"
+                    className="absolute top-10 right-0 min-w-[180px] bg-white rounded-xl overflow-hidden z-50"
                     style={{
                       shadowColor: "#000",
                       shadowOffset: { width: 0, height: 2 },
@@ -626,7 +641,7 @@ export default function ClientDetailScreen() {
                         <Pressable
                           key={option.value}
                           onPress={() => handleOptionSelect(option.value)}
-                          className="flex-row items-center px-4 py-4 gap-3"
+                          className="flex-row items-center px-4 py-3 gap-2"
                           style={{
                             borderBottomWidth: isLast ? 0 : 1,
                             borderBottomColor: "#F0F0F0",
@@ -634,7 +649,7 @@ export default function ClientDetailScreen() {
                           android_ripple={{ color: "#F5F5F5" }}
                         >
                           <IconComponent
-                            size={20}
+                            size={16}
                             color={Color.Black}
                             weight="regular"
                           />
@@ -645,10 +660,8 @@ export default function ClientDetailScreen() {
                                 textButtonMediumStyle.fontFamily === Font.DMsans
                                   ? "DMSans_400Regular"
                                   : "Inter_400Regular",
-                              fontSize: textButtonMediumStyle.fontSize,
-                              fontWeight: String(
-                                textButtonMediumStyle.fontWeight
-                              ) as RNTextStyle["fontWeight"],
+                              fontSize: 13,
+                              fontWeight: "400",
                             }}
                           >
                             {option.label}
@@ -741,6 +754,13 @@ export default function ClientDetailScreen() {
                         className="w-[31%] bg-white rounded-xl p-3 mb-3 justify-between"
                         style={{
                           minHeight: 140,
+                          borderWidth: 1,
+                          borderColor: "#F0F0F0",
+                          shadowColor: "#000",
+                          shadowOffset: { width: 0, height: 2 },
+                          shadowOpacity: 0.04,
+                          shadowRadius: 6,
+                          elevation: 1,
                         }}
                         onPress={() =>
                           router.push(`/reports/${report.report_id}` as any)
@@ -952,6 +972,13 @@ export default function ClientDetailScreen() {
         type={messagePopupType}
         message={messagePopupText}
         onClose={() => setShowMessagePopup(false)}
+      />
+
+      {/* Schedule Appointment Form */}
+      <TaskForm
+        visible={showTaskForm}
+        onClose={() => setShowTaskForm(false)}
+        initialClientId={client?.client_id}
       />
     </View>
   );
