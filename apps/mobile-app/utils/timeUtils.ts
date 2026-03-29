@@ -262,8 +262,11 @@ export function groupReminders<
  */
 export function formatISOToTime(isoDate: string): string {
   const date = new Date(isoDate);
-  const hours = date.getHours();
-  const minutes = date.getMinutes();
+  // Use UTC accessors: datetimes in this system are stored as "naive local time
+  // treated as UTC", so getUTCHours() recovers the original clock value the
+  // doctor entered regardless of the device's local timezone.
+  const hours = date.getUTCHours();
+  const minutes = date.getUTCMinutes();
   const ampm = hours >= 12 ? "pm" : "am";
   const displayHours = hours % 12 || 12;
   const displayMinutes =
