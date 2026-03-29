@@ -3,6 +3,8 @@ import {
   ButtonComponent,
   ButtonSize,
   InlineDropdownComponent,
+  MessagePopup,
+  MessageType,
   TextComponent,
 } from "@/components/basic";
 import {
@@ -71,6 +73,9 @@ export default function RequestReportScreen() {
   const [selectedClientId, setSelectedClientId] = useState<string>(
     typeof id === "string" ? id : ""
   );
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupType, setPopupType] = useState<MessageType>(MessageType.Success);
+  const [popupMessage, setPopupMessage] = useState("");
 
   useEffect(() => {
     if (requestForm?.form_configuration) {
@@ -142,9 +147,18 @@ export default function RequestReportScreen() {
 
     try {
       await createRequestReportMutation.mutateAsync(requestPayload);
-      router.back();
+      setPopupType(MessageType.Success);
+      setPopupMessage("Report request sent successfully!");
+      setShowPopup(true);
     } catch (error) {
       console.error("Failed to create request report:", error);
+      setPopupType(MessageType.Error);
+      setPopupMessage(
+        error instanceof Error
+          ? error.message
+          : "Failed to send report request. Please try again."
+      );
+      setShowPopup(true);
     }
   };
 
@@ -318,6 +332,16 @@ export default function RequestReportScreen() {
           <View style={{ height: BOTTOM_SPACING }} />
         </View>
       </ScrollView>
+
+      <MessagePopup
+        visible={showPopup}
+        type={popupType}
+        message={popupMessage}
+        onClose={() => {
+          setShowPopup(false);
+          router.push("/(tabs)/reports");
+        }}
+      />
     </View>
   );
 }
