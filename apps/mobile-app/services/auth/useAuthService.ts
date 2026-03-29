@@ -179,11 +179,9 @@ export const authService = {
     });
 
     if (!res.ok) {
-      const errorData = (await res
-        .json()
-        .catch(() => ({
-          error: "Failed to upload profile picture",
-        }))) as ErrorResponse;
+      const errorData = (await res.json().catch(() => ({
+        error: "Failed to upload profile picture",
+      }))) as ErrorResponse;
       const errorMessage =
         typeof errorData.error === "string"
           ? errorData.error
