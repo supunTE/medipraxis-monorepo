@@ -80,6 +80,15 @@ const taskFormSchema = z
         ctx.addIssue({ code: "custom", path: ["repeatUntil"], message: "Repeat until date is required" });
     }
 
+    // Cross-field: end date must be after start date (when both present)
+    if (data.startDate && data.endDate) {
+      const start = new Date(data.startDate);
+      const end = new Date(data.endDate);
+      if (end <= start) {
+        ctx.addIssue({ code: "custom", path: ["endDate"], message: "End date & time must be after start date & time" });
+      }
+    }
+
     if (data.eventType === "appointment") {
       if (data.attachToSlot) {
         if (!data.slotWindow)

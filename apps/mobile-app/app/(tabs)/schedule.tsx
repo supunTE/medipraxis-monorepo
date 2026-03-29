@@ -189,6 +189,12 @@ export default function ScheduleScreen() {
         start_date: form.start_date.includes("T")
           ? form.start_date
           : simpleDateTimeToISO(form.start_date),
+        end_date: form.end_date
+          ? form.end_date.includes("T")
+            ? form.end_date
+            : simpleDateTimeToISO(form.end_date)
+          : undefined,
+        client_id: form.client_id ?? undefined,
         note: form.note ?? undefined,
         set_alarm: form.set_alarm,
       },

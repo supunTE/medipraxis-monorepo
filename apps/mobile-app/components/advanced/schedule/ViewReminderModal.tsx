@@ -85,7 +85,23 @@ export const ViewReminderModal = ({
       : "";
 
   const handleEdit = () => onEdit?.();
-  const handleSave = () => onSave?.(form);
+
+  const handleSave = () => {
+    if (!form.start_date) {
+      Alert.alert("Validation", "Start date & time is required.");
+      return;
+    }
+    if (form.end_date) {
+      const start = new Date(form.start_date);
+      const end = new Date(form.end_date);
+      if (end <= start) {
+        Alert.alert("Validation", "End date & time must be after start date & time.");
+        return;
+      }
+    }
+    onSave?.(form);
+  };
+
   const handleCancel = () => onCancel?.();
 
   const handleReminderCheck = () => {
