@@ -20,6 +20,7 @@ import Loader from "@/components/basic/Loader.component";
 import { Icons } from "@/config";
 import { useGetSlotWindows } from "@/services/slotWindows";
 import {
+  useCancelAppointment,
   useGetAppointments,
   useGetReminders,
   useGetTaskById,
@@ -103,6 +104,26 @@ export default function ScheduleScreen() {
       Alert.alert("Error", message ?? "Failed to update reminder");
     },
   });
+
+  const { mutate: cancelTaskStatus, isLoading: isLoadingCancel } = useUpdateTask({
+    onSuccess: () => {
+      handleCloseViewReminderModal();
+      handleCloseViewApptModal();
+    },
+    onError: (message) => {
+      Alert.alert("Error", message ?? "Failed to cancel");
+    },
+  });
+
+  const { mutate: cancelSlotAppointment, isLoading: isLoadingCancelSlot } =
+    useCancelAppointment({
+      onSuccess: () => {
+        handleCloseViewApptModal();
+      },
+      onError: (message) => {
+        Alert.alert("Error", message ?? "Failed to cancel appointment");
+      },
+    });
 
   const buildAppointmentContent = (
     appointment: TaskDetails
@@ -203,6 +224,55 @@ export default function ScheduleScreen() {
     setViewReminderReadOnly(true);
   };
 
+  const handleCancelReminder = () => {
+    if (!selectedReminderId) return;
+    Alert.alert(
+      "Cancel Reminder",
+      "Are you sure you want to cancel this reminder?",
+      [
+        { text: "No", style: "cancel" },
+        {
+          text: "Yes, Cancel",
+          style: "destructive",
+          onPress: () => {
+            cancelTaskStatus({
+              task_id: selectedReminderId,
+              data: { task_status: "CANCELLED" },
+            });
+          },
+        },
+      ]
+    );
+  };
+
+  const handleCancelAppointment = () => {
+    if (!selectedAppointmentId) return;
+    const task = appointmentTaskQuery.data?.task;
+    Alert.alert(
+      "Cancel Appointment",
+      "Are you sure you want to cancel this appointment?",
+      [
+        { text: "No", style: "cancel" },
+        {
+          text: "Yes, Cancel",
+          style: "destructive",
+          onPress: () => {
+            if (task?.slot_window_id) {
+              // Slot-window appointment: use dedicated cancel endpoint to release the slot
+              cancelSlotAppointment({ task_id: selectedAppointmentId });
+            } else {
+              // Custom appointment: update task status to CANCELLED
+              cancelTaskStatus({
+                task_id: selectedAppointmentId,
+                data: { task_status: "CANCELLED" },
+              });
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const handleReminderPress = (reminderId: string) => {
     setSelectedReminderId(reminderId);
     reminderTaskQuery.mutate({ task_id: reminderId });
@@ -274,9 +344,9 @@ export default function ScheduleScreen() {
           onClose={handleCloseViewApptModal}
           onEdit={handleEditViewApptModal}
           onSave={handleSaveTaskModal}
-          onCancel={handleCloseViewApptModal}
+          onCancel={handleCancelAppointment}
           readOnly={viewApptReadOnly}
-          isSaving={isLoadingUpdate}
+          isSaving={isLoadingUpdate || isLoadingCancel || isLoadingCancelSlot}
         />
       )}
 
@@ -287,9 +357,9 @@ export default function ScheduleScreen() {
           onClose={handleCloseViewReminderModal}
           onEdit={handleEditViewReminderModal}
           onSave={handleSaveTaskModal}
-          onCancel={handleCloseViewReminderModal}
+          onCancel={handleCancelReminder}
           readOnly={viewReminderReadOnly}
-          isSaving={isLoadingUpdate}
+          isSaving={isLoadingUpdate || isLoadingCancel}
         />
       )}
 
@@ -297,7 +367,9 @@ export default function ScheduleScreen() {
         appointmentsQuery.isLoading ||
         remindersQuery.isLoading ||
         appointmentTaskQuery.isLoading ||
-        reminderTaskQuery.isLoading) && <Loader />}
+        reminderTaskQuery.isLoading ||
+        isLoadingCancel ||
+        isLoadingCancelSlot) && <Loader />}
 
       <TaskForm visible={showForm} onClose={() => setShowForm(false)} />
     </View>
