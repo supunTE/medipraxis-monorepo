@@ -419,6 +419,7 @@ export default function ScheduleScreen() {
           setFormSlotWindowId(undefined);
         }}
         initialSlotWindowId={formSlotWindowId}
+        slotWindows={slotWindowsQuery.slotWindows}
       />
 
       <ManageSlotWindowsModal

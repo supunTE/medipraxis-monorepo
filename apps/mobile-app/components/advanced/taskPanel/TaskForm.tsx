@@ -11,13 +11,13 @@ import {
 } from "@/components/basic";
 import { Icons } from "@/config";
 import { useFetchClients } from "@/services/clients/useClients";
-import { useGetSlotWindows } from "@/services/slot-windows/useGetSlotWindows";
 import {
   EVENT_TYPES,
   useTaskHandler,
   type EventType,
 } from "@/services/tasks/useTaskHandler";
 import { Color, TextSize, TextVariant } from "@repo/config";
+import type { SlotWindow } from "@repo/models";
 import React, { useEffect, useMemo, useState } from "react";
 import { Controller } from "react-hook-form";
 import { Modal, Pressable, ScrollView, TouchableOpacity, View } from "react-native";
@@ -27,9 +27,10 @@ type Props = {
   onClose: () => void;
   initialClientId?: string;
   initialSlotWindowId?: string;
+  slotWindows?: SlotWindow[];
 };
 
-export default function TaskForm({ visible, onClose, initialClientId, initialSlotWindowId }: Props) {
+export default function TaskForm({ visible, onClose, initialClientId, initialSlotWindowId, slotWindows = [] }: Props) {
   const eventTypes = [
     EVENT_TYPES.APPOINTMENT_SLOT_WINDOW,
     EVENT_TYPES.APPOINTMENT,
@@ -90,8 +91,6 @@ export default function TaskForm({ visible, onClose, initialClientId, initialSlo
     [clients]
   );
 
-  const { data: slotWindows = [] } = useGetSlotWindows({ userId });
-
   const formatTime = (dateStr: string) => {
     const d = new Date(dateStr);
     return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -116,12 +115,10 @@ export default function TaskForm({ visible, onClose, initialClientId, initialSlo
 
   const slotWindowOptions = useMemo(
     () =>
-      slotWindows
-        .filter((sw) => new Date(sw.end_date) > new Date())
-        .map((sw) => ({
-          label: `${formatDateWithDay(sw.start_date)} ${formatTime(sw.start_date)}-${formatTime(sw.end_date)}`,
-          value: sw.slot_window_id,
-        })),
+      slotWindows.map((sw) => ({
+        label: `${formatDateWithDay(sw.start_date)} ${formatTime(sw.start_date)}-${formatTime(sw.end_date)}`,
+        value: sw.slot_window_id,
+      })),
     [slotWindows]
   );
 
