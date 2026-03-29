@@ -159,6 +159,8 @@ export const AddClient: React.FC<AddClientProps> = ({
     formState: { errors },
   } = useForm<ClientFormData>({
     resolver: zodResolver(clientSchema),
+    mode: "onBlur",
+    reValidateMode: "onChange",
     defaultValues: {
       title: "",
       firstName: "",

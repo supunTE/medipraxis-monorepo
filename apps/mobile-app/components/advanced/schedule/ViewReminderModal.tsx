@@ -1,5 +1,6 @@
 import {
   DateTimePickerComponent,
+  DropdownComponent,
   TextInputComponent,
   ToggleButton,
   ToggleSize,
@@ -7,10 +8,12 @@ import {
 import Loader from "@/components/basic/Loader.component";
 import { Text } from "@/components/Themed";
 import { Icons } from "@/config";
+import { useAuth } from "@/auth/AuthContext";
+import { useFetchClients } from "@/services/clients/useClients";
 import { useUpdateTask } from "@/services/tasks";
 import { formatISOToSimple } from "@/utils/timeUtils";
 import { type TaskDetails } from "@repo/models";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Modal,
@@ -41,6 +44,15 @@ export const ViewReminderModal = ({
   readOnly = false,
   isSaving = false,
 }: ViewReminderModalProps) => {
+  const { user } = useAuth();
+  const userId = user?.user_id ?? "";
+  const { data: clients = [] } = useFetchClients(userId);
+
+  const clientOptions = useMemo(
+    () => clients.map((c) => ({ label: c.name, value: c.id })),
+    [clients]
+  );
+
   const { mutate: updateTask, isLoading } = useUpdateTask({
     onSuccess: () => {
       setIsChecked((prev) => !prev);
@@ -49,6 +61,7 @@ export const ViewReminderModal = ({
       Alert.alert("Error", message ?? "Failed to update task");
     },
   });
+
   const [form, setForm] = useState<TaskDetails>(data);
 
   const [isChecked, setIsChecked] = useState(
@@ -66,17 +79,14 @@ export const ViewReminderModal = ({
     setForm(data);
   }, [data?.task_id]);
 
-  const handleEdit = () => {
-    onEdit?.();
-  };
+  const clientName =
+    data?.client_first_name && data?.client_last_name
+      ? `${data.client_first_name} ${data.client_last_name}`
+      : "";
 
-  const handleSave = () => {
-    onSave?.(form);
-  };
-
-  const handleCancel = () => {
-    onCancel?.();
-  };
+  const handleEdit = () => onEdit?.();
+  const handleSave = () => onSave?.(form);
+  const handleCancel = () => onCancel?.();
 
   const handleReminderCheck = () => {
     updateTask({
@@ -103,79 +113,105 @@ export const ViewReminderModal = ({
                 contentContainerStyle={{ padding: 20, paddingBottom: 10 }}
                 showsVerticalScrollIndicator={true}
               >
+                {/* Title + checkbox */}
                 <View className="flex-row items-center gap-3 mb-5">
                   <Pressable
                     onPress={handleReminderCheck}
                     className="w-6 h-6 rounded border-2 border-gray-400 justify-center items-center"
-                    style={{
-                      backgroundColor: isChecked ? "#1f2937" : "transparent",
-                    }}
+                    style={{ backgroundColor: isChecked ? "#1f2937" : "transparent" }}
                     disabled={data?.task_status_name == "CANCELLED"}
                   >
-                    {isChecked && (
-                      <Icons.Check size={16} color="white" weight="bold" />
-                    )}
+                    {isChecked && <Icons.Check size={16} color="white" weight="bold" />}
                   </Pressable>
                   <Text className="text-xl font-bold text-black flex-1">
                     {data?.task_title}
                   </Text>
                 </View>
 
-                {/* Date */}
-                <View className="flex-row justify-between mb-4">
+                {/* Start Date & time */}
+                <View className="mb-4">
                   {readOnly ? (
                     <TextInputComponent
-                      label="Date & time"
-                      startIcon={
-                        <Icons.CalendarDotsIcon
-                          size={20}
-                          weight="bold"
-                          color="#4B5563"
-                        />
-                      }
+                      label="Start Date & time"
+                      startIcon={<Icons.CalendarDotsIcon size={20} weight="bold" color="#4B5563" />}
                       inputField={{
-                        placeholder: "Enter Date & time",
+                        placeholder: "Enter Start Date & time",
                         value: formatISOToSimple(form?.start_date),
-                        onChangeText: (value) => {
-                          setForm((prev) => ({ ...prev, start_date: value }));
-                        },
+                        onChangeText: (value) => setForm((prev) => ({ ...prev, start_date: value })),
                       }}
-                      inputWrapper={{
-                        accessibilityHint: "Enter Date & time",
-                        isDisabled: readOnly,
-                      }}
+                      inputWrapper={{ accessibilityHint: "Start Date & time", isDisabled: true }}
                     />
                   ) : (
                     <DateTimePickerComponent
                       label="Start Date & time"
                       value={form?.start_date}
-                      onChange={(text) =>
-                        setForm((prev) => ({
-                          ...prev,
-                          start_date: text,
-                        }))
-                      }
+                      onChange={(text) => setForm((prev) => ({ ...prev, start_date: text }))}
                       placeholder="Nov 15, 2025  08:00 am"
                       mode="datetime"
                     />
                   )}
                 </View>
 
+                {/* End Date & time */}
+                <View className="mb-4">
+                  {readOnly ? (
+                    <TextInputComponent
+                      label="End Date & time"
+                      startIcon={<Icons.CalendarDotsIcon size={20} weight="bold" color="#4B5563" />}
+                      inputField={{
+                        placeholder: "Not set",
+                        value: form?.end_date ? formatISOToSimple(form.end_date) : "",
+                        onChangeText: (value) => setForm((prev) => ({ ...prev, end_date: value })),
+                      }}
+                      inputWrapper={{ accessibilityHint: "End Date & time", isDisabled: true }}
+                    />
+                  ) : (
+                    <DateTimePickerComponent
+                      label="End Date & time"
+                      value={form?.end_date ?? ""}
+                      onChange={(text) => setForm((prev) => ({ ...prev, end_date: text }))}
+                      placeholder="Nov 15, 2025  09:00 am"
+                      mode="datetime"
+                    />
+                  )}
+                </View>
+
+                {/* Client */}
+                <View className="mb-4">
+                  {readOnly ? (
+                    <TextInputComponent
+                      label="Client"
+                      inputField={{
+                        placeholder: "No client assigned",
+                        value: clientName,
+                        onChangeText: () => {},
+                      }}
+                      inputWrapper={{ accessibilityHint: "Client", isDisabled: true }}
+                    />
+                  ) : (
+                    <DropdownComponent
+                      label="Client"
+                      value={form?.client_id ?? ""}
+                      onValueChange={(value) => setForm((prev) => ({ ...prev, client_id: value }))}
+                      options={clientOptions}
+                      placeholder="Select Client"
+                    />
+                  )}
+                </View>
+
                 {/* Set Alarm */}
-                <View className="flex-row justify-between mb-4">
+                <View className="mb-4">
                   <ToggleButton
                     size={ToggleSize.Medium}
                     label="Alarm"
                     isActive={form?.set_alarm ?? false}
-                    onToggle={(value) => {
-                      setForm((prev) => ({ ...prev, set_alarm: value }));
-                    }}
+                    onToggle={(value) => setForm((prev) => ({ ...prev, set_alarm: value }))}
                     readOnly={readOnly}
                   />
                 </View>
 
                 {/* Note */}
-                <View className="flex-row justify-between mb-4">
+                <View className="mb-4">
                   <TextInputComponent
                     inputWrapper={{
                       accessibilityHint: "Enter your note",
@@ -183,9 +219,7 @@ export const ViewReminderModal = ({
                     }}
                     inputField={{
                       value: form?.note ?? undefined,
-                      onChangeText: (value) => {
-                        setForm((prev) => ({ ...prev, note: value }));
-                      },
+                      onChangeText: (value) => setForm((prev) => ({ ...prev, note: value })),
                       placeholder: "Enter note",
                     }}
                     label="Note"
@@ -204,11 +238,7 @@ export const ViewReminderModal = ({
                   ) : (
                     <Icons.Check size={18} color="white" weight="bold" />
                   )}
-                  <Text
-                    darkColor="white"
-                    lightColor="white"
-                    className=" font-semibold text-sm"
-                  >
+                  <Text darkColor="white" lightColor="white" className="font-semibold text-sm">
                     {readOnly ? "Edit" : "Save"}
                   </Text>
                 </Pressable>
@@ -218,11 +248,7 @@ export const ViewReminderModal = ({
                   onPress={handleCancel}
                 >
                   <Icons.Trash size={18} color="white" weight="bold" />
-                  <Text
-                    darkColor={"white"}
-                    lightColor="white"
-                    className="font-semibold text-sm"
-                  >
+                  <Text darkColor="white" lightColor="white" className="font-semibold text-sm">
                     Cancel Reminder
                   </Text>
                 </Pressable>
