@@ -1,4 +1,5 @@
 import * as chrono from "chrono-node";
+import nlp from "compromise";
 
 export interface NameEntity {
   text: string;
@@ -27,6 +28,11 @@ export interface ExtractedEntities {
   times: TimeEntity[];
 }
 
+interface CompromiseOffset {
+  text: string;
+  offset: { start: number; length: number; index: number };
+}
+
 function pad(n: number): string {
   return n.toString().padStart(2, "0");
 }
@@ -49,27 +55,20 @@ function buildDisplayText(date: Date): string {
   });
 }
 
-function extractNames(text: string): NameEntity[] {
-  const people: NameEntity[] = [];
-  // Match sequences of Title-Case words as potential person names.
-  const namePattern = /\b([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\b/g;
-  let match: RegExpExecArray | null;
-  while ((match = namePattern.exec(text)) !== null) {
-    if (match.index > 0) {
-      people.push({
-        text: match[0],
-        start: match.index,
-        end: match.index + match[0].length,
-      });
-    }
-  }
-  return people;
-}
-
 export function extractEntities(text: string): ExtractedEntities {
   const referenceDate = new Date();
 
-  const people = extractNames(text);
+  const peopleOffsets: CompromiseOffset[] = (
+    nlp(text) as { people: () => { out: (fmt: string) => unknown } }
+  )
+    .people()
+    .out("offsets") as CompromiseOffset[];
+
+  const people: NameEntity[] = peopleOffsets.map((p) => ({
+    text: p.text,
+    start: p.offset.start,
+    end: p.offset.start + p.offset.length,
+  }));
 
   const chronoResults = chrono.parse(text, referenceDate, {
     forwardDate: true,
