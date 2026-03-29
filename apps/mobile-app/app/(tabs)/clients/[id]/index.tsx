@@ -739,7 +739,9 @@ export default function ClientDetailScreen() {
                       )
                     }
                     onAddRecord={(appointmentId) =>
-                      console.log("Add record:", appointmentId)
+                      router.push(
+                        `/clients/${client.client_id}/appointments/${appointmentId}` as any
+                      )
                     }
                   />
                 ) : filteredReports.length > 0 ? (
