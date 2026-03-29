@@ -49,6 +49,7 @@ export default function ScheduleScreen() {
     string | null
   >(null);
   const [showForm, setShowForm] = useState(false);
+  const [formSlotWindowId, setFormSlotWindowId] = useState<string | undefined>(undefined);
   const [viewApptModalVisible, setViewApptModalVisible] = useState(false);
   const [viewApptReadOnly, setViewApptReadOnly] = useState(true);
   const [viewReminderModalVisible, setViewReminderModalVisible] =
@@ -327,12 +328,10 @@ export default function ScheduleScreen() {
           onAppointmentPress={(appointment) =>
             handleAppointmentPress(appointment.id)
           }
-          onEmptySlotPress={(groupId, slotNumber) =>
-            Alert.alert(
-              "Available Slot",
-              `Window ID: ${groupId}\nSlot Number: ${slotNumber + 1}`
-            )
-          }
+          onEmptySlotPress={(groupId) => {
+            setFormSlotWindowId(groupId);
+            setShowForm(true);
+          }}
           onReminderPress={(reminder) => handleReminderPress(reminder.id)}
         />
       </View>
@@ -371,7 +370,14 @@ export default function ScheduleScreen() {
         isLoadingCancel ||
         isLoadingCancelSlot) && <Loader />}
 
-      <TaskForm visible={showForm} onClose={() => setShowForm(false)} />
+      <TaskForm
+        visible={showForm}
+        onClose={() => {
+          setShowForm(false);
+          setFormSlotWindowId(undefined);
+        }}
+        initialSlotWindowId={formSlotWindowId}
+      />
     </View>
   );
 }

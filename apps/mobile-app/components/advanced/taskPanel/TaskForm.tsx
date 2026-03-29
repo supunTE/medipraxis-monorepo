@@ -26,9 +26,10 @@ type Props = {
   visible: boolean;
   onClose: () => void;
   initialClientId?: string;
+  initialSlotWindowId?: string;
 };
 
-export default function TaskForm({ visible, onClose, initialClientId }: Props) {
+export default function TaskForm({ visible, onClose, initialClientId, initialSlotWindowId }: Props) {
   const eventTypes = [
     EVENT_TYPES.APPOINTMENT_SLOT_WINDOW,
     EVENT_TYPES.APPOINTMENT,
@@ -65,6 +66,15 @@ export default function TaskForm({ visible, onClose, initialClientId }: Props) {
       setValue("client", initialClientId);
     }
   }, [visible, initialClientId]);
+
+  // Pre-select slot window + switch to Appointment (attach to slot) when opened from an empty slot
+  useEffect(() => {
+    if (visible && initialSlotWindowId) {
+      switchEventType(EVENT_TYPES.APPOINTMENT);
+      setValue("attachToSlot", true);
+      setValue("slotWindow", initialSlotWindowId);
+    }
+  }, [visible, initialSlotWindowId]);
 
   const [showEndDateTime, setShowEndDateTime] = useState(false);
 
