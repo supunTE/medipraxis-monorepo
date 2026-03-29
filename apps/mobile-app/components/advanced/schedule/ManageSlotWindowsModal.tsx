@@ -70,22 +70,26 @@ function formatTimePart(time: string): string {
 }
 
 // ISO timestamp → "h:mm am/pm"
+// Uses getUTC* because datetimes are stored as "naive local time treated as UTC".
 function formatISOTime(iso: string): string {
   const d = new Date(iso);
-  const h = d.getHours();
-  const m = String(d.getMinutes()).padStart(2, "0");
+  const h = d.getUTCHours();
+  const m = String(d.getUTCMinutes()).padStart(2, "0");
   const suffix = h >= 12 ? "pm" : "am";
   const hour = h % 12 === 0 ? 12 : h % 12;
   return `${hour}:${m} ${suffix}`;
 }
 
-// ISO timestamp → "d MMM yyyy"
+// ISO timestamp or date string → "d MMM yyyy"
+// Uses timeZone:"UTC" so date-only strings ("YYYY-MM-DD") and naive datetime
+// strings both resolve to the correct calendar date.
 function formatISODate(iso: string): string {
   const d = new Date(iso);
   return d.toLocaleDateString("en-US", {
     day: "numeric",
     month: "short",
     year: "numeric",
+    timeZone: "UTC",
   });
 }
 

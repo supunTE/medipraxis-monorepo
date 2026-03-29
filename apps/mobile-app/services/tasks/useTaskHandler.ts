@@ -130,34 +130,52 @@ const DEFAULT_FORM_VALUES: TaskFormData = {
 
 /* ─────────────────────────── Date helpers ───────────────────────── */
 
+// ─── Timezone convention ──────────────────────────────────────────────────────
+// Datetimes are stored as "naive local time treated as UTC" in the database:
+// the doctor's clock value (e.g. "04:00") is persisted verbatim without any
+// timezone conversion so that the API's UTC-boundary date filter still finds
+// the event on the correct local calendar day.
+//
+// IMPORTANT — Hermes (React Native's JS engine on Android) parses datetime
+// strings that lack a timezone designator (e.g. "2026-03-29T04:00") as UTC,
+// NOT as local time. This means new Date(pickerString).getHours() returns the
+// LOCAL equivalent of the UTC hour — wrong on any non-UTC device. To avoid
+// this we never call new Date() on picker-emitted strings; instead we extract
+// the date/time digits directly from the string, which already contains the
+// correct local clock values as emitted by the picker.
+// ─────────────────────────────────────────────────────────────────────────────
+
 const mergeDateAndTime = (dateSource: string, timeSource: string): string => {
-  const d = new Date(dateSource);
-  const t = new Date(timeSource);
-  d.setHours(t.getHours(), t.getMinutes(), 0, 0);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  // Both picker strings are "YYYY-MM-DDTHH:MM".
+  // Take the date portion from dateSource and the time portion from timeSource.
+  const datePart = dateSource.split("T")[0] ?? ""; // "YYYY-MM-DD"
+  const timePart = timeSource.split("T")[1] ?? ""; // "HH:MM"
+  if (!datePart || !timePart) return "";
+  // Append ":00" for seconds — result is "YYYY-MM-DDTHH:MM:00" (naive, no offset)
+  return `${datePart}T${timePart}:00`;
 };
 
 const extractTime = (dateStr: string): string => {
-  const d = new Date(dateStr);
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  // dateStr is "YYYY-MM-DDTHH:MM" from the picker.
+  // Return the time part as "HH:MM:00" for template storage.
+  const timePart = dateStr.split("T")[1] ?? "00:00";
+  const [h = "00", m = "00"] = timePart.split(":");
+  return `${h.padStart(2, "0")}:${m.padStart(2, "0")}:00`;
 };
 
 const formatDateTime = (dateStr: string): string => {
+  // dateStr is "YYYY-MM-DDTHH:MM" from the picker.
   if (!dateStr) return "";
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return dateStr;
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  const [date, time] = dateStr.split("T");
+  if (!date || !time) return dateStr;
+  const [h = "00", m = "00"] = time.split(":");
+  return `${date}T${h.padStart(2, "0")}:${m.padStart(2, "0")}:00`;
 };
 
 const formatDateOnly = (dateStr: string): string => {
+  // dateStr is "YYYY-MM-DDTHH:MM" from the picker — just strip the time part.
   if (!dateStr) return "";
-  const d = new Date(dateStr);
-  if (isNaN(d.getTime())) return dateStr;
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  return dateStr.split("T")[0] ?? dateStr;
 };
 
 /* ─────────────────────────── Hook ──────────────────────────────── */
