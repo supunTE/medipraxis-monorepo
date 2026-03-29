@@ -218,6 +218,24 @@ export default function ScheduleScreen() {
           agendaData={agendaData}
           selectedDate={selectedDate}
           onDateChange={setSelectedDate}
+          onAgendaRefresh={() => {
+            void Promise.all([
+              queryClient.invalidateQueries({
+                queryKey: ["slot-windows", userId],
+              }),
+              queryClient.invalidateQueries({
+                queryKey: ["appointments", userId],
+              }),
+              queryClient.invalidateQueries({
+                queryKey: ["reminders", userId],
+              }),
+            ]);
+          }}
+          isAgendaRefreshing={
+            slotWindowsQuery.isFetching ||
+            appointmentsQuery.isFetching ||
+            remindersQuery.isFetching
+          }
           agendaHeaderRightAction={
             <ButtonComponent
               onPress={() => setShowForm(true)}

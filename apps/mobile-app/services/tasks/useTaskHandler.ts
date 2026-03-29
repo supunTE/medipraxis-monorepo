@@ -245,7 +245,7 @@ export const useTaskHandler = (onClose: () => void) => {
 
   const resetForm = () => {
     setError(null);
-    setFormState(DEFAULT_FORM_STATE);
+    setFormState({ ...DEFAULT_FORM_STATE, userId: authUserId });
   };
 
   const switchEventType = (newType: EventType) => {

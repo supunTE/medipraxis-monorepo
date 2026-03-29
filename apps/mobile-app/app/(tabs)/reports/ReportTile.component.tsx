@@ -17,8 +17,8 @@ import React from "react";
 import { TouchableOpacity, View } from "react-native";
 
 const ICON_SIZE_SMALL = 16;
-const ICON_SIZE_MEDIUM = 20;
 const ICON_SIZE_LARGE = 24;
+const REPORT_ROW_BORDER_GREY = "#E8E8E8";
 
 export interface Report {
   report_id: string;
@@ -67,6 +67,7 @@ export const ReportTile: React.FC<ReportTileProps> = ({
 
   // Determine if reports are completed or pending
   const isCompleted = reports.some((report) => report.file_path);
+  const isPending = !isCompleted;
 
   return (
     <View
@@ -96,27 +97,32 @@ export const ReportTile: React.FC<ReportTileProps> = ({
       </View>
 
       {/* Reports List */}
-      <View className="gap-2 mb-3">
+      <View
+        className={isPending ? "flex-row flex-wrap gap-1 mb-4" : "gap-2 mb-3"}
+      >
         {reports.map((report) => {
           if (report.file_path) {
             return (
               <TouchableOpacity
                 key={report.report_id}
-                className="flex-row items-center gap-3 p-3 rounded-lg bg-white shadow-sm self-start"
-                style={{ borderWidth: 1, borderColor: Color.LightGrey }}
+                className="flex-row items-center gap-3 p-3 rounded-lg bg-white shadow-sm w-full"
+                style={{
+                  borderWidth: 1,
+                  borderColor: REPORT_ROW_BORDER_GREY,
+                }}
                 onPress={() => onReportClick?.(report.report_id)}
                 activeOpacity={0.7}
               >
                 {report.file_type === "PDF" ? (
                   <FilePdfIcon
                     size={ICON_SIZE_LARGE}
-                    color={Color.Black}
+                    color={Color.Grey}
                     weight="regular"
                   />
                 ) : (
                   <FileImageIcon
                     size={ICON_SIZE_LARGE}
-                    color={Color.Black}
+                    color={Color.Grey}
                     weight="regular"
                   />
                 )}
@@ -134,11 +140,17 @@ export const ReportTile: React.FC<ReportTileProps> = ({
           return (
             <View
               key={report.report_id}
-              className="flex-row items-center gap-3 p-3 rounded-lg"
-              style={{ backgroundColor: Color.LightGrey }}
+              className={`flex-row items-center rounded-lg shadow-sm ${
+                isPending ? "gap-2 px-2 py-1" : "gap-3 p-3"
+              }`}
+              style={{
+                backgroundColor: Color.White,
+                borderWidth: 1,
+                borderColor: REPORT_ROW_BORDER_GREY,
+              }}
             >
               <FilePdfIcon
-                size={ICON_SIZE_MEDIUM}
+                size={ICON_SIZE_LARGE}
                 color={Color.Grey}
                 weight="regular"
               />
