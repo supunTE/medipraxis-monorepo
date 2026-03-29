@@ -1,5 +1,9 @@
+import { useAuth } from "@/auth/AuthContext";
+import { ParsedEntities } from "@/components/ai/ParsedEntities.component";
 import { TextComponent, TextInputComponent } from "@/components/basic";
-import { useAIChat } from "@/services/ai";
+import { useAIChat, useInputParser } from "@/services/ai";
+import { useFetchClients } from "@/services/clients/useClients";
+import { useFetchUser } from "@/services/user";
 import { NotoColorEmoji_400Regular } from "@expo-google-fonts/noto-color-emoji";
 import { Color, TextSize, TextVariant } from "@repo/config";
 import { AIChatRole, type UIChatMessage } from "@repo/models";
@@ -12,7 +16,7 @@ import {
   PaperPlaneRightIcon,
   XIcon,
 } from "phosphor-react-native";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -35,6 +39,13 @@ const botAvatar =
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   require("@/assets/images/ai/bot-eye-opened.png") as ImageSourcePropType;
 
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good Morning";
+  if (hour < 18) return "Good Afternoon";
+  return "Good Evening";
+}
+
 interface AIAssistantModalProps {
   visible: boolean;
   onClose: () => void;
@@ -54,9 +65,25 @@ export default function AIAssistantModal({
     NotoColorEmoji_400Regular,
   });
 
+  const { user: authUser } = useAuth();
+  const userId = authUser?.user_id ?? "";
+  const { data: userProfile } = useFetchUser(userId);
+
   const [inputText, setInputText] = useState("");
+  const [resolvedClientIds, setResolvedClientIds] = useState<string[]>([]);
   const { messages, isLoading, sendMessage, clearMessages } = useAIChat();
   const scrollViewRef = useRef<ScrollView>(null);
+
+  const { user } = useAuth();
+  const { data: clients } = useFetchClients(user?.user_id ?? "");
+
+  const handleCorrected = useCallback((corrected: string) => {
+    setInputText(corrected);
+  }, []);
+
+  const { parsed } = useInputParser(inputText, handleCorrected, clients ?? []);
+
+  const canSend = inputText.trim().length > 0 && !isLoading;
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -68,7 +95,7 @@ export default function AIAssistantModal({
   const suggestions: SuggestionButton[] = [
     {
       id: "schedule",
-      emoji: "📅",
+      emoji: "📆",
       label: "Schedule an appointment",
     },
     {
@@ -83,7 +110,7 @@ export default function AIAssistantModal({
     },
     {
       id: "appointments",
-      emoji: "🗓️",
+      emoji: "📆",
       label: "When do I have appointments today?",
     },
   ];
@@ -96,7 +123,7 @@ export default function AIAssistantModal({
     if (inputText.trim() && !isLoading) {
       const message = inputText;
       setInputText("");
-      void sendMessage(message);
+      void sendMessage(message, { clientIds: resolvedClientIds });
     }
   };
 
@@ -196,7 +223,10 @@ export default function AIAssistantModal({
                           size={TextSize.Small}
                           color={Color.TextGreen}
                         >
-                          Good Evening, Katherine
+                          {getGreeting()}
+                          {userProfile?.first_name
+                            ? `, ${userProfile.first_name}`
+                            : ""}
                         </TextComponent>
                       </View>
                     </View>
@@ -289,6 +319,12 @@ export default function AIAssistantModal({
 
               {/* Fixed bottom input area */}
               <View className="absolute bottom-0 left-0 right-0 px-6 py-4">
+                <ParsedEntities
+                  parsed={parsed}
+                  onInputChange={setInputText}
+                  clients={clients ?? []}
+                  onClientIdChange={setResolvedClientIds}
+                />
                 <View className="flex-row items-center gap-3">
                   {/* Input field */}
                   <View className="flex-1 relative">
@@ -316,7 +352,13 @@ export default function AIAssistantModal({
                         ? handleSendMessage
                         : () => console.log("Voice input")
                     }
-                    className="w-12 h-12 bg-mp-black rounded-full items-center justify-center shadow-soft-2 active:opacity-80"
+                    disabled={!canSend && inputText.trim().length > 0}
+                    className={clsx(
+                      "w-12 h-12 rounded-full items-center justify-center shadow-soft-2",
+                      inputText.trim().length > 0 && !canSend
+                        ? "bg-mp-black/40"
+                        : "bg-mp-black active:opacity-80"
+                    )}
                   >
                     {inputText.trim() ? (
                       <PaperPlaneRightIcon

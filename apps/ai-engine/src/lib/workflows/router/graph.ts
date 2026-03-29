@@ -17,7 +17,8 @@ const NOT_IMPLEMENTED_TASKS: AIActionType[] = ["client_management"];
 async function _processAIQuery(
   query: string,
   history: ChatMessage[],
-  userId: string
+  userId: string,
+  clientIds?: string[]
 ): Promise<RouterResponse> {
   // Node 1: guard rail check
   const guardResult = await ai.run("guardRailCheck", () =>
@@ -25,7 +26,6 @@ async function _processAIQuery(
   );
 
   if (!guardResult.isValid) {
-    console.log(`[GUARD RAIL VIOLATION] ${guardResult.violation}`, { query });
     return {
       task: "unknown",
       message:
@@ -34,7 +34,6 @@ async function _processAIQuery(
       guardRailViolation: guardResult.violation,
     };
   }
-  console.log("[GUARD RAIL CHECK] Passed", { query });
 
   // Node 2: task identification (history-aware)
   const { task } = await ai.run("identifyTask", () =>
@@ -50,7 +49,7 @@ async function _processAIQuery(
       >
     > = {
       appointment: (q, h, u) =>
-        processAppointments({ query: q, history: h, userId: u }),
+        processAppointments({ query: q, history: h, userId: u, clientIds }),
       reminder: (q, h, u) =>
         processReminders({ query: q, history: h, userId: u }),
       general: (q, h, u) =>
@@ -98,6 +97,7 @@ export const processAIQuery = ai.defineFlow(
         )
         .optional(),
       userId: z.string(),
+      clientIds: z.array(z.string()).optional(),
     }),
     outputSchema: z.object({
       task: z.string(),
@@ -106,7 +106,8 @@ export const processAIQuery = ai.defineFlow(
       guardRailViolation: z.string().optional(),
     }),
   },
-  ({ query, history = [], userId }) => _processAIQuery(query, history, userId)
+  ({ query, history = [], userId, clientIds }) =>
+    _processAIQuery(query, history, userId, clientIds)
 );
 
 export { VALID_TASKS };

@@ -1,5 +1,5 @@
 import { apiClient } from "@/lib/api-client";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export type ReserveAppointmentPayload = {
   slot_window_id: string;
@@ -11,9 +11,13 @@ type UseReserveAppointmentOptions = {
   onError?: (message: string) => void;
 };
 
+const RESERVE_INVALIDATION_DELAY_MS = 5000;
+
 export const useReserveAppointment = (
   options?: UseReserveAppointmentOptions
 ) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (payload: ReserveAppointmentPayload) => {
       const res = await apiClient.api.tasks.appointments.reserve.$post({
@@ -34,6 +38,17 @@ export const useReserveAppointment = (
 
     onSuccess: () => {
       options?.onSuccess?.();
+
+      // The reservation takes ~5s to fully process on the backend,
+      // so we delay invalidation to avoid fetching stale data.
+      setTimeout(() => {
+        void Promise.all([
+          queryClient.invalidateQueries({ queryKey: ["appointments"] }),
+          queryClient.invalidateQueries({ queryKey: ["slot-windows"] }),
+          queryClient.invalidateQueries({ queryKey: ["taskSummary"] }),
+          queryClient.invalidateQueries({ queryKey: ["upcomingTasks"] }),
+        ]);
+      }, RESERVE_INVALIDATION_DELAY_MS);
     },
 
     onError: (error) => {

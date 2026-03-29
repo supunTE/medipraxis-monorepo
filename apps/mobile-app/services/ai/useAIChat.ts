@@ -6,7 +6,10 @@ import uuid from "react-native-uuid";
 export interface AIConversation {
   messages: UIChatMessage[];
   isLoading: boolean;
-  sendMessage: (message: string) => Promise<void>;
+  sendMessage: (
+    message: string,
+    context?: { clientIds?: string[] }
+  ) => Promise<void>;
   clearMessages: () => void;
 }
 
@@ -38,7 +41,7 @@ export function useAIChat(): AIConversation {
   const [isLoading, setIsLoading] = useState(false);
 
   const sendMessage = useCallback(
-    async (messageText: string) => {
+    async (messageText: string, context?: { clientIds?: string[] }) => {
       if (!messageText.trim()) return;
 
       setIsLoading(true);
@@ -56,7 +59,7 @@ export function useAIChat(): AIConversation {
       try {
         // Send to AI service with conversation history
         const res = await apiClient.api.ai.$post({
-          json: { query: messageText, history },
+          json: { query: messageText, history, clientIds: context?.clientIds },
         });
 
         const resonse = await res.json();

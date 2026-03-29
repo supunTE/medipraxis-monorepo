@@ -1,4 +1,5 @@
 import {
+  DateTimePickerComponent,
   TextInputComponent,
   ToggleButton,
   ToggleSize,
@@ -24,8 +25,10 @@ interface ViewReminderModalProps {
   data: TaskDetails;
   onClose: () => void;
   onEdit?: () => void;
+  onSave?: (form: TaskDetails) => void;
   onCancel?: () => void;
   readOnly?: boolean;
+  isSaving?: boolean;
 }
 
 export const ViewReminderModal = ({
@@ -33,8 +36,10 @@ export const ViewReminderModal = ({
   data,
   onClose,
   onEdit,
+  onSave,
   onCancel,
   readOnly = false,
+  isSaving = false,
 }: ViewReminderModalProps) => {
   const { mutate: updateTask, isLoading } = useUpdateTask({
     onSuccess: () => {
@@ -44,6 +49,7 @@ export const ViewReminderModal = ({
       Alert.alert("Error", message ?? "Failed to update task");
     },
   });
+  const [form, setForm] = useState<TaskDetails>(data);
 
   const [isChecked, setIsChecked] = useState(
     data?.task_status_name == "IN_PROGRESS" ||
@@ -56,8 +62,16 @@ export const ViewReminderModal = ({
     setIsChecked(data?.task_status_name === "COMPLETED");
   }, [data?.task_status_name]);
 
+  useEffect(() => {
+    setForm(data);
+  }, [data?.task_id]);
+
   const handleEdit = () => {
     onEdit?.();
+  };
+
+  const handleSave = () => {
+    onSave?.(form);
   };
 
   const handleCancel = () => {
@@ -109,25 +123,42 @@ export const ViewReminderModal = ({
 
                 {/* Date */}
                 <View className="flex-row justify-between mb-4">
-                  <TextInputComponent
-                    label="Date & time"
-                    startIcon={
-                      <Icons.CalendarDotsIcon
-                        size={20}
-                        weight="bold"
-                        color="#4B5563"
-                      />
-                    }
-                    inputField={{
-                      placeholder: "Enter Date & time",
-                      value: formatISOToSimple(data?.start_date),
-                      onChangeText: () => {},
-                    }}
-                    inputWrapper={{
-                      accessibilityHint: "Enter Date & time",
-                      isDisabled: readOnly,
-                    }}
-                  />
+                  {readOnly ? (
+                    <TextInputComponent
+                      label="Date & time"
+                      startIcon={
+                        <Icons.CalendarDotsIcon
+                          size={20}
+                          weight="bold"
+                          color="#4B5563"
+                        />
+                      }
+                      inputField={{
+                        placeholder: "Enter Date & time",
+                        value: formatISOToSimple(form?.start_date),
+                        onChangeText: (value) => {
+                          setForm((prev) => ({ ...prev, start_date: value }));
+                        },
+                      }}
+                      inputWrapper={{
+                        accessibilityHint: "Enter Date & time",
+                        isDisabled: readOnly,
+                      }}
+                    />
+                  ) : (
+                    <DateTimePickerComponent
+                      label="Start Date & time"
+                      value={form?.start_date}
+                      onChange={(text) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          start_date: text,
+                        }))
+                      }
+                      placeholder="Nov 15, 2025  08:00 am"
+                      mode="datetime"
+                    />
+                  )}
                 </View>
 
                 {/* Set Alarm */}
@@ -135,7 +166,11 @@ export const ViewReminderModal = ({
                   <ToggleButton
                     size={ToggleSize.Medium}
                     label="Alarm"
-                    isActive={data?.set_alarm ?? false}
+                    isActive={form?.set_alarm ?? false}
+                    onToggle={(value) => {
+                      setForm((prev) => ({ ...prev, set_alarm: value }));
+                    }}
+                    readOnly={readOnly}
                   />
                 </View>
 
@@ -147,8 +182,10 @@ export const ViewReminderModal = ({
                       isDisabled: readOnly,
                     }}
                     inputField={{
-                      value: data?.note ?? undefined,
-                      onChangeText: () => {},
+                      value: form?.note ?? undefined,
+                      onChangeText: (value) => {
+                        setForm((prev) => ({ ...prev, note: value }));
+                      },
                       placeholder: "Enter note",
                     }}
                     label="Note"
@@ -160,15 +197,19 @@ export const ViewReminderModal = ({
               <View className="bg-[#EAF8C9] p-4 flex-row justify-end gap-x-2.5 border-t border-gray-100">
                 <Pressable
                   className="flex-row items-center bg-slate-900 py-2.5 px-4 rounded-lg gap-x-2"
-                  onPress={handleEdit}
+                  onPress={readOnly ? handleEdit : handleSave}
                 >
-                  <Icons.Pencil size={18} color="white" weight="bold" />
+                  {readOnly ? (
+                    <Icons.Pencil size={18} color="white" weight="bold" />
+                  ) : (
+                    <Icons.Check size={18} color="white" weight="bold" />
+                  )}
                   <Text
                     darkColor="white"
                     lightColor="white"
                     className=" font-semibold text-sm"
                   >
-                    Edit
+                    {readOnly ? "Edit" : "Save"}
                   </Text>
                 </Pressable>
 
@@ -191,7 +232,7 @@ export const ViewReminderModal = ({
         </View>
       </TouchableWithoutFeedback>
 
-      {isLoading && <Loader />}
+      {(isLoading || isSaving) && <Loader />}
     </Modal>
   );
 };

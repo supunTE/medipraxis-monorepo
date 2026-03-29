@@ -1,6 +1,7 @@
 import {
   ButtonComponent,
   ButtonSize,
+  DateTimePickerComponent,
   DropdownComponent,
   TextComponent,
   TextInputComponent,
@@ -37,6 +38,22 @@ const genderOptions = [
   { label: "Female", value: "FEMALE" },
   { label: "Other", value: "OTHER" },
 ];
+
+// DD/MM/YYYY → YYYY-MM-DDT00:00 (for DateTimePickerComponent value prop)
+function dobToISO(dob: string): string {
+  const parts = dob.split("/");
+  if (parts.length !== 3) return "";
+  const [day, month, year] = parts;
+  return `${year}-${month}-${day}T00:00`;
+}
+
+// YYYY-MM-DDTHH:MM → DD/MM/YYYY (for form field storage)
+function isoToDOB(iso: string): string {
+  const datePart = iso.split("T")[0];
+  if (!datePart) return "";
+  const [year, month, day] = datePart.split("-");
+  return `${day}/${month}/${year}`;
+}
 
 // Zod validation schema
 const clientSchema = z.object({
@@ -323,13 +340,12 @@ export const AddClient: React.FC<AddClientProps> = ({
                     control={control}
                     name="dateOfBirth"
                     render={({ field: { onChange, value } }) => (
-                      <TextInputComponent
+                      <DateTimePickerComponent
                         label="Date of birth *"
-                        inputField={{
-                          value,
-                          onChangeText: onChange,
-                          placeholder: "29/12/1998",
-                        }}
+                        mode="date"
+                        value={value ? dobToISO(value) : ""}
+                        onChange={(iso) => onChange(isoToDOB(iso))}
+                        placeholder="Select date"
                         errorText={errors.dateOfBirth?.message}
                       />
                     )}
@@ -504,8 +520,8 @@ export const AddClient: React.FC<AddClientProps> = ({
                         onChangeText: onChange,
                         placeholder: "Type additional notes here",
                         multiline: true,
-                        numberOfLines: 8,
                         textAlignVertical: "top",
+                        className: "py-2 h-32",
                       }}
                     />
                   )}
