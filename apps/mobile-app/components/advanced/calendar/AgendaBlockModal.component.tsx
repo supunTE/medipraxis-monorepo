@@ -1,4 +1,4 @@
-import { TextComponent } from "@/components/basic";
+import { FormPopup, TextComponent } from "@/components/basic";
 import { Text } from "@/components/Themed";
 import { Icons } from "@/config";
 
@@ -10,7 +10,7 @@ import {
 import { Color, TextSize, TextVariant } from "@repo/config";
 import clsx from "clsx";
 import { useRef } from "react";
-import { Animated, Modal, Pressable, ScrollView, View } from "react-native";
+import { Animated, Pressable, ScrollView, View } from "react-native";
 import { type AgendaBlockContent } from "./calendar.types";
 
 interface AgendaBlockModalProps {
@@ -141,13 +141,12 @@ export function AgendaBlockModal({
   const reservedSlots = contents.filter((content) => content !== null).length;
 
   return (
-    <Modal
+    <FormPopup
       visible={visible}
-      transparent
-      animationType="fade"
       onRequestClose={onClose}
+      animationType="fade"
+      containerStyle={{ alignItems: "center", padding: 0 }}
     >
-      <View className="flex-1 bg-black/50 justify-center items-center">
         <View className="bg-white rounded-2xl overflow-hidden w-[85%] h-[70%]">
           {/* Scrollable content */}
           <View className="flex-1 p-5">
@@ -230,7 +229,6 @@ export function AgendaBlockModal({
             </Pressable>
           </View>
         </View>
-      </View>
-    </Modal>
+    </FormPopup>
   );
 }

@@ -2,6 +2,7 @@ import {
   CheckboxComponent,
   DateTimePickerComponent,
   DropdownComponent,
+  FormPopup,
   RadioGroupComponent,
   TextAreaComponent,
   TextComponent,
@@ -21,7 +22,6 @@ import type { SlotWindow } from "@repo/models";
 import React, { useEffect, useMemo, useState } from "react";
 import { Controller } from "react-hook-form";
 import {
-  Modal,
   Pressable,
   ScrollView,
   TouchableOpacity,
@@ -146,28 +146,7 @@ export default function TaskForm({
   };
 
   return (
-    <>
-      {/* Overlay modal — covers status bar with dark background */}
-      <Modal
-        visible={visible}
-        transparent
-        animationType="fade"
-        statusBarTranslucent
-      >
-        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }} />
-      </Modal>
-
-      {/* Form modal */}
-      <Modal visible={visible} animationType="slide" transparent>
-        {/* Pseudo wrapper — transparent so overlay shows through the padding gaps */}
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            padding: 12,
-            backgroundColor: "transparent",
-          }}
-        >
+    <FormPopup visible={visible}>
           <View
             style={{
               backgroundColor: "white",
@@ -689,8 +668,6 @@ export default function TaskForm({
               </Pressable>
             </View>
           </View>
-        </View>
-      </Modal>
-    </>
+    </FormPopup>
   );
 }

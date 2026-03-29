@@ -3,6 +3,7 @@ import {
   ButtonSize,
   DateTimePickerComponent,
   DropdownComponent,
+  FormPopup,
   TextComponent,
   TextInputComponent,
   TextInputType,
@@ -13,7 +14,7 @@ import { Color, TextSize, TextVariant } from "@repo/config";
 import React, { useState } from "react";
 import type { NativeSyntheticEvent, NativeScrollEvent } from "react-native";
 import { Controller, useForm } from "react-hook-form";
-import { Modal, Pressable, ScrollView, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { z } from "zod";
 import type { CreateClientInput } from "../../../services/clients";
 
@@ -223,34 +224,11 @@ export const AddClient: React.FC<AddClientProps> = ({
   };
 
   return (
-    <>
-      {/* Overlay modal — covers status bar */}
-      <Modal
+    <FormPopup
         visible={visible}
-        transparent
-        animationType="fade"
-        statusBarTranslucent
-      >
-        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }} />
-      </Modal>
-
-      {/* Form modal */}
-      <Modal
-        visible={visible}
-        animationType="slide"
-        transparent
         onRequestClose={handleClose}
+        containerStyle={{ paddingTop: 24 }}
       >
-        {/* Pseudo wrapper — transparent so overlay shows through padding gaps */}
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            padding: 12,
-            paddingTop: 24,
-            backgroundColor: "transparent",
-          }}
-        >
           <View
             style={{
               flex: 1,
@@ -591,8 +569,6 @@ export const AddClient: React.FC<AddClientProps> = ({
               </Pressable>
             </View>
           </View>
-        </View>
-      </Modal>
-    </>
+    </FormPopup>
   );
 };
