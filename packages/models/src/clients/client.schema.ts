@@ -150,6 +150,7 @@ export const getClientByPhoneQuerySchema = z.object({
 
 export const getClientsByNameQuerySchema = z.object({
   name: z.string(),
+  user_id: z.string(),
 });
 
 export const updateClientSchema = z

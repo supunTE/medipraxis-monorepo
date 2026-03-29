@@ -14,8 +14,8 @@ app.get("/", (_req, res) => {
 // AI query endpoint
 app.post("/api/ai/query", apiKeyAuth, async (req, res) => {
   try {
-    const { query, history, userId } = req.body;
-    const result = await processAIQuery({ query, history, userId });
+    const { query, history, userId, clientIds } = req.body;
+    const result = await processAIQuery({ query, history, userId, clientIds });
     res.json({ success: true, data: result });
   } catch (error) {
     console.error("AI Engine error:", error);

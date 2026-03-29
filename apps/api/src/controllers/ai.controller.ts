@@ -22,7 +22,8 @@ export class AIController {
       const response = await aiService.query(
         body.query,
         body.history ?? [],
-        userId
+        userId,
+        body.clientIds
       );
 
       return c.json(ControllerResponse.success(response));
