@@ -101,11 +101,6 @@ export const createReminder = ai.defineTool(
   },
   async (input) => {
     const userId = getUserId();
-    const noteWithClientContext = input.client_id
-      ? [input.note, `Client mentioned: ${input.client_id}`]
-          .filter(Boolean)
-          .join(" | ")
-      : input.note;
 
     const res = await apiClient.api.tasks.$post(
       {
@@ -113,7 +108,7 @@ export const createReminder = ai.defineTool(
           task_title: input.task_title,
           end_date: input.end_date,
           start_date: input.start_date,
-          note: noteWithClientContext,
+          note: input.note,
           set_alarm: input.set_alarm,
           user_id: userId,
           task_type_id: REMINDER_TASK_TYPE_ID,
