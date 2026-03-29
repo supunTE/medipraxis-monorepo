@@ -77,7 +77,7 @@ export class AuthService {
       countryCode
     );
     if (!user || !user.password_hash) {
-      throw new Error("Mobile number not registered");
+      throw new Error("Invalid credentials");
     }
 
     const isValid = await verifyPassword(password, user.password_hash);
