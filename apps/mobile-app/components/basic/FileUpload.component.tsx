@@ -9,6 +9,7 @@ interface FileUploadComponentProps {
   onPress?: () => void;
   fileName?: string;
   helperText?: string;
+  acceptedText?: string;
 }
 
 export const FileUploadComponent: React.FC<FileUploadComponentProps> = ({
@@ -21,7 +22,7 @@ export const FileUploadComponent: React.FC<FileUploadComponentProps> = ({
     <View className="mb-2 mt-1">
       <TextComponent
         variant={TextVariant.Body}
-        size={TextSize.Small}
+        size={TextSize.Large}
         className="mb-1.5"
       >
         {title}
@@ -31,22 +32,28 @@ export const FileUploadComponent: React.FC<FileUploadComponentProps> = ({
         onPress={onPress}
         className="min-h-[86px] items-center justify-center gap-[3px] rounded-lg border-[1.5px] border-dashed border-[#7A7A7A] bg-[#FBFBFB] px-3.5 py-2.5"
       >
-        <Icons.UploadIcon size={20} color={Color.Black} />
-        <TextComponent
-          variant={TextVariant.Body}
-          size={TextSize.Large}
-          className="text-[28px] leading-[31px]"
-        >
-          Upload
-        </TextComponent>
-        <TextComponent
-          variant={TextVariant.Body}
-          size={TextSize.Small}
-          color={Color.Grey}
-          className="text-center"
-        >
-          {fileName ?? helperText}
-        </TextComponent>
+        {!fileName && (
+          <>
+            <Icons.UploadIcon size={20} color={Color.Black} />
+            <TextComponent
+              variant={TextVariant.Body}
+              size={TextSize.Large}
+              className="text-[28px] leading-[31px]"
+            >
+              Upload
+            </TextComponent>
+          </>
+        )}
+        {fileName && (
+          <TextComponent
+            variant={TextVariant.Body}
+            size={TextSize.Small}
+            color={Color.Grey}
+            className="text-center"
+          >
+            {fileName ?? helperText}
+          </TextComponent>
+        )}
       </TouchableOpacity>
     </View>
   );

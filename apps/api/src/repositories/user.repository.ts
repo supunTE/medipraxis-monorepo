@@ -131,7 +131,7 @@ export class UserRepository {
       specialization: string;
       whatsapp_country_code?: string;
       whatsapp_number?: string;
-      email_address: string;
+      email_address?: string;
     }
   ) {
     const { data, error } = await this.db

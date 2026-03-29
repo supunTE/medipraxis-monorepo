@@ -38,7 +38,7 @@ export const registerAdditionalDetailsSchema = z
       .string()
       .regex(/^[0-9]{7,15}$/, "Invalid WhatsApp number")
       .optional(),
-    email_address: z.string().email("Invalid email address"),
+    email_address: z.string().email("Invalid email address").optional(),
   })
   .superRefine((data, ctx) => {
     if (data.different_whatsapp_number) {

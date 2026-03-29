@@ -36,7 +36,7 @@ type AdditionalInfoForm = {
   differentWhatsappNumber: boolean;
   whatsappCountryCode: string;
   whatsappNumber: string;
-  emailAddress: string;
+  emailAddress?: string;
 };
 
 export default function AdditionalInfoScreen() {
@@ -75,18 +75,18 @@ export default function AdditionalInfoScreen() {
     formState: { errors },
   } = useForm<AdditionalInfoForm>({
     defaultValues: {
-      title: "Mr",
-      firstName: "John",
-      lastName: "Siriwardane",
+      title: "",
+      firstName: "",
+      lastName: "",
       profession: "doctor",
       registrationNumber: "",
       specialization: "",
       mobileCountryCode: "+94",
       mobileNumber: "",
-      differentWhatsappNumber: true,
+      differentWhatsappNumber: false,
       whatsappCountryCode: "+94",
       whatsappNumber: "",
-      emailAddress: "",
+      emailAddress: undefined,
     },
   });
 
@@ -136,7 +136,7 @@ export default function AdditionalInfoScreen() {
       different_whatsapp_number: data.differentWhatsappNumber,
       whatsapp_country_code: data.whatsappCountryCode || undefined,
       whatsapp_number: data.whatsappNumber || undefined,
-      email_address: data.emailAddress,
+      email_address: data.emailAddress || undefined,
     };
 
     try {
@@ -216,7 +216,7 @@ export default function AdditionalInfoScreen() {
         <TextComponent
           variant={TextVariant.Title}
           size={TextSize.Large}
-          className="mb-[18px] text-[44px] leading-[52px]"
+          className="pt-3 pb-4"
         >
           Account Registration
         </TextComponent>
@@ -237,7 +237,7 @@ export default function AdditionalInfoScreen() {
               rules={{ required: "Title is required" }}
               render={({ field: { onChange, value } }) => (
                 <DropdownComponent
-                  label="Title"
+                  label="Title *"
                   value={value}
                   onValueChange={onChange}
                   options={titleOptions}
@@ -254,7 +254,7 @@ export default function AdditionalInfoScreen() {
               rules={{ required: "First name is required" }}
               render={({ field: { onChange, value } }) => (
                 <TextInputComponent
-                  label="First Name"
+                  label="First Name *"
                   inputField={{
                     value,
                     onChangeText: onChange,
@@ -267,14 +267,14 @@ export default function AdditionalInfoScreen() {
           </View>
         </View>
 
-        <View className="mb-2">
+        <View className="mb-2 mt-2">
           <Controller
             control={control}
             name="lastName"
             rules={{ required: "Last name is required" }}
             render={({ field: { onChange, value } }) => (
               <TextInputComponent
-                label="Last Name"
+                label="Last Name *"
                 inputField={{
                   value,
                   onChangeText: onChange,
@@ -289,7 +289,7 @@ export default function AdditionalInfoScreen() {
         <TextComponent
           variant={TextVariant.Title}
           size={TextSize.Small}
-          className="mb-2 mt-2"
+          className="mb-2 mt-4"
         >
           2. Professional Info
         </TextComponent>
@@ -301,6 +301,7 @@ export default function AdditionalInfoScreen() {
             rules={{ required: "Profession is required" }}
             render={({ field: { onChange, value } }) => (
               <DropdownComponent
+                label="Doctor *"
                 value={value}
                 onValueChange={onChange}
                 options={professionOptions}
@@ -317,10 +318,11 @@ export default function AdditionalInfoScreen() {
             rules={{ required: "Registration number is required" }}
             render={({ field: { onChange, value } }) => (
               <TextInputComponent
+                label="Registration Number *"
                 inputField={{
                   value,
                   onChangeText: onChange,
-                  placeholder: "Registration Number",
+                  placeholder: "17748143-79526-hkprt",
                 }}
                 errorText={errors.registrationNumber?.message}
               />
@@ -334,10 +336,11 @@ export default function AdditionalInfoScreen() {
             rules={{ required: "Specialization is required" }}
             render={({ field: { onChange, value } }) => (
               <DropdownComponent
+                label="Specialization *"
                 value={value}
                 onValueChange={onChange}
                 options={specializationOptions}
-                placeholder="Specialization"
+                placeholder="Cardiology"
                 errorText={errors.specialization?.message}
               />
             )}
@@ -347,11 +350,18 @@ export default function AdditionalInfoScreen() {
         <TextComponent
           variant={TextVariant.Title}
           size={TextSize.Small}
-          className="mb-2 mt-2"
+          className="mb-2 mt-4"
         >
           3. Contact Info
         </TextComponent>
 
+        <TextComponent
+          variant={TextVariant.Body}
+          size={TextSize.Large}
+          className="mb-1"
+        >
+          Mobile Number
+        </TextComponent>
         <View className="mb-2 flex-row gap-2.5">
           <View className="flex-[0.3]">
             <Controller
@@ -391,7 +401,7 @@ export default function AdditionalInfoScreen() {
           </View>
         </View>
 
-        <View className="my-0.5">
+        <View className="mb-2 my-0.5">
           <Controller
             control={control}
             name="differentWhatsappNumber"
@@ -408,59 +418,67 @@ export default function AdditionalInfoScreen() {
         </View>
 
         {showWhatsappNumber && (
-          <View className="mb-2 flex-row gap-2.5">
-            <View className="flex-[0.3]">
-              <Controller
-                control={control}
-                name="whatsappCountryCode"
-                rules={{
-                  validate: (value) =>
-                    !showWhatsappNumber || !!value.trim() || "Code required",
-                }}
-                render={({ field: { onChange, value } }) => (
-                  <TextInputComponent
-                    inputType={TextInputType.Phone}
-                    inputField={{
-                      value,
-                      onChangeText: onChange,
-                      placeholder: "Code",
-                    }}
-                    errorText={errors.whatsappCountryCode?.message}
-                  />
-                )}
-              />
+          <>
+            <TextComponent
+              variant={TextVariant.Body}
+              size={TextSize.Large}
+              className="mb-1"
+            >
+              WhatsApp Number
+            </TextComponent>
+            <View className="mb-2 flex-row gap-2.5">
+              <View className="flex-[0.3]">
+                <Controller
+                  control={control}
+                  name="whatsappCountryCode"
+                  rules={{
+                    validate: (value) =>
+                      !showWhatsappNumber || !!value.trim() || "Code required",
+                  }}
+                  render={({ field: { onChange, value } }) => (
+                    <TextInputComponent
+                      inputType={TextInputType.Phone}
+                      inputField={{
+                        value,
+                        onChangeText: onChange,
+                        placeholder: "Code",
+                      }}
+                      errorText={errors.whatsappCountryCode?.message}
+                    />
+                  )}
+                />
+              </View>
+              <View className="flex-[0.7]">
+                <Controller
+                  control={control}
+                  name="whatsappNumber"
+                  rules={{
+                    validate: (value) =>
+                      !showWhatsappNumber ||
+                      !!value.trim() ||
+                      "WhatsApp number is required",
+                  }}
+                  render={({ field: { onChange, value } }) => (
+                    <TextInputComponent
+                      inputType={TextInputType.Phone}
+                      inputField={{
+                        value,
+                        onChangeText: onChange,
+                        placeholder: "WhatsApp Number",
+                      }}
+                      errorText={errors.whatsappNumber?.message}
+                    />
+                  )}
+                />
+              </View>
             </View>
-            <View className="flex-[0.7]">
-              <Controller
-                control={control}
-                name="whatsappNumber"
-                rules={{
-                  validate: (value) =>
-                    !showWhatsappNumber ||
-                    !!value.trim() ||
-                    "WhatsApp number is required",
-                }}
-                render={({ field: { onChange, value } }) => (
-                  <TextInputComponent
-                    inputType={TextInputType.Phone}
-                    inputField={{
-                      value,
-                      onChangeText: onChange,
-                      placeholder: "WhatsApp Number",
-                    }}
-                    errorText={errors.whatsappNumber?.message}
-                  />
-                )}
-              />
-            </View>
-          </View>
+          </>
         )}
         <View className="mb-2">
           <Controller
             control={control}
             name="emailAddress"
             rules={{
-              required: "Email address is required",
               pattern: {
                 value: /^\S+@\S+\.\S+$/,
                 message: "Enter a valid email address",
@@ -468,11 +486,12 @@ export default function AdditionalInfoScreen() {
             }}
             render={({ field: { onChange, value } }) => (
               <TextInputComponent
+                label="Email Address"
                 inputType={TextInputType.Email}
                 inputField={{
                   value,
                   onChangeText: onChange,
-                  placeholder: "Email Address",
+                  placeholder: "john.s@gmail.com",
                 }}
                 errorText={errors.emailAddress?.message}
               />
@@ -483,7 +502,7 @@ export default function AdditionalInfoScreen() {
         <TextComponent
           variant={TextVariant.Title}
           size={TextSize.Small}
-          className="mb-2 mt-2"
+          className="mb-2 mt-4"
         >
           4. Additional Info
         </TextComponent>
