@@ -101,11 +101,24 @@ export const useAuthHandler = (initialValues?: {
 
   const handleSignUp = async (data: RegisterFormData) => {
     try {
+      const trimmedUsername = data.username.trim();
+      let firstName = "";
+      let lastName = "";
+
+      if (trimmedUsername) {
+        const parts = trimmedUsername.split(/\s+/);
+        firstName = parts[0] ?? "";
+        if (parts.length > 1) {
+          lastName = parts.slice(1).join(" ");
+        }
+      }
       await signUp(
         data.phoneNumber,
         data.countryCode,
         data.password,
-        data.username
+        data.username,
+        firstName,
+        lastName
       );
     } catch (error) {
       const message = parseError(error);

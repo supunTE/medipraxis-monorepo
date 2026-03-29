@@ -50,6 +50,8 @@ describe("Auth Controller Flow", () => {
         mobile_number: "1234567890",
         mobile_country_code: "+1",
         password: "password123",
+        first_name: "Test",
+        last_name: "User",
       };
       mockContext.req.json.mockResolvedValue(payload);
 
@@ -66,7 +68,9 @@ describe("Auth Controller Flow", () => {
         payload.username,
         payload.mobile_number,
         payload.mobile_country_code,
-        payload.password
+        payload.password,
+        payload.first_name,
+        payload.last_name
       );
       expect(mockContext.json).toHaveBeenCalledWith(mockResult, 201);
     });

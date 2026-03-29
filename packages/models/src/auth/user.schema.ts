@@ -19,6 +19,8 @@ export const createUserSchema = z.object({
   mobile_country_code: z.string().min(1),
   password_hash: z.string(),
   username: z.string().min(1),
+  first_name: z.string().optional(),
+  last_name: z.string().optional(),
 });
 
 /* ---------------- TYPES (DERIVED) ---------------- */
