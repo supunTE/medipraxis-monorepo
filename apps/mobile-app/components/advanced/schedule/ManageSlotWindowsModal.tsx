@@ -442,9 +442,9 @@ export function ManageSlotWindowsModal({
   const getContentsForSlotWindow = (
     sw: SlotWindow
   ): (AgendaBlockContent | null)[] => {
-    const base = Array.from<AgendaBlockContent | null>(
+    const base: (AgendaBlockContent | null)[] = Array.from(
       { length: sw.total_slots },
-      () => null
+      (): AgendaBlockContent | null => null
     );
     const filled = contentsBySlotWindowId.get(sw.slot_window_id) ?? [];
     for (let i = 0; i < filled.length && i < base.length; i++) {

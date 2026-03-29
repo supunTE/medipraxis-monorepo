@@ -129,7 +129,7 @@ export default function ScheduleScreen() {
       },
     });
 
-  const { mutate: cancelSlotAppointment, isLoading: isLoadingCancelSlot } =
+  const { mutate: cancelSlotAppointment, isPending: isLoadingCancelSlot } =
     useCancelAppointment({
       onSuccess: () => {
         handleCloseViewApptModal();
