@@ -199,7 +199,9 @@ export class TaskService {
     }
 
     if (input.task_type_id == appointmentTypeId) {
-      const appointmentDate = input.start_date;
+      const appointmentDate = (
+        input.start_date ?? new Date().toISOString()
+      ).split("T")[0]!;
 
       const count = await this.taskRepository.getAppointmentCountForDate(
         input.user_id,

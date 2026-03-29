@@ -43,8 +43,8 @@ import {
   type NativeSyntheticEvent,
   type TextStyle as RNTextStyle,
 } from "react-native";
-import { AppointmentsList } from "./AppointmentList.component";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { AppointmentsList } from "./AppointmentList.component";
 
 enum ClientDetailTab {
   Appointments = "Appointments",
@@ -732,7 +732,9 @@ export default function ClientDetailScreen() {
                     clientId={client.client_id}
                     searchQuery={searchQuery}
                     onViewAppointment={(appointmentId) =>
-                      console.log("View appointment:", appointmentId)
+                      router.push(
+                        `/clients/${client.client_id}/appointments/${appointmentId}` as any
+                      )
                     }
                     onAddRecord={(appointmentId) =>
                       console.log("Add record:", appointmentId)

@@ -293,3 +293,24 @@ export function formatISOToSimple(iso: string, mode?: "dateOnly"): string {
 
   return `${datePart} ${displayHour}.${minuteStr}${period}`;
 }
+
+/**
+ * Converts "YYYY-MM-DD h.mmam/pm" string to ISO-like datetime "YYYY-MM-DDTHH:MM:00"
+ * @param input - Date time string (e.g., "2026-03-25 1.41am")
+ * @returns ISO-like datetime without timezone (e.g., "2026-03-25T01:41:00")
+ */
+export function simpleDateTimeToISO(input: string): string {
+  if (!input) return "";
+
+  const [d, rawT] = input.trim().split(" ");
+  if (!d || !rawT) return "";
+
+  const t = rawT.replace(".", ":").toLowerCase();
+  const [thRaw, tm] = t.split(":");
+  if (!thRaw || !tm) return "";
+
+  let th = Number(thRaw);
+  if (tm.slice(-2).toLowerCase() == "p" && th !== 12) th += 12;
+
+  return `${d}T${String(th).padStart(2, "0")}:${tm.slice(0, 2)}:00`;
+}

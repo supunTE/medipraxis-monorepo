@@ -3,10 +3,12 @@ import { ParsedEntities } from "@/components/ai/ParsedEntities.component";
 import { TextComponent, TextInputComponent } from "@/components/basic";
 import { useAIChat, useInputParser } from "@/services/ai";
 import { useFetchClients } from "@/services/clients/useClients";
+import { useFetchUser } from "@/services/user";
 import { NotoColorEmoji_400Regular } from "@expo-google-fonts/noto-color-emoji";
 import { Color, TextSize, TextVariant } from "@repo/config";
 import { AIChatRole, type UIChatMessage } from "@repo/models";
 import clsx from "clsx";
+import Markdown from "react-native-markdown-display";
 import { useFonts } from "expo-font";
 import { LinearGradient } from "expo-linear-gradient";
 import {
@@ -15,7 +17,7 @@ import {
   PaperPlaneRightIcon,
   XIcon,
 } from "phosphor-react-native";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -25,6 +27,7 @@ import {
   Platform,
   Pressable,
   ScrollView,
+  StyleSheet,
   Text,
   View,
   type ImageSourcePropType,
@@ -37,6 +40,13 @@ const backgroundGradient =
 const botAvatar =
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   require("@/assets/images/ai/bot-eye-opened.png") as ImageSourcePropType;
+
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good Morning";
+  if (hour < 18) return "Good Afternoon";
+  return "Good Evening";
+}
 
 interface AIAssistantModalProps {
   visible: boolean;
@@ -56,6 +66,10 @@ export default function AIAssistantModal({
   const [fontsLoaded] = useFonts({
     NotoColorEmoji_400Regular,
   });
+
+  const { user: authUser } = useAuth();
+  const userId = authUser?.user_id ?? "";
+  const { data: userProfile } = useFetchUser(userId);
 
   const [inputText, setInputText] = useState("");
   const [resolvedClientIds, setResolvedClientIds] = useState<string[]>([]);
@@ -115,6 +129,53 @@ export default function AIAssistantModal({
     }
   };
 
+  const markdownStyles = useMemo(
+    () =>
+      StyleSheet.create({
+        body: { color: Color.Black, fontSize: 14, lineHeight: 20 },
+        heading1: {
+          fontSize: 20,
+          fontWeight: "bold",
+          color: Color.Black,
+          marginBottom: 4,
+        },
+        heading2: {
+          fontSize: 18,
+          fontWeight: "bold",
+          color: Color.Black,
+          marginBottom: 4,
+        },
+        heading3: {
+          fontSize: 16,
+          fontWeight: "bold",
+          color: Color.Black,
+          marginBottom: 4,
+        },
+        strong: { fontWeight: "bold" },
+        em: { fontStyle: "italic" },
+        bullet_list: { marginVertical: 4 },
+        ordered_list: { marginVertical: 4 },
+        list_item: { marginVertical: 2 },
+        code_inline: {
+          backgroundColor: "#f0f0f0",
+          borderRadius: 4,
+          paddingHorizontal: 4,
+          fontSize: 13,
+          fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
+        },
+        fence: {
+          backgroundColor: "#f0f0f0",
+          borderRadius: 8,
+          padding: 10,
+          marginVertical: 4,
+          fontSize: 13,
+          fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
+        },
+        paragraph: { marginVertical: 2 },
+      }),
+    []
+  );
+
   const renderMessage = (message: UIChatMessage) => {
     const isUser = message.role === AIChatRole.User;
 
@@ -129,13 +190,17 @@ export default function AIAssistantModal({
             isUser ? "bg-mp-green" : "bg-mp-white shadow-soft-1"
           )}
         >
-          <TextComponent
-            variant={TextVariant.Body}
-            size={TextSize.Medium}
-            color={isUser ? Color.White : Color.Black}
-          >
-            {message.content}
-          </TextComponent>
+          {isUser ? (
+            <TextComponent
+              variant={TextVariant.Body}
+              size={TextSize.Medium}
+              color={Color.White}
+            >
+              {message.content}
+            </TextComponent>
+          ) : (
+            <Markdown style={markdownStyles}>{message.content}</Markdown>
+          )}
         </View>
       </View>
     );
@@ -211,7 +276,10 @@ export default function AIAssistantModal({
                           size={TextSize.Small}
                           color={Color.TextGreen}
                         >
-                          Good Evening, Katherine
+                          {getGreeting()}
+                          {userProfile?.first_name
+                            ? `, ${userProfile.first_name}`
+                            : ""}
                         </TextComponent>
                       </View>
                     </View>
