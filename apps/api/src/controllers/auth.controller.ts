@@ -68,6 +68,72 @@ export class AuthController {
     }
   }
 
+  static async uploadProfilePicture(c: APIContext<any>) {
+    try {
+      const body = await c.req.parseBody();
+      const file = body["file"];
+      const mobileNumber = body["mobile_number"];
+      const countryCode = body["mobile_country_code"];
+
+      if (!(file instanceof File)) {
+        return c.json({ error: "file is required" }, 400);
+      }
+
+      if (typeof mobileNumber !== "string" || typeof countryCode !== "string") {
+        return c.json(
+          { error: "mobile_number and mobile_country_code are required" },
+          400
+        );
+      }
+
+      const authService = getAuthService(c);
+      const result = await authService.uploadProfilePicture(
+        file,
+        mobileNumber,
+        countryCode
+      );
+
+      return c.json(result, 201);
+    } catch (e: any) {
+      if (e.message === "User not found") {
+        return c.json({ error: e.message }, 404);
+      }
+
+      return c.json({ error: e.message ?? "Failed to upload profile picture" }, 400);
+    }
+  }
+
+  static async uploadSeal(c: APIContext<any>) {
+    try {
+      const body = await c.req.parseBody();
+      const file = body["file"];
+      const mobileNumber = body["mobile_number"];
+      const countryCode = body["mobile_country_code"];
+
+      if (!(file instanceof File)) {
+        return c.json({ error: "file is required" }, 400);
+      }
+
+      if (typeof mobileNumber !== "string" || typeof countryCode !== "string") {
+        return c.json(
+          { error: "mobile_number and mobile_country_code are required" },
+          400
+        );
+      }
+
+      const authService = getAuthService(c);
+      const result = await authService.uploadSeal(file, mobileNumber, countryCode);
+
+      return c.json(result, 201);
+    } catch (e: any) {
+      if (e.message === "User not found") {
+        return c.json({ error: e.message }, 404);
+      }
+
+      return c.json({ error: e.message ?? "Failed to upload seal" }, 400);
+    }
+  }
+
   static async refresh(c: APIContext<any>) {
     const { refreshToken } = await c.req.json();
     const authService = getAuthService(c);

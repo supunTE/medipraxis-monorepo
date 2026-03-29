@@ -26,6 +26,11 @@ const auth = new Hono<{ Bindings: Env }>()
     zValidator("json", registerAdditionalDetailsSchema),
     AuthController.registerAdditionalDetails
   )
+  .post(
+    "/register/additional-details/profile-picture",
+    AuthController.uploadProfilePicture
+  )
+  .post("/register/additional-details/seal", AuthController.uploadSeal)
   .post("/login", zValidator("json", loginSchema), AuthController.login)
   .post(
     "/refresh",

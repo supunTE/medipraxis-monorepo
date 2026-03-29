@@ -226,4 +226,69 @@ export class AuthService {
 
     return updatedUser;
   }
+
+  private validateUserAsset(file: File, assetName: "profile" | "seal") {
+    const allowedTypes = ["application/pdf", "image/jpeg", "image/png", "image/jpg"];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+
+    if (!allowedTypes.includes(file.type)) {
+      throw new Error(
+        `Invalid ${assetName} file type. Only PDF and image files (JPEG, PNG, JPG) are allowed`
+      );
+    }
+
+    if (file.size > maxSize) {
+      throw new Error(`${assetName} file exceeds 5MB limit`);
+    }
+  }
+
+  async uploadProfilePicture(
+    file: File,
+    mobileNumber: string,
+    countryCode: string
+  ) {
+    this.validateUserAsset(file, "profile");
+
+    const user = await this.userRepository.findUserByMobile(
+      mobileNumber,
+      countryCode
+    );
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const uploadResult = await this.userRepository.uploadProfilePictureForUser(
+      file,
+      user.user_id
+    );
+
+    return {
+      user: uploadResult.user,
+      file_path: uploadResult.filePath,
+      photo_url: uploadResult.publicUrl,
+    };
+  }
+
+  async uploadSeal(file: File, mobileNumber: string, countryCode: string) {
+    this.validateUserAsset(file, "seal");
+
+    const user = await this.userRepository.findUserByMobile(
+      mobileNumber,
+      countryCode
+    );
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const uploadResult = await this.userRepository.uploadSealForUser(
+      file,
+      user.user_id
+    );
+
+    return {
+      user: uploadResult.user,
+      file_path: uploadResult.filePath,
+      seal_url: uploadResult.publicUrl,
+    };
+  }
 }
