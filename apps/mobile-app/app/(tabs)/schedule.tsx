@@ -3,7 +3,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCallback, useMemo, useState } from "react";
-import { Alert, StyleSheet } from "react-native";
+import { Alert, StyleSheet, Text as RNText, TouchableOpacity, View as RNView } from "react-native";
 import { View } from "@/components/Themed";
 import {
   type AgendaBlockContent,
@@ -11,6 +11,7 @@ import {
   CalendarComponent,
 } from "@/components/advanced";
 import {
+  ManageSlotWindowsModal,
   ViewAppointmentModal,
   ViewReminderModal,
 } from "@/components/advanced/schedule";
@@ -50,6 +51,8 @@ export default function ScheduleScreen() {
   >(null);
   const [showForm, setShowForm] = useState(false);
   const [formSlotWindowId, setFormSlotWindowId] = useState<string | undefined>(undefined);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [manageSlotWindowsVisible, setManageSlotWindowsVisible] = useState(false);
   const [viewApptModalVisible, setViewApptModalVisible] = useState(false);
   const [viewApptReadOnly, setViewApptReadOnly] = useState(true);
   const [viewReminderModalVisible, setViewReminderModalVisible] =
@@ -314,16 +317,55 @@ export default function ScheduleScreen() {
             remindersQuery.isFetching
           }
           agendaHeaderRightAction={
-            <ButtonComponent
-              onPress={() => setShowForm(true)}
-              size={ButtonSize.Small}
-              leftIcon={Icons.Plus}
-              buttonColor={Color.Black}
-              textColor={Color.White}
-              iconColor={Color.White}
-            >
-              Create
-            </ButtonComponent>
+            <RNView style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <ButtonComponent
+                onPress={() => setShowForm(true)}
+                size={ButtonSize.Small}
+                leftIcon={Icons.Plus}
+                buttonColor={Color.Black}
+                textColor={Color.White}
+                iconColor={Color.White}
+              >
+                Create
+              </ButtonComponent>
+              <RNView style={{ position: "relative" }}>
+                <TouchableOpacity
+                  className="px-2 py-2 justify-center items-center"
+                  onPress={() => setMenuOpen((prev) => !prev)}
+                  activeOpacity={0.7}
+                >
+                  <Icons.DotsThreeVertical size={20} color={Color.Black} weight="bold" />
+                </TouchableOpacity>
+                {menuOpen && (
+                  <RNView
+                    className="absolute top-10 right-0 bg-white rounded-xl overflow-hidden"
+                    style={{
+                      minWidth: 180,
+                      zIndex: 50,
+                      shadowColor: "#000",
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.1,
+                      shadowRadius: 8,
+                      elevation: 4,
+                    }}
+                  >
+                    <TouchableOpacity
+                      className="flex-row items-center px-4 py-3 gap-2"
+                      onPress={() => {
+                        setMenuOpen(false);
+                        setManageSlotWindowsVisible(true);
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <Icons.CalendarBlank size={16} color={Color.Black} weight="regular" />
+                      <RNText style={{ color: Color.Black, fontSize: 13, fontWeight: "400" }}>
+                        Manage Slot Windows
+                      </RNText>
+                    </TouchableOpacity>
+                  </RNView>
+                )}
+              </RNView>
+            </RNView>
           }
           onAppointmentPress={(appointment) =>
             handleAppointmentPress(appointment.id)
@@ -378,6 +420,13 @@ export default function ScheduleScreen() {
         }}
         initialSlotWindowId={formSlotWindowId}
       />
+
+      <ManageSlotWindowsModal
+        visible={manageSlotWindowsVisible}
+        onClose={() => setManageSlotWindowsVisible(false)}
+        userId={userId}
+      />
+
     </View>
   );
 }

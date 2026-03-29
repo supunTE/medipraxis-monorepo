@@ -1,19 +1,19 @@
 import { apiClient } from "@/lib/api-client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-type UseDeleteSlotWindowTemplateOptions = {
+type UseDeactivateSlotWindowTemplateOptions = {
   onSuccess?: () => void;
   onError?: (message: string) => void;
 };
 
-export const useDeleteSlotWindowTemplate = (
-  options?: UseDeleteSlotWindowTemplateOptions
+export const useDeactivateSlotWindowTemplate = (
+  options?: UseDeactivateSlotWindowTemplateOptions
 ) => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async (templateId: string) => {
-      const res = await apiClient.api["slot-windows"].templates[":id"].$delete({
+      const res = await apiClient.api["slot-windows"].templates[":id"].deactivate.$post({
         param: { id: templateId },
       });
 
@@ -22,7 +22,7 @@ export const useDeleteSlotWindowTemplate = (
         throw new Error(
           errorData?.error ??
             errorData?.message ??
-            "Failed to delete slot window template"
+            "Failed to deactivate slot window template"
         );
       }
 
