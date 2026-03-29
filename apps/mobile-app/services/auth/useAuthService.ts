@@ -24,6 +24,13 @@ export interface AdditionalDetailsResponse {
   user?: User;
 }
 
+export interface UploadUserAssetResponse {
+  user?: User;
+  file_path?: string;
+  photo_url?: string;
+  seal_url?: string;
+}
+
 export const authService = {
   async login(
     phoneNumber: string,
@@ -152,5 +159,61 @@ export const authService = {
     }
 
     return (await res.json()) as AdditionalDetailsResponse;
+  },
+
+  async uploadProfilePicture(
+    file: Blob,
+    mobileNumber: string,
+    countryCode: string
+  ): Promise<UploadUserAssetResponse> {
+    const res = await (
+      apiClient.api.auth.register["additional-details"]["profile-picture"] as any
+    ).$post({
+      form: {
+        file,
+        mobile_number: mobileNumber,
+        mobile_country_code: countryCode,
+      },
+    });
+
+    if (!res.ok) {
+      const errorData = (await res
+        .json()
+        .catch(() => ({ error: "Failed to upload profile picture" }))) as ErrorResponse;
+      const errorMessage =
+        typeof errorData.error === "string"
+          ? errorData.error
+          : JSON.stringify(errorData.error) || "Failed to upload profile picture";
+      throw new Error(errorMessage);
+    }
+
+    return (await res.json()) as UploadUserAssetResponse;
+  },
+
+  async uploadSeal(
+    file: Blob,
+    mobileNumber: string,
+    countryCode: string
+  ): Promise<UploadUserAssetResponse> {
+    const res = await (apiClient.api.auth.register["additional-details"].seal as any).$post({
+      form: {
+        file,
+        mobile_number: mobileNumber,
+        mobile_country_code: countryCode,
+      },
+    });
+
+    if (!res.ok) {
+      const errorData = (await res
+        .json()
+        .catch(() => ({ error: "Failed to upload seal" }))) as ErrorResponse;
+      const errorMessage =
+        typeof errorData.error === "string"
+          ? errorData.error
+          : JSON.stringify(errorData.error) || "Failed to upload seal";
+      throw new Error(errorMessage);
+    }
+
+    return (await res.json()) as UploadUserAssetResponse;
   },
 };

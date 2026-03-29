@@ -2,6 +2,7 @@ import { Color, TextSize, TextVariant } from "@repo/config";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import type { RegisterAdditionalDetailsInput } from "@repo/models";
+import { File as ExpoFile } from "expo-file-system";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -41,6 +42,8 @@ type AdditionalInfoForm = {
 export default function AdditionalInfoScreen() {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
+  const [photoFile, setPhotoFile] = useState<ExpoFile | null>(null);
+  const [sealFile, setSealFile] = useState<ExpoFile | null>(null);
   const [photoUploadName, setPhotoUploadName] = useState<string>("");
   const [sealUploadName, setSealUploadName] = useState<string>("");
 
@@ -89,6 +92,37 @@ export default function AdditionalInfoScreen() {
 
   const showWhatsappNumber = watch("differentWhatsappNumber");
 
+  const pickFile = async (
+    target: "photo" | "seal",
+    pickerTitle: "Photo" | "Seal"
+  ) => {
+    try {
+      const picked = await ExpoFile.pickFileAsync();
+      const selected = Array.isArray(picked) ? picked[0] : picked;
+
+      if (!selected) {
+        return;
+      }
+
+      if (target === "photo") {
+        setPhotoFile(selected);
+        setPhotoUploadName(selected.name);
+      } else {
+        setSealFile(selected);
+        setSealUploadName(selected.name);
+      }
+    } catch (e: any) {
+      const message = String(e?.message ?? "");
+      if (message.toLowerCase().includes("cancel")) {
+        return;
+      }
+      Alert.alert(
+        `${pickerTitle} Upload`,
+        e?.message ?? `Failed to pick ${pickerTitle.toLowerCase()} file`
+      );
+    }
+  };
+
   const onSave = async (data: AdditionalInfoForm) => {
     const payload: RegisterAdditionalDetailsInput = {
       title: data.title + ".",
@@ -108,6 +142,30 @@ export default function AdditionalInfoScreen() {
     try {
       setIsSaving(true);
       await authService.registerAdditionalDetails(payload);
+
+      try {
+        if (photoFile) {
+          await authService.uploadProfilePicture(
+            photoFile,
+            data.mobileNumber,
+            data.mobileCountryCode
+          );
+        }
+
+        if (sealFile) {
+          await authService.uploadSeal(
+            sealFile,
+            data.mobileNumber,
+            data.mobileCountryCode
+          );
+        }
+      } catch (uploadError: any) {
+        Alert.alert(
+          "Partial Success",
+          `Details saved, but file upload failed: ${uploadError?.message ?? "Unknown error"}`
+        );
+        return;
+      }
 
       Alert.alert("Saved", "Additional information submitted.");
       router.replace({
@@ -432,12 +490,12 @@ export default function AdditionalInfoScreen() {
         <FileUploadComponent
           title="Photo Upload"
           fileName={photoUploadName}
-          onPress={() => setPhotoUploadName("photo_upload.pdf")}
+          onPress={() => void pickFile("photo", "Photo")}
         />
         <FileUploadComponent
           title="Seal Upload"
           fileName={sealUploadName}
-          onPress={() => setSealUploadName("seal_upload.png")}
+          onPress={() => void pickFile("seal", "Seal")}
         />
 
         <View className="mt-[14px]">
