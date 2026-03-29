@@ -350,6 +350,8 @@ export const AddClient: React.FC<AddClientProps> = ({
                     onChange={(iso) => onChange(isoToDOB(iso))}
                     placeholder="Select date"
                     errorText={errors.dateOfBirth?.message}
+                    minYear={1900}
+                    maxYear={new Date().getFullYear()}
                   />
                 )}
               />
