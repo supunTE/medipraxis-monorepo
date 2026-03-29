@@ -10,7 +10,7 @@ export class AuthController {
       password,
       first_name,
       last_name,
-    } = await c.req.valid("json");
+    } = await c.req.json();
     const authService = getAuthService(c);
 
     try {
