@@ -3,7 +3,13 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCallback, useMemo, useState } from "react";
-import { Alert, StyleSheet } from "react-native";
+import {
+  Alert,
+  StyleSheet,
+  Text as RNText,
+  TouchableOpacity,
+  View as RNView,
+} from "react-native";
 import { View } from "@/components/Themed";
 import {
   type AgendaBlockContent,
@@ -11,6 +17,7 @@ import {
   CalendarComponent,
 } from "@/components/advanced";
 import {
+  ManageSlotWindowsModal,
   ViewAppointmentModal,
   ViewReminderModal,
 } from "@/components/advanced/schedule";
@@ -20,6 +27,7 @@ import Loader from "@/components/basic/Loader.component";
 import { Icons } from "@/config";
 import { useGetSlotWindows } from "@/services/slotWindows";
 import {
+  useCancelAppointment,
   useGetAppointments,
   useGetReminders,
   useGetTaskById,
@@ -48,6 +56,12 @@ export default function ScheduleScreen() {
     string | null
   >(null);
   const [showForm, setShowForm] = useState(false);
+  const [formSlotWindowId, setFormSlotWindowId] = useState<string | undefined>(
+    undefined
+  );
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [manageSlotWindowsVisible, setManageSlotWindowsVisible] =
+    useState(false);
   const [viewApptModalVisible, setViewApptModalVisible] = useState(false);
   const [viewApptReadOnly, setViewApptReadOnly] = useState(true);
   const [viewReminderModalVisible, setViewReminderModalVisible] =
@@ -103,6 +117,27 @@ export default function ScheduleScreen() {
       Alert.alert("Error", message ?? "Failed to update reminder");
     },
   });
+
+  const { mutate: cancelTaskStatus, isLoading: isLoadingCancel } =
+    useUpdateTask({
+      onSuccess: () => {
+        handleCloseViewReminderModal();
+        handleCloseViewApptModal();
+      },
+      onError: (message) => {
+        Alert.alert("Error", message ?? "Failed to cancel");
+      },
+    });
+
+  const { mutate: cancelSlotAppointment, isPending: isLoadingCancelSlot } =
+    useCancelAppointment({
+      onSuccess: () => {
+        handleCloseViewApptModal();
+      },
+      onError: (message) => {
+        Alert.alert("Error", message ?? "Failed to cancel appointment");
+      },
+    });
 
   const buildAppointmentContent = (
     appointment: TaskDetails
@@ -189,12 +224,67 @@ export default function ScheduleScreen() {
         start_date: form.start_date.includes("T")
           ? form.start_date
           : simpleDateTimeToISO(form.start_date),
+        end_date: form.end_date
+          ? form.end_date.includes("T")
+            ? form.end_date
+            : simpleDateTimeToISO(form.end_date)
+          : undefined,
+        client_id: form.client_id ?? undefined,
         note: form.note ?? undefined,
         set_alarm: form.set_alarm,
       },
     });
     setViewApptReadOnly(true);
     setViewReminderReadOnly(true);
+  };
+
+  const handleCancelReminder = () => {
+    if (!selectedReminderId) return;
+    Alert.alert(
+      "Cancel Reminder",
+      "Are you sure you want to cancel this reminder?",
+      [
+        { text: "No", style: "cancel" },
+        {
+          text: "Yes, Cancel",
+          style: "destructive",
+          onPress: () => {
+            cancelTaskStatus({
+              task_id: selectedReminderId,
+              data: { task_status: "CANCELLED" },
+            });
+          },
+        },
+      ]
+    );
+  };
+
+  const handleCancelAppointment = () => {
+    if (!selectedAppointmentId) return;
+    const task = appointmentTaskQuery.data?.task;
+    Alert.alert(
+      "Cancel Appointment",
+      "Are you sure you want to cancel this appointment?",
+      [
+        { text: "No", style: "cancel" },
+        {
+          text: "Yes, Cancel",
+          style: "destructive",
+          onPress: () => {
+            if (task?.slot_window_id) {
+              // Slot-window appointment: use dedicated cancel endpoint to release the slot
+              cancelSlotAppointment({ task_id: selectedAppointmentId });
+            } else {
+              // Custom appointment: update task status to CANCELLED
+              cancelTaskStatus({
+                task_id: selectedAppointmentId,
+                data: { task_status: "CANCELLED" },
+              });
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleReminderPress = (reminderId: string) => {
@@ -237,26 +327,79 @@ export default function ScheduleScreen() {
             remindersQuery.isFetching
           }
           agendaHeaderRightAction={
-            <ButtonComponent
-              onPress={() => setShowForm(true)}
-              size={ButtonSize.Small}
-              leftIcon={Icons.Plus}
-              buttonColor={Color.Black}
-              textColor={Color.White}
-              iconColor={Color.White}
+            <RNView
+              style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
             >
-              Create
-            </ButtonComponent>
+              <ButtonComponent
+                onPress={() => setShowForm(true)}
+                size={ButtonSize.Small}
+                leftIcon={Icons.Plus}
+                buttonColor={Color.Black}
+                textColor={Color.White}
+                iconColor={Color.White}
+              >
+                Create
+              </ButtonComponent>
+              <RNView style={{ position: "relative" }}>
+                <TouchableOpacity
+                  className="px-2 py-2 justify-center items-center"
+                  onPress={() => setMenuOpen((prev) => !prev)}
+                  activeOpacity={0.7}
+                >
+                  <Icons.DotsThreeVertical
+                    size={20}
+                    color={Color.Black}
+                    weight="bold"
+                  />
+                </TouchableOpacity>
+                {menuOpen && (
+                  <RNView
+                    className="absolute top-10 right-0 bg-white rounded-xl overflow-hidden"
+                    style={{
+                      minWidth: 180,
+                      zIndex: 50,
+                      shadowColor: "#000",
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.1,
+                      shadowRadius: 8,
+                      elevation: 4,
+                    }}
+                  >
+                    <TouchableOpacity
+                      className="flex-row items-center px-4 py-3 gap-2"
+                      onPress={() => {
+                        setMenuOpen(false);
+                        setManageSlotWindowsVisible(true);
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <Icons.CalendarBlank
+                        size={16}
+                        color={Color.Black}
+                        weight="regular"
+                      />
+                      <RNText
+                        style={{
+                          color: Color.Black,
+                          fontSize: 13,
+                          fontWeight: "400",
+                        }}
+                      >
+                        Manage Slot Windows
+                      </RNText>
+                    </TouchableOpacity>
+                  </RNView>
+                )}
+              </RNView>
+            </RNView>
           }
           onAppointmentPress={(appointment) =>
             handleAppointmentPress(appointment.id)
           }
-          onEmptySlotPress={(groupId, slotNumber) =>
-            Alert.alert(
-              "Available Slot",
-              `Window ID: ${groupId}\nSlot Number: ${slotNumber + 1}`
-            )
-          }
+          onEmptySlotPress={(groupId) => {
+            setFormSlotWindowId(groupId);
+            setShowForm(true);
+          }}
           onReminderPress={(reminder) => handleReminderPress(reminder.id)}
         />
       </View>
@@ -268,9 +411,9 @@ export default function ScheduleScreen() {
           onClose={handleCloseViewApptModal}
           onEdit={handleEditViewApptModal}
           onSave={handleSaveTaskModal}
-          onCancel={handleCloseViewApptModal}
+          onCancel={handleCancelAppointment}
           readOnly={viewApptReadOnly}
-          isSaving={isLoadingUpdate}
+          isSaving={isLoadingUpdate || isLoadingCancel || isLoadingCancelSlot}
         />
       )}
 
@@ -281,9 +424,9 @@ export default function ScheduleScreen() {
           onClose={handleCloseViewReminderModal}
           onEdit={handleEditViewReminderModal}
           onSave={handleSaveTaskModal}
-          onCancel={handleCloseViewReminderModal}
+          onCancel={handleCancelReminder}
           readOnly={viewReminderReadOnly}
-          isSaving={isLoadingUpdate}
+          isSaving={isLoadingUpdate || isLoadingCancel}
         />
       )}
 
@@ -291,9 +434,25 @@ export default function ScheduleScreen() {
         appointmentsQuery.isLoading ||
         remindersQuery.isLoading ||
         appointmentTaskQuery.isLoading ||
-        reminderTaskQuery.isLoading) && <Loader />}
+        reminderTaskQuery.isLoading ||
+        isLoadingCancel ||
+        isLoadingCancelSlot) && <Loader />}
 
-      <TaskForm visible={showForm} onClose={() => setShowForm(false)} />
+      <TaskForm
+        visible={showForm}
+        onClose={() => {
+          setShowForm(false);
+          setFormSlotWindowId(undefined);
+        }}
+        initialSlotWindowId={formSlotWindowId}
+        slotWindows={slotWindowsQuery.slotWindows}
+      />
+
+      <ManageSlotWindowsModal
+        visible={manageSlotWindowsVisible}
+        onClose={() => setManageSlotWindowsVisible(false)}
+        userId={userId}
+      />
     </View>
   );
 }
