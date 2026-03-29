@@ -9,6 +9,7 @@ import { Color, TextSize, TextVariant } from "@repo/config";
 import {
   CalendarBlankIcon,
   ClockIcon,
+  EyeIcon,
   MapPinIcon,
   PlusIcon,
 } from "phosphor-react-native";
@@ -85,9 +86,6 @@ export const AppointmentTile: React.FC<AppointmentTileProps> = ({
     appointment.status === "NOT_STARTED" &&
     new Date(appointment.date) > new Date();
 
-  // Show "Add Record" button only if no record exists
-  const showAddRecord = !hasRecord;
-
   return (
     <View
       className="bg-white rounded-2xl p-4 mb-3"
@@ -111,7 +109,18 @@ export const AppointmentTile: React.FC<AppointmentTileProps> = ({
         </TextComponent>
 
         <View className="flex-row items-center gap-2">
-          {showAddRecord && (
+          {hasRecord ? (
+            <ButtonComponent
+              size={ButtonSize.Small}
+              leftIcon={EyeIcon}
+              buttonColor={Color.Black}
+              textColor={Color.White}
+              iconColor={Color.White}
+              onPress={() => onViewAppointment?.(appointment.appointment_id)}
+            >
+              View Record
+            </ButtonComponent>
+          ) : (
             <ButtonComponent
               size={ButtonSize.Small}
               leftIcon={PlusIcon}

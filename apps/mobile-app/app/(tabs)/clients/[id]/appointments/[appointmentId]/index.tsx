@@ -187,7 +187,7 @@ export default function AppointmentDetailsScreen() {
     return (
       <SafeAreaView className="flex-1 bg-white">
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color={Color.Black} />
+          <ActivityIndicator size="large" color={Color.Green} />
         </View>
       </SafeAreaView>
     );
