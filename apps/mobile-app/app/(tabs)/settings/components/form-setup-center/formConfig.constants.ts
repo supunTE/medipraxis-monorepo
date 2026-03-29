@@ -11,6 +11,12 @@ import type { FieldTypeOption } from "./formConfig.types";
 
 export const FIELD_TYPES: FieldTypeOption[] = [
   {
+    id: "upload-attachment",
+    label: "Upload attachment",
+    icon: UploadSimpleIcon,
+    disabledForForms: ["1", "2"],
+  },
+  {
     id: "single-text",
     label: "Single text field",
     icon: TextTIcon,
@@ -45,11 +51,5 @@ export const FIELD_TYPES: FieldTypeOption[] = [
     label: "Date field",
     icon: CalendarBlankIcon,
     disabledForForms: ["3"],
-  },
-  {
-    id: "upload-attachment",
-    label: "Upload attachment",
-    icon: UploadSimpleIcon,
-    disabledForForms: [],
   },
 ];
