@@ -228,7 +228,12 @@ export class AuthService {
   }
 
   private validateUserAsset(file: File, assetName: "profile" | "seal") {
-    const allowedTypes = ["application/pdf", "image/jpeg", "image/png", "image/jpg"];
+    const allowedTypes = [
+      "application/pdf",
+      "image/jpeg",
+      "image/png",
+      "image/jpg",
+    ];
     const maxSize = 5 * 1024 * 1024; // 5MB
 
     if (!allowedTypes.includes(file.type)) {

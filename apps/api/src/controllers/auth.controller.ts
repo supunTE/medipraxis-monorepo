@@ -99,7 +99,10 @@ export class AuthController {
         return c.json({ error: e.message }, 404);
       }
 
-      return c.json({ error: e.message ?? "Failed to upload profile picture" }, 400);
+      return c.json(
+        { error: e.message ?? "Failed to upload profile picture" },
+        400
+      );
     }
   }
 
@@ -122,7 +125,11 @@ export class AuthController {
       }
 
       const authService = getAuthService(c);
-      const result = await authService.uploadSeal(file, mobileNumber, countryCode);
+      const result = await authService.uploadSeal(
+        file,
+        mobileNumber,
+        countryCode
+      );
 
       return c.json(result, 201);
     } catch (e: any) {

@@ -167,7 +167,9 @@ export const authService = {
     countryCode: string
   ): Promise<UploadUserAssetResponse> {
     const res = await (
-      apiClient.api.auth.register["additional-details"]["profile-picture"] as any
+      apiClient.api.auth.register["additional-details"][
+        "profile-picture"
+      ] as any
     ).$post({
       form: {
         file,
@@ -179,11 +181,14 @@ export const authService = {
     if (!res.ok) {
       const errorData = (await res
         .json()
-        .catch(() => ({ error: "Failed to upload profile picture" }))) as ErrorResponse;
+        .catch(() => ({
+          error: "Failed to upload profile picture",
+        }))) as ErrorResponse;
       const errorMessage =
         typeof errorData.error === "string"
           ? errorData.error
-          : JSON.stringify(errorData.error) || "Failed to upload profile picture";
+          : JSON.stringify(errorData.error) ||
+            "Failed to upload profile picture";
       throw new Error(errorMessage);
     }
 
@@ -195,7 +200,9 @@ export const authService = {
     mobileNumber: string,
     countryCode: string
   ): Promise<UploadUserAssetResponse> {
-    const res = await (apiClient.api.auth.register["additional-details"].seal as any).$post({
+    const res = await (
+      apiClient.api.auth.register["additional-details"].seal as any
+    ).$post({
       form: {
         file,
         mobile_number: mobileNumber,
