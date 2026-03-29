@@ -511,11 +511,19 @@ export default function AdditionalInfoScreen() {
           title="Photo Upload"
           fileName={photoUploadName}
           onPress={() => void pickFile("photo", "Photo")}
+          onRemove={() => {
+            setPhotoFile(null);
+            setPhotoUploadName("");
+          }}
         />
         <FileUploadComponent
           title="Seal Upload"
           fileName={sealUploadName}
           onPress={() => void pickFile("seal", "Seal")}
+          onRemove={() => {
+            setSealFile(null);
+            setSealUploadName("");
+          }}
         />
 
         <View className="mt-[14px]">

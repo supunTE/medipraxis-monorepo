@@ -481,5 +481,6 @@ const [photoFileName, setPhotoFileName] = useState("");
     title="Photo Upload"
     fileName={photoFileName}
     onPress={() => setPhotoFileName("photo_upload.pdf")}
+    onRemove={() => setPhotoFileName("")}
 />
 ```
