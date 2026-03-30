@@ -15,6 +15,6 @@ export const mmkvClientStorage = {
   },
   getItem: (key: string) => mmkvStorage?.getString(key) ?? null,
   removeItem: (key: string) => {
-    mmkvStorage?.delete(key);
+    mmkvStorage?.remove(key);
   },
 };
