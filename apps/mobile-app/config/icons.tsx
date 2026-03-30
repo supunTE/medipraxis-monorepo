@@ -1,4 +1,5 @@
 import {
+  ArrowLeftIcon,
   ArrowRightIcon,
   BellIcon,
   CalendarBlankIcon,
@@ -10,6 +11,7 @@ import {
   CaretRightIcon,
   CaretUpIcon,
   CheckIcon,
+  ClockIcon,
   DotsThreeVerticalIcon,
   EyeIcon,
   EyeSlashIcon,
@@ -19,6 +21,7 @@ import {
   InfoIcon,
   KeyIcon,
   MagnifyingGlassIcon,
+  MapPinIcon,
   PencilSimpleIcon,
   PhoneIcon,
   PlusIcon,
@@ -67,6 +70,9 @@ export const Icons = {
   Bell: BellIcon,
   Gear: GearIcon,
   CalendarCheckIcon: CalendarCheckIcon,
+  ArrowLeft: ArrowLeftIcon,
+  Clock: ClockIcon,
+  MapPin: MapPinIcon,
 } as const;
 
 export type IconName = keyof typeof Icons;

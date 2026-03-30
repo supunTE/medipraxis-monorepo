@@ -1,10 +1,17 @@
 import { TextComponent } from "@/components/basic";
+import { useCancelSlotWindow } from "@/services/slotWindows";
 import { timeToDecimalHour } from "@/utils";
 import { Color, TextSize, TextVariant } from "@repo/config";
 import clsx from "clsx";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRef, useState } from "react";
-import { Animated, Pressable, useWindowDimensions, View } from "react-native";
+import {
+  Alert,
+  Animated,
+  Pressable,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { AgendaBlockModal } from "./AgendaBlockModal.component";
 import {
   AGENDA_COLORS,
@@ -40,6 +47,31 @@ export function AgendaTimeBlockGroup({
 }: AgendaTimeBlockGroupProps): React.JSX.Element {
   const { width: screenWidth } = useWindowDimensions();
   const [modalVisible, setModalVisible] = useState(false);
+
+  const { mutate: cancelSlotWindow } = useCancelSlotWindow({
+    onSuccess: () => {
+      setModalVisible(false);
+    },
+    onError: (message) => {
+      Alert.alert("Error", message);
+    },
+  });
+
+  const handleCancelSlotWindow = () => {
+    Alert.alert(
+      "Cancel Slot Window",
+      "This will cancel the slot window and all its appointments. Continue?",
+      [
+        { text: "No", style: "cancel" },
+        {
+          text: "Yes, Cancel",
+          style: "destructive",
+          onPress: () => cancelSlotWindow(groupId),
+        },
+      ]
+    );
+  };
+
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const startHourDecimal = timeToDecimalHour(startHour);
@@ -168,6 +200,7 @@ export function AgendaTimeBlockGroup({
         contents={contents}
         onAppointmentPress={onAppointmentPress}
         onEmptySlotPress={onEmptySlotPress}
+        onCancelSlotWindow={handleCancelSlotWindow}
       />
     </Pressable>
   );

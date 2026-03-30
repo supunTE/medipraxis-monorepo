@@ -13,6 +13,7 @@ type GetSlotWindowsResponse = {
 
 type UseGetSlotWindowsResult = UseQueryResult<GetSlotWindowsResponse, Error> & {
   timeBlockGroups: AgendaTimeBlockGroupData[];
+  slotWindows: SlotWindow[];
 };
 
 export const useGetSlotWindows = (
@@ -56,5 +57,7 @@ export const useGetSlotWindows = (
       }));
   }, [query.data?.slotWindows]);
 
-  return { ...query, timeBlockGroups };
+  const slotWindows: SlotWindow[] = query.data?.slotWindows ?? [];
+
+  return { ...query, timeBlockGroups, slotWindows };
 };

@@ -98,8 +98,9 @@ export class ClientController {
     try {
       const clientService = getClientService(c);
       const name = c.req.query("name");
+      const userId = c.req.query("user_id");
 
-      const clients = await clientService.getClientsByName(name!);
+      const clients = await clientService.getClientsByName(name!, userId!);
 
       if (clients.length === 0) {
         return c.json({ exists: false, clients: [] });

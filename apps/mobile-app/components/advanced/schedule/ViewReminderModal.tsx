@@ -1,4 +1,6 @@
 import {
+  DateTimePickerComponent,
+  DropdownComponent,
   TextInputComponent,
   ToggleButton,
   ToggleSize,
@@ -6,10 +8,12 @@ import {
 import Loader from "@/components/basic/Loader.component";
 import { Text } from "@/components/Themed";
 import { Icons } from "@/config";
+import { useAuth } from "@/auth/AuthContext";
+import { useFetchClients } from "@/services/clients/useClients";
 import { useUpdateTask } from "@/services/tasks";
 import { formatISOToSimple } from "@/utils/timeUtils";
 import { type TaskDetails } from "@repo/models";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Modal,
@@ -24,8 +28,10 @@ interface ViewReminderModalProps {
   data: TaskDetails;
   onClose: () => void;
   onEdit?: () => void;
+  onSave?: (form: TaskDetails) => void;
   onCancel?: () => void;
   readOnly?: boolean;
+  isSaving?: boolean;
 }
 
 export const ViewReminderModal = ({
@@ -33,9 +39,20 @@ export const ViewReminderModal = ({
   data,
   onClose,
   onEdit,
+  onSave,
   onCancel,
   readOnly = false,
+  isSaving = false,
 }: ViewReminderModalProps) => {
+  const { user } = useAuth();
+  const userId = user?.user_id ?? "";
+  const { data: clients = [] } = useFetchClients(userId);
+
+  const clientOptions = useMemo(
+    () => clients.map((c) => ({ label: c.name, value: c.id })),
+    [clients]
+  );
+
   const { mutate: updateTask, isLoading } = useUpdateTask({
     onSuccess: () => {
       setIsChecked((prev) => !prev);
@@ -44,6 +61,8 @@ export const ViewReminderModal = ({
       Alert.alert("Error", message ?? "Failed to update task");
     },
   });
+
+  const [form, setForm] = useState<TaskDetails>(data);
 
   const [isChecked, setIsChecked] = useState(
     data?.task_status_name == "IN_PROGRESS" ||
@@ -56,13 +75,37 @@ export const ViewReminderModal = ({
     setIsChecked(data?.task_status_name === "COMPLETED");
   }, [data?.task_status_name]);
 
-  const handleEdit = () => {
-    onEdit?.();
+  useEffect(() => {
+    setForm(data);
+  }, [data?.task_id]);
+
+  const clientName =
+    data?.client_first_name && data?.client_last_name
+      ? `${data.client_first_name} ${data.client_last_name}`
+      : "";
+
+  const handleEdit = () => onEdit?.();
+
+  const handleSave = () => {
+    if (!form.start_date) {
+      Alert.alert("Validation", "Start date & time is required.");
+      return;
+    }
+    if (form.end_date) {
+      const start = new Date(form.start_date);
+      const end = new Date(form.end_date);
+      if (end <= start) {
+        Alert.alert(
+          "Validation",
+          "End date & time must be after start date & time."
+        );
+        return;
+      }
+    }
+    onSave?.(form);
   };
 
-  const handleCancel = () => {
-    onCancel?.();
-  };
+  const handleCancel = () => onCancel?.();
 
   const handleReminderCheck = () => {
     updateTask({
@@ -89,6 +132,7 @@ export const ViewReminderModal = ({
                 contentContainerStyle={{ padding: 20, paddingBottom: 10 }}
                 showsVerticalScrollIndicator={true}
               >
+                {/* Title + checkbox */}
                 <View className="flex-row items-center gap-3 mb-5">
                   <Pressable
                     onPress={handleReminderCheck}
@@ -107,48 +151,132 @@ export const ViewReminderModal = ({
                   </Text>
                 </View>
 
-                {/* Date */}
-                <View className="flex-row justify-between mb-4">
-                  <TextInputComponent
-                    label="Date & time"
-                    startIcon={
-                      <Icons.CalendarDotsIcon
-                        size={20}
-                        weight="bold"
-                        color="#4B5563"
-                      />
-                    }
-                    inputField={{
-                      placeholder: "Enter Date & time",
-                      value: formatISOToSimple(data?.start_date),
-                      onChangeText: () => {},
-                    }}
-                    inputWrapper={{
-                      accessibilityHint: "Enter Date & time",
-                      isDisabled: readOnly,
-                    }}
-                  />
+                {/* Start Date & time */}
+                <View className="mb-4">
+                  {readOnly ? (
+                    <TextInputComponent
+                      label="Start Date & time"
+                      startIcon={
+                        <Icons.CalendarDotsIcon
+                          size={20}
+                          weight="bold"
+                          color="#4B5563"
+                        />
+                      }
+                      inputField={{
+                        placeholder: "Enter Start Date & time",
+                        value: formatISOToSimple(form?.start_date),
+                        onChangeText: (value) =>
+                          setForm((prev) => ({ ...prev, start_date: value })),
+                      }}
+                      inputWrapper={{
+                        accessibilityHint: "Start Date & time",
+                        isDisabled: true,
+                      }}
+                    />
+                  ) : (
+                    <DateTimePickerComponent
+                      label="Start Date & time"
+                      value={form?.start_date}
+                      onChange={(text) =>
+                        setForm((prev) => ({ ...prev, start_date: text }))
+                      }
+                      placeholder="Nov 15, 2025  08:00 am"
+                      mode="datetime"
+                    />
+                  )}
+                </View>
+
+                {/* End Date & time */}
+                <View className="mb-4">
+                  {readOnly ? (
+                    <TextInputComponent
+                      label="End Date & time"
+                      startIcon={
+                        <Icons.CalendarDotsIcon
+                          size={20}
+                          weight="bold"
+                          color="#4B5563"
+                        />
+                      }
+                      inputField={{
+                        placeholder: "Not set",
+                        value: form?.end_date
+                          ? formatISOToSimple(form.end_date)
+                          : "",
+                        onChangeText: (value) =>
+                          setForm((prev) => ({ ...prev, end_date: value })),
+                      }}
+                      inputWrapper={{
+                        accessibilityHint: "End Date & time",
+                        isDisabled: true,
+                      }}
+                    />
+                  ) : (
+                    <DateTimePickerComponent
+                      label="End Date & time"
+                      value={form?.end_date ?? ""}
+                      onChange={(text) =>
+                        setForm((prev) => ({ ...prev, end_date: text }))
+                      }
+                      placeholder="Nov 15, 2025  09:00 am"
+                      mode="datetime"
+                    />
+                  )}
+                </View>
+
+                {/* Client */}
+                <View className="mb-4">
+                  {readOnly ? (
+                    <TextInputComponent
+                      label="Client"
+                      inputField={{
+                        placeholder: "No client assigned",
+                        value: clientName,
+                        onChangeText: () => {},
+                      }}
+                      inputWrapper={{
+                        accessibilityHint: "Client",
+                        isDisabled: true,
+                      }}
+                    />
+                  ) : (
+                    <DropdownComponent
+                      label="Client"
+                      value={form?.client_id ?? ""}
+                      onValueChange={(value) =>
+                        setForm((prev) => ({ ...prev, client_id: value }))
+                      }
+                      options={clientOptions}
+                      placeholder="Select Client"
+                    />
+                  )}
                 </View>
 
                 {/* Set Alarm */}
-                <View className="flex-row justify-between mb-4">
+                <View className="mb-4">
                   <ToggleButton
                     size={ToggleSize.Medium}
                     label="Alarm"
-                    isActive={data?.set_alarm ?? false}
+                    isActive={form?.set_alarm ?? false}
+                    onToggle={(value) =>
+                      setForm((prev) => ({ ...prev, set_alarm: value }))
+                    }
+                    readOnly={readOnly}
                   />
                 </View>
 
                 {/* Note */}
-                <View className="flex-row justify-between mb-4">
+                <View className="mb-4">
                   <TextInputComponent
                     inputWrapper={{
                       accessibilityHint: "Enter your note",
                       isDisabled: readOnly,
                     }}
                     inputField={{
-                      value: data?.note ?? undefined,
-                      onChangeText: () => {},
+                      value: form?.note ?? undefined,
+                      onChangeText: (value) =>
+                        setForm((prev) => ({ ...prev, note: value })),
                       placeholder: "Enter note",
                     }}
                     label="Note"
@@ -160,15 +288,19 @@ export const ViewReminderModal = ({
               <View className="bg-[#EAF8C9] p-4 flex-row justify-end gap-x-2.5 border-t border-gray-100">
                 <Pressable
                   className="flex-row items-center bg-slate-900 py-2.5 px-4 rounded-lg gap-x-2"
-                  onPress={handleEdit}
+                  onPress={readOnly ? handleEdit : handleSave}
                 >
-                  <Icons.Pencil size={18} color="white" weight="bold" />
+                  {readOnly ? (
+                    <Icons.Pencil size={18} color="white" weight="bold" />
+                  ) : (
+                    <Icons.Check size={18} color="white" weight="bold" />
+                  )}
                   <Text
                     darkColor="white"
                     lightColor="white"
-                    className=" font-semibold text-sm"
+                    className="font-semibold text-sm"
                   >
-                    Edit
+                    {readOnly ? "Edit" : "Save"}
                   </Text>
                 </Pressable>
 
@@ -178,7 +310,7 @@ export const ViewReminderModal = ({
                 >
                   <Icons.Trash size={18} color="white" weight="bold" />
                   <Text
-                    darkColor={"white"}
+                    darkColor="white"
                     lightColor="white"
                     className="font-semibold text-sm"
                   >
@@ -191,7 +323,7 @@ export const ViewReminderModal = ({
         </View>
       </TouchableWithoutFeedback>
 
-      {isLoading && <Loader />}
+      {(isLoading || isSaving) && <Loader />}
     </Modal>
   );
 };

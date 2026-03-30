@@ -7,13 +7,7 @@ import type { Env } from "../types";
 const auth = new Hono<{ Bindings: Env }>()
   .post(
     "/register",
-    zValidator("json", registerSchema, (result, c) => {
-      if (!result.success) {
-        console.error("Validation error:", result.error);
-        return c.json({ error: result.error }, 400);
-      }
-      return undefined;
-    }),
+    zValidator("json", registerSchema),
     AuthController.register
   )
   .post("/login", zValidator("json", loginSchema), AuthController.login)

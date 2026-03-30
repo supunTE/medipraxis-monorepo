@@ -42,7 +42,12 @@ export const useUpdateTask = (options?: UseUpdateTaskOptions) => {
     },
 
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["reminders"] });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["appointments"] }),
+        queryClient.invalidateQueries({ queryKey: ["reminders"] }),
+        queryClient.invalidateQueries({ queryKey: ["taskSummary"] }),
+        queryClient.invalidateQueries({ queryKey: ["upcomingTasks"] }),
+      ]);
       options?.onSuccess?.();
     },
 

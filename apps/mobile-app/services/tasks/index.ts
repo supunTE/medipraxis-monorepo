@@ -1,3 +1,4 @@
+export * from "./useCancelAppointment";
 export * from "./useCreateTask";
 export * from "./useGetAppointments";
 export * from "./useGetReminders";

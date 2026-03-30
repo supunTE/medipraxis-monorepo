@@ -1,8 +1,13 @@
-import { TextInputComponent } from "@/components/basic";
+import {
+  DateTimePickerComponent,
+  TextInputComponent,
+} from "@/components/basic";
+import Loader from "@/components/basic/Loader.component";
 import { Text } from "@/components/Themed";
 import { Icons } from "@/config";
 import { formatISOToSimple } from "@/utils/timeUtils";
-import { type TaskDetails } from "@repo/models";
+import { TaskDetails } from "@repo/models";
+import { useEffect, useState } from "react";
 import {
   Modal,
   Pressable,
@@ -16,8 +21,10 @@ interface ViewAppointmentModalProps {
   data: TaskDetails;
   onClose: () => void;
   onEdit?: () => void;
+  onSave?: (data: TaskDetails) => void;
   onCancel?: () => void;
   readOnly?: boolean;
+  isSaving?: boolean;
 }
 
 export const ViewAppointmentModal = ({
@@ -25,11 +32,27 @@ export const ViewAppointmentModal = ({
   data,
   onClose,
   onEdit,
+  onSave,
   onCancel,
   readOnly = false,
+  isSaving = false,
 }: ViewAppointmentModalProps) => {
+  const [form, setForm] = useState<TaskDetails>(data);
+
+  useEffect(() => {
+    setForm(data);
+  }, []);
+
+  useEffect(() => {
+    setForm(data);
+  }, [data && data.task_id]);
+
   const handleEdit = () => {
     onEdit?.();
+  };
+
+  const handleSave = () => {
+    onSave?.(form);
   };
 
   const handleCancel = () => {
@@ -39,7 +62,7 @@ export const ViewAppointmentModal = ({
   return (
     <Modal
       animationType="fade"
-      transparent={true}
+      transparent
       visible={visible}
       onRequestClose={onClose}
     >
@@ -53,40 +76,51 @@ export const ViewAppointmentModal = ({
                 showsVerticalScrollIndicator={true}
               >
                 <Text className="text-xl font-bold text-black mb-5">
-                  {data?.task_title}
+                  {form?.task_title}
                 </Text>
 
                 {/* Slot Window */}
-                <View className="flex-row justify-between mb-4">
-                  <TextInputComponent
-                    label="Slot Window"
-                    inputField={{
-                      placeholder: "Slot Window",
-                      value: formatISOToSimple(data?.start_date, "dateOnly"),
-                      onChangeText: () => {},
-                    }}
-                    inputWrapper={{
-                      accessibilityHint: "Slot Window",
-                      isDisabled: readOnly,
-                    }}
-                  />
-                </View>
+                {form?.slot_window_id && (
+                  <>
+                    <View className="flex-row justify-between mb-4">
+                      <TextInputComponent
+                        label="Slot Window"
+                        inputField={{
+                          placeholder: "Slot Window",
+                          value: formatISOToSimple(
+                            form?.start_date,
+                            "dateOnly"
+                          ),
+                          onChangeText: () => {},
+                        }}
+                        inputWrapper={{
+                          accessibilityHint: "Slot Window",
+                          isDisabled: readOnly,
+                        }}
+                      />
+                    </View>
 
-                {/* Slot No. */}
-                <View className="flex-row justify-between mb-4">
-                  <TextInputComponent
-                    label="Slot No."
-                    inputField={{
-                      placeholder: "Slot No.",
-                      value: data?.appointment_number?.toString() ?? "",
-                      onChangeText: () => {},
-                    }}
-                    inputWrapper={{
-                      accessibilityHint: "Slot No.",
-                      isDisabled: readOnly,
-                    }}
-                  />
-                </View>
+                    {/* Slot No. */}
+                    <View className="flex-row justify-between mb-4">
+                      <TextInputComponent
+                        label="Slot No."
+                        inputField={{
+                          placeholder: "Slot No.",
+                          value: form?.appointment_number?.toString() ?? "",
+                          onChangeText: (text) =>
+                            setForm((prev) => ({
+                              ...prev,
+                              appointment_number: Number(text),
+                            })),
+                        }}
+                        inputWrapper={{
+                          accessibilityHint: "Slot No.",
+                          isDisabled: readOnly || !readOnly,
+                        }}
+                      />
+                    </View>
+                  </>
+                )}
 
                 {/* Client Details */}
                 <View className="flex-row justify-between mb-4">
@@ -94,7 +128,9 @@ export const ViewAppointmentModal = ({
                     label="Client Details"
                     inputField={{
                       placeholder: "Client Details",
-                      value: `${data?.client_first_name ?? ""} ${data?.client_last_name ?? ""}`,
+                      value: `${form?.client_first_name ?? ""} ${
+                        form?.client_last_name ?? ""
+                      }`,
                       onChangeText: () => {},
                     }}
                     inputWrapper={{
@@ -106,49 +142,88 @@ export const ViewAppointmentModal = ({
 
                 {/* Start Date */}
                 <View className="flex-row justify-between mb-4">
-                  <TextInputComponent
-                    label="Start Date & time"
-                    startIcon={
-                      <Icons.CalendarDotsIcon
-                        size={20}
-                        weight="bold"
-                        color="#4B5563"
-                      />
-                    }
-                    inputField={{
-                      placeholder: "Enter Start Date & time",
-                      value: formatISOToSimple(data?.start_date),
-                      onChangeText: () => {},
-                    }}
-                    inputWrapper={{
-                      accessibilityHint: "Enter Start Date & time",
-                      isDisabled: readOnly,
-                    }}
-                  />
+                  {readOnly ? (
+                    <TextInputComponent
+                      label="Start Date & time"
+                      startIcon={
+                        <Icons.CalendarDotsIcon
+                          size={20}
+                          weight="bold"
+                          color="#4B5563"
+                        />
+                      }
+                      inputField={{
+                        placeholder: "Enter Start Date & time",
+                        value: formatISOToSimple(form?.start_date),
+                        onChangeText: (text) =>
+                          setForm((prev) => ({
+                            ...prev,
+                            start_date: text,
+                          })),
+                      }}
+                      inputWrapper={{
+                        accessibilityHint: "Enter Start Date & time",
+                        isDisabled: readOnly || !readOnly,
+                      }}
+                    />
+                  ) : (
+                    <DateTimePickerComponent
+                      label="Start Date & time"
+                      value={form?.start_date}
+                      onChange={(text) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          start_date: text,
+                        }))
+                      }
+                      placeholder="Nov 15, 2025  08:00 am"
+                      mode="datetime"
+                    />
+                  )}
                 </View>
 
                 {/* End Date */}
                 <View className="flex-row justify-between mb-4">
-                  <TextInputComponent
-                    label="End Date & time"
-                    startIcon={
-                      <Icons.CalendarDotsIcon
-                        size={20}
-                        weight="bold"
-                        color="#4B5563"
-                      />
-                    }
-                    inputField={{
-                      placeholder: "Enter End Date & time",
-                      value: formatISOToSimple(data?.end_date),
-                      onChangeText: () => {},
-                    }}
-                    inputWrapper={{
-                      accessibilityHint: "Enter End Date & time",
-                      isDisabled: readOnly,
-                    }}
-                  />
+                  {readOnly ? (
+                    <TextInputComponent
+                      label="End Date & time"
+                      startIcon={
+                        <Icons.CalendarDotsIcon
+                          size={20}
+                          weight="bold"
+                          color="#4B5563"
+                        />
+                      }
+                      inputField={{
+                        placeholder: "Enter End Date & time",
+                        value: formatISOToSimple(form?.end_date),
+                        onChangeText: (text) =>
+                          setForm((prev) => ({
+                            ...prev,
+                            end_date: text,
+                          })),
+                      }}
+                      inputWrapper={{
+                        accessibilityHint: "Enter End Date & time",
+                        isDisabled: readOnly || !readOnly,
+                      }}
+                    />
+                  ) : (
+                    <DateTimePickerComponent
+                      label="Enter End Date & time"
+                      value={form?.end_date}
+                      onChange={(text) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          end_date: text,
+                        }))
+                      }
+                      placeholder="Nov 15, 2025  08:00 am"
+                      mode="datetime"
+                    />
+                  )}
                 </View>
+
                 {/* Note */}
                 <View className="flex-row justify-between mb-4">
                   <TextInputComponent
@@ -157,8 +232,12 @@ export const ViewAppointmentModal = ({
                       isDisabled: readOnly,
                     }}
                     inputField={{
-                      value: data?.note ?? undefined,
-                      onChangeText: () => {},
+                      value: form?.note ?? "",
+                      onChangeText: (text) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          note: text,
+                        })),
                       placeholder: "Enter note",
                     }}
                     label="Note"
@@ -168,19 +247,25 @@ export const ViewAppointmentModal = ({
 
               {/* Footer Action Bar */}
               <View className="bg-[#EAF8C9] p-4 flex-row justify-end gap-x-2.5 border-t border-gray-100">
-                <Pressable
-                  className="flex-row items-center bg-slate-900 py-2.5 px-4 rounded-lg gap-x-2"
-                  onPress={handleEdit}
-                >
-                  <Icons.Pencil size={18} color="white" weight="bold" />
-                  <Text
-                    darkColor="white"
-                    lightColor="white"
-                    className=" font-semibold text-sm"
+                {!data?.slot_window_id && (
+                  <Pressable
+                    className="flex-row items-center bg-slate-900 py-2.5 px-4 rounded-lg gap-x-2"
+                    onPress={readOnly ? handleEdit : handleSave}
                   >
-                    Edit
-                  </Text>
-                </Pressable>
+                    {readOnly ? (
+                      <Icons.Pencil size={18} color="white" weight="bold" />
+                    ) : (
+                      <Icons.Check size={18} color="white" weight="bold" />
+                    )}
+                    <Text
+                      darkColor="white"
+                      lightColor="white"
+                      className=" font-semibold text-sm"
+                    >
+                      {readOnly ? "Edit" : "Save"}
+                    </Text>
+                  </Pressable>
+                )}
 
                 <Pressable
                   className="flex-row items-center bg-[#FF5A5F] py-2.5 px-4 rounded-lg gap-x-2"
@@ -188,7 +273,7 @@ export const ViewAppointmentModal = ({
                 >
                   <Icons.Trash size={18} color="white" weight="bold" />
                   <Text
-                    darkColor={"white"}
+                    darkColor="white"
                     lightColor="white"
                     className="font-semibold text-sm"
                   >
@@ -200,6 +285,7 @@ export const ViewAppointmentModal = ({
           </TouchableWithoutFeedback>
         </View>
       </TouchableWithoutFeedback>
+      {isSaving && <Loader />}
     </Modal>
   );
 };

@@ -1,5 +1,5 @@
 import { apiClient, customFetch } from "@/lib/api-client";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Alert } from "react-native";
 import type { AppointmentStatus } from "../../app/(tabs)/clients/[id]/AppointmentTile.component";
 
@@ -25,6 +25,27 @@ export interface AppointmentApiItem {
   client_first_name: string | null;
   client_last_name: string | null;
   slot_window_location: string | null; // From slot_windows table
+}
+
+export interface AppointmentRecordFieldData {
+  active: boolean;
+  required: boolean;
+  sequence: number;
+  help_text: string;
+  shareable: boolean;
+  field_type: string;
+  description: string;
+  display_label: string;
+  data: string;
+}
+
+export interface CreateAppointmentRecordPayload {
+  user_id: string;
+  client_id: string;
+  appointment_id: string;
+  form_id: string;
+  appointment_data: AppointmentRecordFieldData[];
+  note?: string;
 }
 
 // Status
@@ -122,5 +143,96 @@ export const useFetchClientAppointmentRecords = (clientId: string) => {
       return new Set<string>(data.records.map((r) => r.appointment_id));
     },
     enabled: !!clientId,
+  });
+};
+
+// Fetch existing appointment record for a specific appointment
+export const useFetchAppointmentRecord = (
+  clientId: string,
+  appointmentId: string
+) => {
+  return useQuery({
+    queryKey: ["appointment-record", clientId, appointmentId],
+    queryFn: async () => {
+      const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+
+      const response = await customFetch(
+        `${API_BASE_URL}/api/appointment-records?client_id=${clientId}&appointment_id=${appointmentId}`
+      );
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          return null; // No record exists yet
+        }
+        throw new Error("Failed to fetch appointment record");
+      }
+
+      const data = (await response.json()) as {
+        record: {
+          appointment_record_id: string;
+          user_id: string;
+          client_id: string;
+          appointment_id: string;
+          form_id: string;
+          appointment_data: AppointmentRecordFieldData[];
+          note: string | null;
+          created_date: string;
+          updated_date: string;
+          deleted: boolean;
+        };
+      };
+
+      return data.record;
+    },
+    enabled: !!clientId && !!appointmentId,
+  });
+};
+
+type UseCreateAppointmentRecordOptions = {
+  onSuccess?: () => void;
+  onError?: (message: string) => void;
+};
+
+export const useCreateAppointmentRecord = (
+  options?: UseCreateAppointmentRecordOptions
+) => {
+  return useMutation({
+    mutationFn: async (payload: CreateAppointmentRecordPayload) => {
+      const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+
+      const response = await customFetch(
+        `${API_BASE_URL}/api/appointment-records`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = (await response.json().catch(() => ({}))) as any;
+        throw new Error(
+          errorData?.error ??
+            errorData?.message ??
+            "Failed to create appointment record"
+        );
+      }
+
+      return response.json();
+    },
+
+    onSuccess: () => {
+      options?.onSuccess?.();
+    },
+
+    onError: (error) => {
+      options?.onError?.(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong. Please try again."
+      );
+    },
   });
 };

@@ -29,12 +29,14 @@ export const useGetReminders = (userId: string, date: string) => {
 
   const reminders: AgendaReminderData[] = useMemo(() => {
     if (!query.data?.tasks) return [];
-    return query.data.tasks.map((task) => ({
-      content: { id: task.task_id, title: task.task_title },
-      startTime: formatISOToTime(task.start_date),
-      ...(task.end_date && { endTime: formatISOToTime(task.end_date) }),
-      isCompleted: task.task_status_name === "COMPLETED",
-    }));
+    return query.data.tasks
+      .filter((task) => task.task_status_name !== "CANCELLED")
+      .map((task) => ({
+        content: { id: task.task_id, title: task.task_title },
+        startTime: formatISOToTime(task.start_date),
+        ...(task.end_date && { endTime: formatISOToTime(task.end_date) }),
+        isCompleted: task.task_status_name === "COMPLETED",
+      }));
   }, [query.data]);
 
   return { ...query, reminders };

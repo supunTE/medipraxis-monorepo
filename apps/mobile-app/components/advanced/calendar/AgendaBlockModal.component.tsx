@@ -1,4 +1,7 @@
-import { ButtonComponent, ButtonSize, TextComponent } from "@/components/basic";
+import { FormPopup, TextComponent } from "@/components/basic";
+import { Text } from "@/components/Themed";
+import { Icons } from "@/config";
+
 import {
   formatDuration,
   getSlotTimeFromMinutes,
@@ -7,7 +10,7 @@ import {
 import { Color, TextSize, TextVariant } from "@repo/config";
 import clsx from "clsx";
 import { useRef } from "react";
-import { Animated, Modal, Pressable, ScrollView, View } from "react-native";
+import { Animated, Pressable, ScrollView, View } from "react-native";
 import { type AgendaBlockContent } from "./calendar.types";
 
 interface AgendaBlockModalProps {
@@ -23,6 +26,7 @@ interface AgendaBlockModalProps {
     groupId: string | null
   ) => void;
   onEmptySlotPress?: (groupId: string, slotNumber: number) => void;
+  onCancelSlotWindow?: () => void;
 }
 
 interface SlotItemProps {
@@ -125,6 +129,7 @@ export function AgendaBlockModal({
   contents,
   onAppointmentPress,
   onEmptySlotPress,
+  onCancelSlotWindow,
 }: AgendaBlockModalProps): React.JSX.Element {
   // Start and end times of full window in minutes
   const startTimeMinutes = parseTimeToMinutes(startTime);
@@ -136,14 +141,15 @@ export function AgendaBlockModal({
   const reservedSlots = contents.filter((content) => content !== null).length;
 
   return (
-    <Modal
+    <FormPopup
       visible={visible}
-      transparent
-      animationType="fade"
       onRequestClose={onClose}
+      animationType="fade"
+      containerStyle={{ alignItems: "center", padding: 0 }}
     >
-      <View className="flex-1 bg-black/50 justify-center items-center">
-        <View className="bg-white rounded-2xl p-5 w-[85%] h-[70%]">
+      <View className="bg-white rounded-2xl overflow-hidden w-[85%] h-[70%]">
+        {/* Scrollable content */}
+        <View className="flex-1 p-5">
           <View className="mb-4">
             <TextComponent size={TextSize.Medium} variant={TextVariant.Title}>
               Appointments
@@ -192,18 +198,37 @@ export function AgendaBlockModal({
               );
             })}
           </ScrollView>
+        </View>
 
-          <ButtonComponent
-            onPress={onClose}
-            size={ButtonSize.Medium}
-            buttonColor={Color.Green}
-            textColor={Color.White}
-            className="mt-4 rounded-lg"
+        {/* Footer — same pattern as ViewAppointmentModal / ViewReminderModal */}
+        <View className="bg-[#EAF8C9] p-4 flex-row justify-end gap-x-2.5 border-t border-gray-100">
+          <Pressable
+            className="flex-row items-center bg-[#FF5A5F] py-2.5 px-4 rounded-lg gap-x-2"
+            onPress={onCancelSlotWindow}
           >
-            Close
-          </ButtonComponent>
+            <Icons.Trash size={18} color="white" weight="bold" />
+            <Text
+              darkColor="white"
+              lightColor="white"
+              className="font-semibold text-sm"
+            >
+              Cancel Slot Window
+            </Text>
+          </Pressable>
+          <Pressable
+            className="flex-row items-center bg-slate-900 py-2.5 px-4 rounded-lg gap-x-2"
+            onPress={onClose}
+          >
+            <Text
+              darkColor="white"
+              lightColor="white"
+              className="font-semibold text-sm"
+            >
+              Close
+            </Text>
+          </Pressable>
         </View>
       </View>
-    </Modal>
+    </FormPopup>
   );
 }
