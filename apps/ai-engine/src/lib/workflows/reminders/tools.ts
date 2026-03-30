@@ -1,6 +1,6 @@
 import { z } from "genkit";
 import { apiClient } from "../../api-client";
-import { getUserId } from "../../context";
+import { getUserId, getTimezone } from "../../context";
 import { ai } from "../../models";
 
 const REMINDER_TASK_TYPE_ID = "24f21ec7-bf59-4c35-9c54-36cb24afafbb";
@@ -86,12 +86,6 @@ export const createReminder = ai.defineTool(
         .boolean()
         .optional()
         .describe("Whether an alarm should be enabled"),
-      //   client_id: z
-      //     .string()
-      //     .optional()
-      //     .describe(
-      //       "Optional client identifier from user input. This will be converted into note text and will not be attached as client_id."
-      //     ),
     }),
     outputSchema: z.object({
       success: z.boolean(),
@@ -151,10 +145,35 @@ export const checkDateTime = ai.defineTool(
       date: z.string().describe("Current date in YYYY-MM-DD format"),
       time: z.string().describe("Current time in HH:MM format"),
       dayOfWeek: z.string().describe("Current day of the week"),
+      datetime: z
+        .string()
+        .describe(
+          "Current date-time in ISO format with timezone offset (e.g. 2026-03-29T14:30:00+05:30)"
+        ),
     }),
   },
   async () => {
+    const timezone = getTimezone();
     const now = new Date();
+
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: timezone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    }).formatToParts(now);
+
+    const get = (type: string) =>
+      parts.find((p) => p.type === type)?.value ?? "";
+
+    const date = `${get("year")}-${get("month")}-${get("day")}`;
+    const time = `${get("hour")}:${get("minute")}`;
+    const seconds = get("second");
+
     const days = [
       "Sunday",
       "Monday",
@@ -164,12 +183,26 @@ export const checkDateTime = ai.defineTool(
       "Friday",
       "Saturday",
     ];
+    const dayOfWeek = days[new Date(`${date}T${time}:${seconds}`).getDay()]!;
 
-    return {
-      date: now.toISOString().split("T")[0]!,
-      time: now.toTimeString().slice(0, 5),
-      dayOfWeek: days[now.getDay()]!,
-    };
+    // Compute UTC offset string (e.g. +05:30) for the timezone
+    const utcOffsetMinutes =
+      (now.getTime() -
+        new Date(
+          new Date(
+            now.toLocaleString("en-US", { timeZone: timezone })
+          ).getTime()
+        ).getTime()) /
+      -60000;
+    const sign = utcOffsetMinutes >= 0 ? "+" : "-";
+    const absMinutes = Math.abs(Math.round(utcOffsetMinutes));
+    const offsetHH = String(Math.floor(absMinutes / 60)).padStart(2, "0");
+    const offsetMM = String(absMinutes % 60).padStart(2, "0");
+    const offset = `${sign}${offsetHH}:${offsetMM}`;
+
+    const datetime = `${date}T${time}:${seconds}${offset}`;
+
+    return { date, time, dayOfWeek, datetime };
   }
 );
 
