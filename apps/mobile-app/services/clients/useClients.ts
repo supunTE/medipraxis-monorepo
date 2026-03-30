@@ -165,7 +165,7 @@ export const useCreateClient = (userId: string) => {
         gender: clientData.gender,
         date_of_birth: formattedDate,
         country_code: countryCode,
-        contact_number: contactNumber,
+        contact_number: "0" + contactNumber,
         emergency_contact_name: clientData.emergencyContactName ?? null,
         emergency_contact_country_code: emergencyCountryCode,
         emergency_contact_number: emergencyContactNumber,

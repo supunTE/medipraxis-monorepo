@@ -122,40 +122,60 @@ export default function LoginScreen() {
                 Enter your details to log in
               </TextComponent>
 
-              <View className="flex-row items-center mb-4 gap-2">
-                <View style={{ flex: 0.3 }}>
-                  <Controller
-                    control={control}
-                    name="countryCode"
-                    render={({ field: { onChange, value } }) => (
-                      <TextInputComponent
-                        inputField={{
-                          placeholder: "Code",
-                          value: value,
-                          onChangeText: onChange,
-                        }}
-                        errorText={errors.countryCode?.message}
-                      />
-                    )}
-                  />
+              <View className="mb-4">
+                <View className="flex-row items-center gap-2">
+                  <View style={{ flex: 0.3 }}>
+                    <Controller
+                      control={control}
+                      name="countryCode"
+                      render={({ field: { onChange, value } }) => (
+                        <TextInputComponent
+                          inputWrapper={{
+                            isInvalid: !!(
+                              errors.phoneNumber || errors.countryCode
+                            ),
+                          }}
+                          inputField={{
+                            placeholder: "Code",
+                            value: value,
+                            onChangeText: onChange,
+                          }}
+                        />
+                      )}
+                    />
+                  </View>
+                  <View style={{ flex: 0.7 }}>
+                    <Controller
+                      control={control}
+                      name="phoneNumber"
+                      render={({ field: { onChange, value } }) => (
+                        <TextInputComponent
+                          inputType={TextInputType.Phone}
+                          inputWrapper={{
+                            isInvalid: !!(
+                              errors.phoneNumber || errors.countryCode
+                            ),
+                          }}
+                          inputField={{
+                            placeholder: "Mobile Number",
+                            value: value,
+                            onChangeText: onChange,
+                          }}
+                        />
+                      )}
+                    />
+                  </View>
                 </View>
-                <View style={{ flex: 0.7 }}>
-                  <Controller
-                    control={control}
-                    name="phoneNumber"
-                    render={({ field: { onChange, value } }) => (
-                      <TextInputComponent
-                        inputType={TextInputType.Phone}
-                        inputField={{
-                          placeholder: "Mobile Number",
-                          value: value,
-                          onChangeText: onChange,
-                        }}
-                        errorText={errors.phoneNumber?.message}
-                      />
-                    )}
-                  />
-                </View>
+                {(errors.phoneNumber || errors.countryCode) && (
+                  <TextComponent
+                    variant={TextVariant.Body}
+                    size={TextSize.Small}
+                    color={Color.Danger}
+                    className="mt-1 ml-1"
+                  >
+                    {errors.phoneNumber?.message || errors.countryCode?.message}
+                  </TextComponent>
+                )}
               </View>
 
               <View className="mb-4">

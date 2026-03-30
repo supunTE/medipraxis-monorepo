@@ -25,6 +25,11 @@ interface DateTimePickerProps {
   errorText?: string;
   hideHelperText?: boolean;
   className?: string;
+  minDate?: string;
+  /** When true, the calendar opens immediately on mount (used by chip interaction) */
+  autoOpen?: boolean;
+  /** Called when the modal is dismissed without confirming a selection */
+  onDismiss?: () => void;
 }
 
 const textLargeStyle = textStyles[TextVariant.Body][TextSize.Large];
@@ -73,8 +78,11 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
   errorText,
   hideHelperText = false,
   className,
+  minDate,
+  autoOpen = false,
+  onDismiss,
 }) => {
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(autoOpen);
 
   let initialDate = new Date();
   if (value) {
@@ -265,7 +273,10 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
         visible={showModal}
         transparent={true}
         animationType="fade"
-        onRequestClose={() => setShowModal(false)}
+        onRequestClose={() => {
+          setShowModal(false);
+          onDismiss?.();
+        }}
       >
         <TouchableOpacity
           className="flex-1 justify-center items-center bg-black/40 p-4"
@@ -273,7 +284,10 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
           onPress={() => {
             if (showTimePicker && mode !== "time") setShowTimePicker(false);
             else if (showMonthYearPicker) setShowMonthYearPicker(false);
-            else setShowModal(false);
+            else {
+              setShowModal(false);
+              onDismiss?.();
+            }
           }}
         >
           <TouchableOpacity
@@ -338,6 +352,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
                     key={selectedDateStr}
                     hideArrows={true}
                     renderHeader={() => <View />} // Hide default header, using our custom one above
+                    minDate={minDate}
                     onDayPress={(day) => {
                       const newDate = new Date(day.timestamp);
                       newDate.setHours(tempDate.getHours());
@@ -644,7 +659,12 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
 
             {/* OK / CANCEL Buttons Footer */}
             <View className="flex-row justify-end px-6 pb-6 gap-6 pt-2">
-              <TouchableOpacity onPress={() => setShowModal(false)}>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowModal(false);
+                  onDismiss?.();
+                }}
+              >
                 <Text
                   style={{
                     fontFamily: "Inter_700Bold",

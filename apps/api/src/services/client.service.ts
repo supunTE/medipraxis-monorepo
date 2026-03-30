@@ -41,7 +41,7 @@ export class ClientService {
     contactNumber: string
   ): Promise<Client[]> {
     // Remove leading plus sign from country code
-    const cleanCountryCode = countryCode?.replace(/^\\+/, "") ?? "";
+    const cleanCountryCode = countryCode?.replace(/^\+/, "") ?? "";
     const clients = await this.clientRepository.findByPhone(
       cleanCountryCode,
       contactNumber
@@ -49,8 +49,8 @@ export class ClientService {
     return clients;
   }
 
-  async getClientsByName(name: string): Promise<Client[]> {
-    const clients = await this.clientRepository.findByName(name);
+  async getClientsByName(name: string, userId: string): Promise<Client[]> {
+    const clients = await this.clientRepository.findByName(name, userId);
 
     if (!clients) {
       throw new Error("Clients not found");
@@ -64,7 +64,7 @@ export class ClientService {
 
     if (input.country_code && input.contact_number) {
       // Remove leading plus sign from country code
-      const cleanCountryCode = input.country_code.replace(/^\\+/, "");
+      const cleanCountryCode = input.country_code.replace(/^\+/, "");
 
       let contact = await this.clientRepository.findContactInfo(
         cleanCountryCode,

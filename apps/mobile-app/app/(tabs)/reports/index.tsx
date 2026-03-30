@@ -11,12 +11,15 @@ import {
   ScrollView,
   TouchableOpacity,
   View,
+  type NativeSyntheticEvent,
+  type NativeScrollEvent,
   type TextStyle as RNTextStyle,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ReportTile } from "./ReportTile.component";
 
 const SEARCH_ICON_SIZE = 20;
-const INPUT_HEIGHT = 56;
+const INPUT_HEIGHT = 54;
 const INPUT_BORDER_WIDTH = 1.5;
 const INPUT_BORDER_RADIUS = 12;
 const BOTTOM_PADDING = 100;
@@ -26,10 +29,16 @@ type TabType = "completed" | "pending";
 const textLargeStyle = textStyles[TextVariant.Body][TextSize.Large];
 
 export default function ReportsScreen() {
+  const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const userId = user?.user_id ?? "";
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState<TabType>("completed");
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    setIsScrolled(e.nativeEvent.contentOffset.y > 0);
+  };
   const router = useRouter();
 
   // Fetch reports based on active tab
@@ -86,7 +95,10 @@ export default function ReportsScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white px-5 pt-5">
+    <View
+      className="flex-1 bg-white"
+      style={{ paddingTop: insets.top + 20, paddingHorizontal: 20 }}
+    >
       {/* Header with Title and Button */}
       <View className="flex-row justify-between items-center mb-5">
         <TextComponent
@@ -151,47 +163,72 @@ export default function ReportsScreen() {
       </View>
 
       {/* Tabs */}
-      <View className="flex-row justify-center items-center mb-5 gap-4">
-        <TouchableOpacity
-          onPress={() => setActiveTab("completed")}
-          className="px-6 py-2 rounded-lg"
+      <View
+        style={{
+          marginHorizontal: -20,
+          overflow: "hidden",
+          paddingBottom: 12,
+          zIndex: 1,
+        }}
+      >
+        <View
+          className="flex-row justify-center items-center gap-4 bg-white"
           style={{
-            backgroundColor:
-              activeTab === "completed" ? Color.Green : "transparent",
+            marginTop: -20,
+            paddingTop: 20,
+            paddingHorizontal: 20,
+            paddingBottom: 12,
+            shadowColor: "#0000007b",
+            shadowOffset: { width: 0, height: 8 },
+            shadowOpacity: isScrolled ? 0.05 : 0,
+            shadowRadius: 4,
+            elevation: isScrolled ? 2 : 0,
           }}
         >
-          <TextComponent
-            variant={TextVariant.Body}
-            size={TextSize.Medium}
-            color={Color.Black}
+          <TouchableOpacity
+            onPress={() => setActiveTab("completed")}
+            className="px-6 py-2 rounded-lg"
+            style={{
+              backgroundColor:
+                activeTab === "completed" ? Color.Green : "transparent",
+            }}
           >
-            Completed
-          </TextComponent>
-        </TouchableOpacity>
+            <TextComponent
+              variant={TextVariant.Body}
+              size={TextSize.Medium}
+              color={Color.Black}
+            >
+              Completed
+            </TextComponent>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => setActiveTab("pending")}
-          className="px-6 py-2 rounded-lg"
-          style={{
-            backgroundColor:
-              activeTab === "pending" ? Color.Green : "transparent",
-          }}
-        >
-          <TextComponent
-            variant={TextVariant.Body}
-            size={TextSize.Medium}
-            color={Color.Black}
+          <TouchableOpacity
+            onPress={() => setActiveTab("pending")}
+            className="px-6 py-2 rounded-lg"
+            style={{
+              backgroundColor:
+                activeTab === "pending" ? Color.Green : "transparent",
+            }}
           >
-            Pending
-          </TextComponent>
-        </TouchableOpacity>
+            <TextComponent
+              variant={TextVariant.Body}
+              size={TextSize.Medium}
+              color={Color.Black}
+            >
+              Pending
+            </TextComponent>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Reports List */}
       <ScrollView
         className="flex-1"
         showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
         contentContainerStyle={{
+          paddingTop: 20,
           paddingBottom: BOTTOM_PADDING,
         }}
       >

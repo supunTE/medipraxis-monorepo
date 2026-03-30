@@ -21,10 +21,10 @@ import {
   Dimensions,
   Image,
   Platform,
-  SafeAreaView,
   ScrollView,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
 
 const ICON_SIZE = 18;
@@ -75,6 +75,7 @@ const isEncrypted = (fileType: string | null) =>
   fileType === ReportFileType.EncryptedImage;
 
 export default function ReportViewerScreen() {
+  const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const userId = user?.user_id ?? "";
 
@@ -125,7 +126,10 @@ export default function ReportViewerScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-white justify-center items-center">
+      <View
+        className="flex-1 bg-white justify-center items-center"
+        style={{ paddingTop: insets.top }}
+      >
         <ActivityIndicator size="large" color={Color.Green} />
         <TextComponent
           variant={TextVariant.Body}
@@ -135,13 +139,13 @@ export default function ReportViewerScreen() {
         >
           Loading report...
         </TextComponent>
-      </SafeAreaView>
+      </View>
     );
   }
 
   if (error || !reportData) {
     return (
-      <SafeAreaView className="flex-1 bg-white">
+      <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
         <View className="px-5 pt-3">
           <View className="mb-6 self-start">
             <ButtonComponent.BackButton
@@ -168,12 +172,12 @@ export default function ReportViewerScreen() {
             Retry
           </ButtonComponent>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
       <View className="flex-1" style={{ backgroundColor: Color.LightGrey }}>
         {/* Header Section */}
         <View className="px-5 pt-3 pb-6 bg-white">
@@ -510,6 +514,6 @@ export default function ReportViewerScreen() {
           )}
         </ScrollView>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }

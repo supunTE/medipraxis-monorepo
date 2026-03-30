@@ -1,25 +1,36 @@
 import { useAuth } from "@/auth/AuthContext";
 import { Icons } from "@/config";
-import { Color, TextSize, TextVariant, textStyles } from "@repo/config";
 import { useFocusEffect } from "@react-navigation/native";
+import { Color, TextSize, TextVariant, textStyles } from "@repo/config";
 import { useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  type NativeSyntheticEvent,
+  type NativeScrollEvent,
+} from "react-native";
 
 import TaskForm from "@/components/advanced/taskPanel/TaskForm";
 import { HomeCard } from "./home/HomeCard.component";
 import { UpcomingEventCard } from "./home/UpcomingEventCard.Component";
 
 const PlusIcon = Icons.Plus;
-const FileTextIcon = Icons.FileText;
-import { FormSetupCenter } from "./settings/components/form-setup-center";
 
 export default function TabOneScreen() {
   const { user } = useAuth();
   const userId = user?.user_id ?? "";
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [showForm, setShowForm] = useState(false);
-  const [showFormSetup, setShowFormSetup] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    setIsScrolled(e.nativeEvent.contentOffset.y > 0);
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -33,7 +44,7 @@ export default function TabOneScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: Color.White }}>
       {/* HomeCard fixed */}
-      <HomeCard />
+      <HomeCard onSettingsPress={() => router.push("/settings")} />
 
       {/* Upcoming events header always visible */}
       <View
@@ -45,6 +56,12 @@ export default function TabOneScreen() {
           paddingTop: 24,
           paddingBottom: 12,
           backgroundColor: Color.White,
+          shadowColor: "#0000007b",
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: isScrolled ? 0.05 : 0,
+          shadowRadius: 4,
+          elevation: isScrolled ? 2 : 0,
+          zIndex: 1,
         }}
       >
         <Text
@@ -58,45 +75,30 @@ export default function TabOneScreen() {
           Upcoming events
         </Text>
 
-        <View style={{ flexDirection: "row", gap: 10 }}>
-          <TouchableOpacity
-            onPress={() => setShowForm(true)}
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 8,
-              borderWidth: 1,
-              borderColor: Color.LightGrey,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <PlusIcon size={20} color={Color.DarkGreen} />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => setShowFormSetup(true)}
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 8,
-              borderWidth: 1,
-              borderColor: Color.LightGrey,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <FileTextIcon size={20} color={Color.DarkGreen} />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          onPress={() => setShowForm(true)}
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: Color.LightGrey,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <PlusIcon size={20} color={Color.DarkGreen} />
+        </TouchableOpacity>
       </View>
 
       {/* Scrollable: only the event cards scroll */}
       <ScrollView
         contentContainerStyle={{
-          paddingTop: 4,
+          paddingTop: 16,
           paddingBottom: 120, // space for nav bar
         }}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
       >
         <UpcomingEventCard />
@@ -104,10 +106,6 @@ export default function TabOneScreen() {
 
       {/* Task Form modal */}
       <TaskForm visible={showForm} onClose={() => setShowForm(false)} />
-      <FormSetupCenter
-        visible={showFormSetup}
-        onClose={() => setShowFormSetup(false)}
-      />
     </View>
   );
 }

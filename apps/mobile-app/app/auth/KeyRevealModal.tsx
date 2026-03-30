@@ -244,6 +244,8 @@ export function KeyRevealModal({
                   isChecked={acknowledged}
                   onChange={setAcknowledged}
                   isInvalid={isRevoke}
+                  shrinkLabel={false}
+                  containerClassName="items-center"
                   label={
                     isRevoke
                       ? "I understand that revoking my key will make older records inaccessible"

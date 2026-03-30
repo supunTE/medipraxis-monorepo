@@ -7,13 +7,21 @@ import type {
 } from "@repo/models";
 import { TaskStatus, TaskType } from "@repo/models";
 import { APPOINTMENT_COOLDOWN_MINUTES } from "../constants";
-import { type TaskRepository } from "../repositories";
+import {
+  type SlotWindowRepository,
+  type TaskRepository,
+} from "../repositories";
 
 export class TaskService {
   private taskRepository: TaskRepository;
+  private slotWindowRepository?: SlotWindowRepository;
 
-  constructor(taskRepository: TaskRepository) {
+  constructor(
+    taskRepository: TaskRepository,
+    slotWindowRepository?: SlotWindowRepository
+  ) {
     this.taskRepository = taskRepository;
+    this.slotWindowRepository = slotWindowRepository;
   }
 
   async getAllTasks(
@@ -88,6 +96,51 @@ export class TaskService {
     });
   }
 
+  // Same as getAppointmentsByClientId but joins slot_window_location.
+  // Only used by getAppointmentsByClientId in TaskController.
+  async getAppointmentsByClientIdWithLocation(
+    clientId: string,
+    taskStatus?: keyof typeof TaskStatus,
+    slotWindowId?: string
+  ): Promise<(TaskDetails & { slot_window_location: string | null })[]> {
+    const appointments = await this.getAppointmentsByClientId(
+      clientId,
+      taskStatus,
+      slotWindowId
+    );
+
+    // If no slotWindowRepository was injected, return with null locations
+    if (!this.slotWindowRepository) {
+      return appointments.map((a) => ({ ...a, slot_window_location: null }));
+    }
+
+    const slotWindowIds = [
+      ...new Set(
+        appointments
+          .map((a) => a.slot_window_id)
+          .filter((id): id is string => !!id)
+      ),
+    ];
+
+    const locationMap: Record<string, string | null> = {};
+
+    if (slotWindowIds.length > 0) {
+      const slotWindows =
+        await this.slotWindowRepository.findSlotWindowsByIds(slotWindowIds);
+
+      for (const window of slotWindows) {
+        locationMap[window.slot_window_id] = window.location ?? null;
+      }
+    }
+
+    return appointments.map((appointment) => ({
+      ...appointment,
+      slot_window_location: appointment.slot_window_id
+        ? (locationMap[appointment.slot_window_id] ?? null)
+        : null,
+    }));
+  }
+
   async getTaskById(taskId: string): Promise<TaskDetails> {
     const task = await this.taskRepository.findById(taskId);
 
@@ -146,7 +199,9 @@ export class TaskService {
     }
 
     if (input.task_type_id == appointmentTypeId) {
-      const appointmentDate = input.start_date;
+      const appointmentDate = (
+        input.start_date ?? new Date().toISOString()
+      ).split("T")[0]!;
 
       const count = await this.taskRepository.getAppointmentCountForDate(
         input.user_id,
@@ -310,7 +365,7 @@ export class TaskService {
       ? dateString
       : `${dateString}Z`;
     const lastAppointmentDate = new Date(utcDateString);
-    const nowUtc = Date.now(); // Current time in UTC milliseconds
+    const nowUtc = Date.now();
     const minutesSinceLastAppointment =
       (nowUtc - lastAppointmentDate.getTime()) / (1000 * 60);
 

@@ -10,7 +10,7 @@ if (!API_BASE_URL) {
 }
 
 // Custom fetch wrapper to handle auth
-const customFetch: typeof fetch = async (input, init) => {
+export const customFetch: typeof fetch = async (input, init) => {
   // 1. Inject Token
   const token = await authStorage.getAccessToken();
   const headers = new Headers(init?.headers);

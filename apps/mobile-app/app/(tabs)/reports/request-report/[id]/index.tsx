@@ -11,7 +11,7 @@ import {
   CheckboxIndicator,
   CheckboxLabel,
 } from "@/components/ui/checkbox";
-import { Icons, type Icon } from "@/config";
+import type { Icon } from "@/config";
 import { useFetchClients } from "@/services/clients";
 import { useFetchActiveForm } from "@/services/forms";
 import { useCreateRequestReport } from "@/services/reports";
@@ -28,14 +28,13 @@ import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  SafeAreaView,
   ScrollView,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const CLIENT_ICON_SIZE = 14;
 const SEND_THROUGH_ICON_SIZE = 18;
 const NOTES_MIN_HEIGHT = 120;
 const BOTTOM_SPACING = 24;
@@ -53,6 +52,7 @@ const SEND_THROUGH_OPTIONS: {
 ];
 
 export default function RequestReportScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
@@ -150,7 +150,7 @@ export default function RequestReportScreen() {
 
   if (isFormLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-white">
+      <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
         <View className="flex-1 justify-center items-center">
           <ActivityIndicator size="large" color={Color.Green} />
           <TextComponent
@@ -162,12 +162,12 @@ export default function RequestReportScreen() {
             Loading form...
           </TextComponent>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
       <ScrollView
         className="flex-1 bg-white"
         showsVerticalScrollIndicator={false}
@@ -189,7 +189,7 @@ export default function RequestReportScreen() {
             Requesting Reports
           </TextComponent>
 
-          <View className="flex-row items-center gap-2 mb-6">
+          <View className="flex-row items-center gap-2 mb-3">
             <TextComponent
               variant={TextVariant.Body}
               size={TextSize.Medium}
@@ -197,12 +197,6 @@ export default function RequestReportScreen() {
             >
               from
             </TextComponent>
-            <View
-              className="w-6 h-6 rounded-full justify-center items-center overflow-hidden"
-              style={{ backgroundColor: Color.LightCream }}
-            >
-              <Icons.User size={CLIENT_ICON_SIZE} color={Color.Grey} />
-            </View>
             <InlineDropdownComponent
               value={selectedClientId}
               onValueChange={setSelectedClientId}
@@ -324,6 +318,6 @@ export default function RequestReportScreen() {
           <View style={{ height: BOTTOM_SPACING }} />
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }

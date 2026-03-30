@@ -23,6 +23,7 @@ function Index() {
       isPending={isPending}
       serverMessage={serverMessage}
       onClearMessage={clearServerMessage}
+      onBack={onClose}
     />
   );
 }

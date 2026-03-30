@@ -33,6 +33,7 @@ export class OtpController {
         success: true,
         message: "OTP sent successfully",
         contact_id: clients[0]!.contact_id,
+        user_id: clients[0]!.user_id,
       });
     } catch (error) {
       const message =
