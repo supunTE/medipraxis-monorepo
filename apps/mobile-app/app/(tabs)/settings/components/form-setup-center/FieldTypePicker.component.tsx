@@ -68,6 +68,13 @@ export function FieldTypePicker({
     return false;
   };
 
+  const sortedOptions = [...options].sort((a, b) => {
+    const aDisabled = isOptionDisabled(a);
+    const bDisabled = isOptionDisabled(b);
+    if (aDisabled === bDisabled) return 0;
+    return aDisabled ? 1 : -1;
+  });
+
   if (!fontsLoaded) {
     return null;
   }
@@ -138,7 +145,7 @@ export function FieldTypePicker({
               nestedScrollEnabled={true}
               showsVerticalScrollIndicator={false}
             >
-              {options.map((option) => {
+              {sortedOptions.map((option) => {
                 const IconComponent = option.icon;
                 const disabled = isOptionDisabled(option);
                 return (
