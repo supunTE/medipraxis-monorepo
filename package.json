@@ -24,7 +24,7 @@
   "resolutions": {
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "axios": "npm:@aspect-build/empty@0.0.0"
+    "axios": "1.14.0"
   },
   "workspaces": {
     "packages": [
