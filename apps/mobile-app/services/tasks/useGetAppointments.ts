@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 
 import { apiClient } from "@/lib/api-client";
-import { TaskDetails, TaskType } from "@repo/models";
+import { type TaskDetails, TaskType } from "@repo/models";
 import { type UseQueryResult, useQuery } from "@tanstack/react-query";
 
 type GetAppointmentsResponse = {
