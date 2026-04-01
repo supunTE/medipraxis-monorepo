@@ -15,7 +15,7 @@ import { useColorScheme } from "@/components/useColorScheme";
 
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AuthProvider } from "../auth/AuthContext";
+import { AuthProvider, useAuth } from "../auth/AuthContext";
 
 const queryClient = new QueryClient();
 
@@ -42,12 +42,6 @@ export default function RootLayout() {
     if (error) throw error;
   }, [error]);
 
-  useEffect(() => {
-    if (loaded) {
-      void SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
   if (!loaded) {
     return null;
   }
@@ -61,29 +55,46 @@ function RootLayoutNav() {
   return (
     <GluestackUIProvider mode="light">
       <AuthProvider>
-        <ThemeProvider
-          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-        >
-          <QueryClientProvider client={queryClient}>
-            <Stack>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="modal" options={{ presentation: "modal" }} />
-              <Stack.Screen
-                name="auth/login"
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="auth/register"
-                options={{ headerShown: false }}
-              />
-              <Stack.Screen
-                name="auth/key-reveal"
-                options={{ headerShown: false, gestureEnabled: false }}
-              />
-            </Stack>
-          </QueryClientProvider>
-        </ThemeProvider>
+        <AuthWrapper>
+          <ThemeProvider
+            value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+          >
+            <QueryClientProvider client={queryClient}>
+              <Stack>
+                <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+                <Stack.Screen
+                  name="modal"
+                  options={{ presentation: "modal" }}
+                />
+                <Stack.Screen
+                  name="auth/login"
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                  name="auth/register"
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen
+                  name="auth/key-reveal"
+                  options={{ headerShown: false, gestureEnabled: false }}
+                />
+              </Stack>
+            </QueryClientProvider>
+          </ThemeProvider>
+        </AuthWrapper>
       </AuthProvider>
     </GluestackUIProvider>
   );
+}
+
+function AuthWrapper({ children }: { children: React.ReactNode }) {
+  const { isLoading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading) {
+      void SplashScreen.hideAsync();
+    }
+  }, [authLoading]);
+
+  return <>{children}</>;
 }

@@ -50,7 +50,7 @@ export async function generateResponse(
     greeting: "router/greeting-response",
     appointment: null,
     client_management: null,
-    general: "router/general-response",
+    general: null,
     unknown: "router/unknown-response",
   };
 

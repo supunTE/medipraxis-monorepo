@@ -21,11 +21,15 @@ import {
   Dimensions,
   Image,
   Platform,
-  SafeAreaView,
   ScrollView,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
+
+const ICON_SIZE = 18;
+const DOCUMENT_HEIGHT_RATIO = 0.6;
+const IMAGE_HEIGHT_RATIO = 0.5;
 
 const HIDE_POPOUT_ICON_JS = `
 (function() {
@@ -71,6 +75,7 @@ const isEncrypted = (fileType: string | null) =>
   fileType === ReportFileType.EncryptedImage;
 
 export default function ReportViewerScreen() {
+  const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const userId = user?.user_id ?? "";
 
@@ -121,7 +126,10 @@ export default function ReportViewerScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 bg-white justify-center items-center">
+      <View
+        className="flex-1 bg-white justify-center items-center"
+        style={{ paddingTop: insets.top }}
+      >
         <ActivityIndicator size="large" color={Color.Green} />
         <TextComponent
           variant={TextVariant.Body}
@@ -131,13 +139,13 @@ export default function ReportViewerScreen() {
         >
           Loading report...
         </TextComponent>
-      </SafeAreaView>
+      </View>
     );
   }
 
   if (error || !reportData) {
     return (
-      <SafeAreaView className="flex-1 bg-white">
+      <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
         <View className="px-5 pt-3">
           <View className="mb-6 self-start">
             <ButtonComponent.BackButton
@@ -164,13 +172,13 @@ export default function ReportViewerScreen() {
             Retry
           </ButtonComponent>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <View className="flex-1 bg-[#F5F5F5]">
+    <View className="flex-1 bg-white" style={{ paddingTop: insets.top }}>
+      <View className="flex-1" style={{ backgroundColor: Color.LightGrey }}>
         {/* Header Section */}
         <View className="px-5 pt-3 pb-6 bg-white">
           {/* Back Button */}
@@ -185,7 +193,7 @@ export default function ReportViewerScreen() {
           <View className="gap-2">
             {/* Client Name */}
             <View className="flex-row items-center gap-2">
-              <UserIcon size={18} color={Color.Black} weight="regular" />
+              <UserIcon size={ICON_SIZE} color={Color.Black} weight="regular" />
               <TextComponent
                 variant={TextVariant.Body}
                 size={TextSize.Small}
@@ -204,7 +212,11 @@ export default function ReportViewerScreen() {
 
             {/* Report Title */}
             <View className="flex-row items-center gap-2">
-              <FileTextIcon size={18} color={Color.Black} weight="regular" />
+              <FileTextIcon
+                size={ICON_SIZE}
+                color={Color.Black}
+                weight="regular"
+              />
               <TextComponent
                 variant={TextVariant.Body}
                 size={TextSize.Small}
@@ -224,7 +236,7 @@ export default function ReportViewerScreen() {
             {/* Uploaded On */}
             <View className="flex-row items-center gap-2">
               <CalendarBlankIcon
-                size={18}
+                size={ICON_SIZE}
                 color={Color.Black}
                 weight="regular"
               />
@@ -247,7 +259,11 @@ export default function ReportViewerScreen() {
             {/* Expires On */}
             {reportData.expiresIn && (
               <View className="flex-row items-center gap-2">
-                <ClockIcon size={18} color={Color.Danger} weight="regular" />
+                <ClockIcon
+                  size={ICON_SIZE}
+                  color={Color.Danger}
+                  weight="regular"
+                />
                 <TextComponent
                   variant={TextVariant.Body}
                   size={TextSize.Small}
@@ -269,7 +285,8 @@ export default function ReportViewerScreen() {
 
         {/* Document Viewer */}
         <ScrollView
-          className="flex-1 bg-[#F5F5F5]"
+          className="flex-1"
+          style={{ backgroundColor: Color.LightGrey }}
           contentContainerStyle={{
             paddingHorizontal: 20,
             paddingTop: 20,
@@ -410,7 +427,7 @@ export default function ReportViewerScreen() {
             <View
               className="relative rounded-xl overflow-hidden bg-white"
               style={{
-                height: Dimensions.get("window").height * 0.6,
+                height: Dimensions.get("window").height * DOCUMENT_HEIGHT_RATIO,
               }}
             >
               <WebView
@@ -460,7 +477,7 @@ export default function ReportViewerScreen() {
                 source={{ uri: reportData.fileUrl }}
                 className="w-full rounded-xl"
                 style={{
-                  height: Dimensions.get("window").height * 0.5,
+                  height: Dimensions.get("window").height * IMAGE_HEIGHT_RATIO,
                 }}
                 resizeMode="contain"
                 onLoadStart={() => setDocumentLoading(true)}
@@ -497,6 +514,6 @@ export default function ReportViewerScreen() {
           )}
         </ScrollView>
       </View>
-    </SafeAreaView>
+    </View>
   );
 }

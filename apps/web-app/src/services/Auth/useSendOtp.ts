@@ -7,7 +7,7 @@ export interface SendOtpInput {
 }
 
 type UseSendOtpOptions = {
-  onSuccess?: (contactId: string) => void;
+  onSuccess?: (contactId: string, userId: string) => void;
   onError?: (message: string) => void;
 };
 
@@ -30,7 +30,7 @@ export const useSendOtp = (options?: UseSendOtpOptions) => {
     },
 
     onSuccess: (data) => {
-      options?.onSuccess?.(data.contact_id);
+      options?.onSuccess?.(data.contact_id, data.user_id);
     },
 
     onError: (error) => {

@@ -16,7 +16,9 @@ interface AuthContextType {
     phoneNumber: string,
     countryCode: string,
     password: string,
-    username: string
+    username: string,
+    firstName?: string,
+    lastName?: string
   ) => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -31,11 +33,13 @@ export function useAuth() {
   return context;
 }
 
-function useProtectedRoute(user: User | null) {
+function useProtectedRoute(user: User | null, isLoading: boolean) {
   const segments = useSegments();
   const router = useRouter();
 
   useEffect(() => {
+    if (isLoading) return;
+
     const inAuthGroup = (segments[0] as string) === "auth";
 
     if (
@@ -49,7 +53,7 @@ function useProtectedRoute(user: User | null) {
       // Redirect away from the sign-in page.
       router.replace("/");
     }
-  }, [user, segments]);
+  }, [user, segments, isLoading]);
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -90,7 +94,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     checkAuth();
   }, []);
 
-  useProtectedRoute(user);
+  useProtectedRoute(user, isLoading);
 
   const signIn = async (
     phoneNumber: string,
@@ -112,10 +116,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     countryCode: string,
     password: string,
     username: string,
-    _title?: string
+    firstName?: string,
+    lastName?: string
   ) => {
     try {
-      await authService.register(phoneNumber, countryCode, password, username);
+      await authService.register(
+        phoneNumber,
+        countryCode,
+        password,
+        username,
+        firstName,
+        lastName
+      );
       // Registration successful, but we don't log them in automatically.
       // The user will be redirected manually from the Register screen.
     } catch (e) {

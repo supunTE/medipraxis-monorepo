@@ -16,6 +16,10 @@ import {
 import React from "react";
 import { TouchableOpacity, View } from "react-native";
 
+const ICON_SIZE_SMALL = 16;
+const ICON_SIZE_LARGE = 24;
+const REPORT_ROW_BORDER_GREY = "#E8E8E8";
+
 export interface Report {
   report_id: string;
   report_title: string | null;
@@ -63,9 +67,21 @@ export const ReportTile: React.FC<ReportTileProps> = ({
 
   // Determine if reports are completed or pending
   const isCompleted = reports.some((report) => report.file_path);
+  const isPending = !isCompleted;
 
   return (
-    <View className="bg-white rounded-2xl p-4 shadow-sm border border-[#E5E5E5]">
+    <View
+      className="bg-white rounded-2xl p-4"
+      style={{
+        borderWidth: 1,
+        borderColor: "#F0F0F0",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.04,
+        shadowRadius: 6,
+        elevation: 1,
+      }}
+    >
       {/* Header: Client Name and View Client Button */}
       <View className="flex-row justify-between items-center mb-3">
         <TextComponent
@@ -89,23 +105,32 @@ export const ReportTile: React.FC<ReportTileProps> = ({
       </View>
 
       {/* Reports List */}
-      <View className="gap-2 mb-3">
+      <View
+        className={isPending ? "flex-row flex-wrap gap-1 mb-4" : "gap-2 mb-3"}
+      >
         {reports.map((report) => {
-          // If report has file_path, show as clickable tile
           if (report.file_path) {
             return (
               <TouchableOpacity
                 key={report.report_id}
-                className="flex-row items-center gap-3 p-3 rounded-lg bg-white border border-[#E5E5E5] self-start shadow-sm"
+                className="flex-row items-center gap-3 p-3 rounded-lg bg-white shadow-sm w-full"
+                style={{
+                  borderWidth: 1,
+                  borderColor: REPORT_ROW_BORDER_GREY,
+                }}
                 onPress={() => onReportClick?.(report.report_id)}
                 activeOpacity={0.7}
               >
                 {report.file_type === "PDF" ? (
-                  <FilePdfIcon size={24} color={Color.Black} weight="regular" />
+                  <FilePdfIcon
+                    size={ICON_SIZE_LARGE}
+                    color={Color.Grey}
+                    weight="regular"
+                  />
                 ) : (
                   <FileImageIcon
-                    size={24}
-                    color={Color.Black}
+                    size={ICON_SIZE_LARGE}
+                    color={Color.Grey}
                     weight="regular"
                   />
                 )}
@@ -120,13 +145,23 @@ export const ReportTile: React.FC<ReportTileProps> = ({
             );
           }
 
-          // For pending reports without file_path, show with file icon
           return (
             <View
               key={report.report_id}
-              className="flex-row items-center gap-3 p-3 rounded-lg bg-[#F5F5F5]"
+              className={`flex-row items-center rounded-lg shadow-sm ${
+                isPending ? "gap-2 px-2 py-1" : "gap-3 p-3"
+              }`}
+              style={{
+                backgroundColor: Color.White,
+                borderWidth: 1,
+                borderColor: REPORT_ROW_BORDER_GREY,
+              }}
             >
-              <FilePdfIcon size={20} color={Color.Grey} weight="regular" />
+              <FilePdfIcon
+                size={ICON_SIZE_LARGE}
+                color={Color.Grey}
+                weight="regular"
+              />
               <TextComponent
                 variant={TextVariant.Body}
                 size={TextSize.Small}
@@ -142,7 +177,11 @@ export const ReportTile: React.FC<ReportTileProps> = ({
       {/* Date and Time */}
       <View className="flex-row justify-between items-center mb-3">
         <View className="flex-row items-center gap-2">
-          <CalendarBlankIcon size={16} color={Color.Grey} weight="regular" />
+          <CalendarBlankIcon
+            size={ICON_SIZE_SMALL}
+            color={Color.Grey}
+            weight="regular"
+          />
           <TextComponent
             variant={TextVariant.Body}
             size={TextSize.Small}
@@ -152,7 +191,11 @@ export const ReportTile: React.FC<ReportTileProps> = ({
           </TextComponent>
         </View>
         <View className="flex-row items-center gap-2">
-          <ClockIcon size={16} color={Color.Grey} weight="regular" />
+          <ClockIcon
+            size={ICON_SIZE_SMALL}
+            color={Color.Grey}
+            weight="regular"
+          />
           <TextComponent
             variant={TextVariant.Body}
             size={TextSize.Small}
@@ -164,7 +207,10 @@ export const ReportTile: React.FC<ReportTileProps> = ({
       </View>
 
       {/* Horizontal Divider */}
-      <View className="border-t border-[#E5E5E5] mb-3" />
+      <View
+        className="mb-3"
+        style={{ borderTopWidth: 1, borderTopColor: Color.LightGrey }}
+      />
 
       {/* Status Chip */}
       <ChipComponent

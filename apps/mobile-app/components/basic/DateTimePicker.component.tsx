@@ -25,6 +25,15 @@ interface DateTimePickerProps {
   errorText?: string;
   hideHelperText?: boolean;
   className?: string;
+  minDate?: string;
+  /** Earliest year shown in the year picker (default: current year - 10) */
+  minYear?: number;
+  /** Latest year shown in the year picker (default: current year + 29) */
+  maxYear?: number;
+  /** When true, the calendar opens immediately on mount (used by chip interaction) */
+  autoOpen?: boolean;
+  /** Called when the modal is dismissed without confirming a selection */
+  onDismiss?: () => void;
 }
 
 const textLargeStyle = textStyles[TextVariant.Body][TextSize.Large];
@@ -73,8 +82,13 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
   errorText,
   hideHelperText = false,
   className,
+  minDate,
+  minYear,
+  maxYear,
+  autoOpen = false,
+  onDismiss,
 }) => {
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = useState(autoOpen);
 
   let initialDate = new Date();
   if (value) {
@@ -139,8 +153,13 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
 
   const selectedDateStr = `${tempDate.getFullYear()}-${padZero(tempDate.getMonth() + 1)}-${padZero(tempDate.getDate())}`;
 
-  const baseYear = new Date().getFullYear();
-  const yearsOptions = Array.from({ length: 40 }, (_, i) => baseYear - 10 + i);
+  const currentYear = new Date().getFullYear();
+  const effectiveMinYear = minYear ?? currentYear - 10;
+  const effectiveMaxYear = maxYear ?? currentYear + 29;
+  const yearsOptions = Array.from(
+    { length: effectiveMaxYear - effectiveMinYear + 1 },
+    (_, i) => effectiveMinYear + i
+  );
   const hoursOptions = Array.from({ length: 12 }, (_, i) => i + 1);
   const minutesOptions = Array.from({ length: 60 }, (_, i) => i);
 
@@ -159,7 +178,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
           y: Math.max(0, monthIdx * ITEM_HEIGHT - ITEM_HEIGHT),
           animated: false,
         });
-        const yearIdx = tempDate.getFullYear() - (baseYear - 10);
+        const yearIdx = tempDate.getFullYear() - effectiveMinYear;
         yearScrollRef.current?.scrollTo({
           y: Math.max(0, yearIdx * ITEM_HEIGHT - ITEM_HEIGHT),
           animated: false,
@@ -193,12 +212,10 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
             color: Color.Black,
             fontFamily:
               textLargeStyle.fontFamily === Font.DMsans
-                ? "DMSans_400Regular"
-                : "Lato_400Regular",
+                ? "DMSans_600SemiBold"
+                : "Inter_600SemiBold",
             fontSize: textLargeStyle.fontSize,
-            fontWeight: String(
-              textLargeStyle.fontWeight
-            ) as RNTextStyle["fontWeight"],
+            fontWeight: "600" as RNTextStyle["fontWeight"],
           }}
         >
           {label}
@@ -220,7 +237,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
               errorText || isInvalid ? Color.Danger : Color.LightGrey,
             borderWidth: 1,
             borderRadius: 8,
-            height: 50,
+            height: 42,
           }}
           pointerEvents="none"
         >
@@ -232,7 +249,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
               fontFamily:
                 textLargeStyle.fontFamily === Font.DMsans
                   ? "DMSans_400Regular"
-                  : "Lato_400Regular",
+                  : "Inter_400Regular",
               fontSize: textLargeStyle.fontSize,
               color: value ? Color.Black : Color.Grey,
             }}
@@ -251,7 +268,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
             fontFamily:
               textSmallStyle.fontFamily === Font.DMsans
                 ? "DMSans_400Regular"
-                : "Lato_400Regular",
+                : "Inter_400Regular",
             fontSize: textSmallStyle.fontSize,
             fontWeight: String(
               textSmallStyle.fontWeight
@@ -267,7 +284,10 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
         visible={showModal}
         transparent={true}
         animationType="fade"
-        onRequestClose={() => setShowModal(false)}
+        onRequestClose={() => {
+          setShowModal(false);
+          onDismiss?.();
+        }}
       >
         <TouchableOpacity
           className="flex-1 justify-center items-center bg-black/40 p-4"
@@ -275,7 +295,10 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
           onPress={() => {
             if (showTimePicker && mode !== "time") setShowTimePicker(false);
             else if (showMonthYearPicker) setShowMonthYearPicker(false);
-            else setShowModal(false);
+            else {
+              setShowModal(false);
+              onDismiss?.();
+            }
           }}
         >
           <TouchableOpacity
@@ -294,7 +317,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
                 >
                   <Text
                     className="text-xl text-[#333]"
-                    style={{ fontFamily: "Lato_700Bold" }}
+                    style={{ fontFamily: "Inter_700Bold" }}
                   >
                     {monthNamesFull[tempDate.getMonth()]}{" "}
                     {tempDate.getFullYear()}
@@ -340,6 +363,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
                     key={selectedDateStr}
                     hideArrows={true}
                     renderHeader={() => <View />} // Hide default header, using our custom one above
+                    minDate={minDate}
                     onDayPress={(day) => {
                       const newDate = new Date(day.timestamp);
                       newDate.setHours(tempDate.getHours());
@@ -358,8 +382,8 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
                         calendarBackground: "#f8f9fa",
                         selectedDayBackgroundColor: Color.Green,
                         todayTextColor: Color.Green,
-                        textDayFontFamily: "Lato_400Regular",
-                        textDayHeaderFontFamily: "Lato_700Bold",
+                        textDayFontFamily: "Inter_400Regular",
+                        textDayHeaderFontFamily: "Inter_700Bold",
                         textDayFontSize: 16,
                         "stylesheet.calendar.header": {
                           dayHeader: {
@@ -368,7 +392,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
                             width: 32,
                             textAlign: "center",
                             fontSize: 13,
-                            fontFamily: "Lato_400Regular",
+                            fontFamily: "Inter_400Regular",
                             color: "#999",
                           },
                         },
@@ -471,7 +495,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
                     >
                       <Text
                         style={{
-                          fontFamily: "Lato_700Bold",
+                          fontFamily: "Inter_700Bold",
                           color: Color.Green,
                           fontSize: 14,
                         }}
@@ -491,7 +515,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
                   <>
                     <Text
                       className="text-[#333] text-base"
-                      style={{ fontFamily: "Lato_400Regular" }}
+                      style={{ fontFamily: "Inter_400Regular" }}
                     >
                       Time
                     </Text>
@@ -506,7 +530,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
                         className="font-bold text-base tracking-wide"
                         style={{
                           color: showTimePicker ? Color.Green : "#333",
-                          fontFamily: "Lato_700Bold",
+                          fontFamily: "Inter_700Bold",
                         }}
                       >
                         {tempHours}:{padZero(tempMinutes)}{" "}
@@ -545,7 +569,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
                 {mode === "time" && (
                   <Text
                     className="text-xl font-bold mb-4 text-[#333] text-center"
-                    style={{ fontFamily: "Lato_700Bold" }}
+                    style={{ fontFamily: "Inter_700Bold" }}
                   >
                     Select Time
                   </Text>
@@ -632,7 +656,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
                   >
                     <Text
                       style={{
-                        fontFamily: "Lato_700Bold",
+                        fontFamily: "Inter_700Bold",
                         color: Color.Green,
                         fontSize: 14,
                       }}
@@ -646,10 +670,15 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
 
             {/* OK / CANCEL Buttons Footer */}
             <View className="flex-row justify-end px-6 pb-6 gap-6 pt-2">
-              <TouchableOpacity onPress={() => setShowModal(false)}>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowModal(false);
+                  onDismiss?.();
+                }}
+              >
                 <Text
                   style={{
-                    fontFamily: "Lato_700Bold",
+                    fontFamily: "Inter_700Bold",
                     color: "#666",
                     fontSize: 16,
                   }}
@@ -660,7 +689,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
               <TouchableOpacity onPress={handleConfirm}>
                 <Text
                   style={{
-                    fontFamily: "Lato_700Bold",
+                    fontFamily: "Inter_700Bold",
                     color: Color.Green,
                     fontSize: 16,
                   }}

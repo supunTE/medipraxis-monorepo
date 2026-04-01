@@ -3,7 +3,7 @@ import {
   DMSans_500Medium,
   DMSans_600SemiBold,
 } from "@expo-google-fonts/dm-sans";
-import { Lato_400Regular, Lato_700Bold } from "@expo-google-fonts/lato";
+import { Inter_400Regular, Inter_700Bold } from "@expo-google-fonts/inter";
 import { Color } from "@repo/config";
 import { useFonts } from "expo-font";
 import { CaretDownIcon } from "phosphor-react-native";
@@ -23,8 +23,8 @@ export function FieldTypePicker({
     DMSans_400Regular,
     DMSans_500Medium,
     DMSans_600SemiBold,
-    Lato_400Regular,
-    Lato_700Bold,
+    Inter_400Regular,
+    Inter_700Bold,
   });
 
   const [isOpen, setIsOpen] = useState(false);
@@ -67,6 +67,13 @@ export function FieldTypePicker({
     if (formType && option.disabledForForms?.includes(formType)) return true;
     return false;
   };
+
+  const sortedOptions = [...options].sort((a, b) => {
+    const aDisabled = isOptionDisabled(a);
+    const bDisabled = isOptionDisabled(b);
+    if (aDisabled === bDisabled) return 0;
+    return aDisabled ? 1 : -1;
+  });
 
   if (!fontsLoaded) {
     return null;
@@ -138,7 +145,7 @@ export function FieldTypePicker({
               nestedScrollEnabled={true}
               showsVerticalScrollIndicator={false}
             >
-              {options.map((option) => {
+              {sortedOptions.map((option) => {
                 const IconComponent = option.icon;
                 const disabled = isOptionDisabled(option);
                 return (

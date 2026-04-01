@@ -22,6 +22,7 @@ import {
   View,
   type LayoutChangeEvent,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   Defs,
   LinearGradient,
@@ -33,7 +34,7 @@ import {
 const IMG_SIZE = 120;
 
 const fontFamilyMap: { [key in Font]: string } = {
-  [Font.Lato]: "Lato",
+  [Font.Inter]: "Inter",
   [Font.DMsans]: "DMSans",
 };
 
@@ -103,6 +104,10 @@ interface HomeCardProps {
   notificationCount?: number;
 }
 
+type HomeHeaderUser = {
+  first_name?: string | null;
+};
+
 const BellIcon = Icons.Bell;
 const SettingsIcon = Icons.Gear;
 
@@ -111,11 +116,17 @@ export function HomeCard({
   onSettingsPress,
   notificationCount = 8,
 }: HomeCardProps) {
+  const insets = useSafeAreaInsets();
   const { user: authUser } = useAuth();
   const userId = authUser?.user_id ?? "";
   const today = getLocalDateString();
 
-  const { data: user, isLoading: userLoading } = useFetchUser(userId);
+  const userQuery = useFetchUser(userId) as {
+    data: HomeHeaderUser | null;
+    isLoading: boolean;
+  };
+  const user = userQuery.data;
+  const userLoading = userQuery.isLoading;
   const { data: taskSummary, isLoading: summaryLoading } = useFetchTaskSummary(
     userId,
     today
@@ -127,6 +138,9 @@ export function HomeCard({
 
   const [cardHeight, setCardHeight] = useState(0);
   const imgTop = cardHeight > 0 ? cardHeight / 2 - IMG_SIZE / 2 : 0;
+  const topInsetPadding = Math.max(insets.top + 8, 20);
+  const greetingTop = topInsetPadding + 48;
+  const headerHeight = 340 + Math.max(topInsetPadding - 20, 0);
 
   const handleCardLayout = (e: LayoutChangeEvent) => {
     const { height } = e.nativeEvent.layout;
@@ -137,12 +151,26 @@ export function HomeCard({
     <ImageBackground
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       source={require("@/assets/images/home/card-background.png") as number}
-      style={{ width: "100%", height: 300 }}
+      style={{ width: "100%", height: headerHeight }}
       imageStyle={{ borderBottomLeftRadius: 24, borderBottomRightRadius: 24 }}
       resizeMode="cover"
     >
-      <View className="flex-row justify-between items-center px-5 pt-5">
-        <Text style={{ color: Color.Black, fontSize: 14, fontWeight: "500" }}>
+      <View
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          paddingHorizontal: 20,
+          paddingTop: topInsetPadding,
+        }}
+      >
+        <Text
+          allowFontScaling={false}
+          style={{ color: Color.Black, fontSize: 14, fontWeight: "500" }}
+        >
           {getFormattedDate()}
         </Text>
 
@@ -169,8 +197,18 @@ export function HomeCard({
         </View>
       </View>
 
-      <View className="px-5 pt-3">
-        <Text style={{ color: Color.Black, fontSize: 32, fontWeight: "700" }}>
+      <View
+        style={{
+          position: "absolute",
+          left: 20,
+          right: 20,
+          top: greetingTop,
+        }}
+      >
+        <Text
+          allowFontScaling={false}
+          style={{ color: Color.Black, fontSize: 32, fontWeight: "700" }}
+        >
           {getGreeting()}
         </Text>
 
@@ -180,7 +218,7 @@ export function HomeCard({
             style={{ alignSelf: "flex-start", marginTop: 8 }}
           />
         ) : (
-          <Svg height={56} width="100%">
+          <Svg height={56} width="100%" style={{ marginTop: -4 }}>
             <Defs>
               <LinearGradient id="nameGradient" x1="0" y1="0" x2="1" y2="0">
                 <Stop offset="0" stopColor={Color.TextGreen} />
@@ -194,7 +232,7 @@ export function HomeCard({
               fontWeight="800"
               fontStyle="italic"
               x="0"
-              y="48"
+              y="42"
             >
               {user?.first_name ?? ""}
             </SvgText>
@@ -204,8 +242,16 @@ export function HomeCard({
 
       {/* Stats Cards Row */}
       <View
-        className="flex-row px-5 gap-3 mt-5"
-        style={{ overflow: "visible" }}
+        style={{
+          flexDirection: "row",
+          gap: 12,
+          paddingHorizontal: 20,
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 30,
+          overflow: "visible",
+        }}
       >
         {/* Appointments Card */}
         <View
@@ -213,7 +259,7 @@ export function HomeCard({
           style={{
             backgroundColor: Color.LightCream,
             minHeight: 120,
-            overflow: "visible",
+            overflow: "hidden",
           }}
           onLayout={handleCardLayout}
         >
@@ -226,16 +272,24 @@ export function HomeCard({
           >
             APPOINTMENTS
           </Text>
-          <Text
-            style={{
-              ...applyTextStyle(TextVariant.Title, TextSize.Large),
-              color: Color.Black,
-              textAlign: "center",
-              lineHeight: 36,
-            }}
-          >
-            {loading ? "--" : String(appointmentCount).padStart(2, "0")}
-          </Text>
+          {loading ? (
+            <ActivityIndicator
+              size="small"
+              color={Color.Black}
+              style={{ marginTop: 6, marginBottom: 6 }}
+            />
+          ) : (
+            <Text
+              style={{
+                ...applyTextStyle(TextVariant.Title, TextSize.Large),
+                color: Color.Black,
+                textAlign: "center",
+                lineHeight: 36,
+              }}
+            >
+              {String(appointmentCount).padStart(2, "0")}
+            </Text>
+          )}
 
           {/* Appointment image — left edge, dynamically vertically centered */}
           {cardHeight > 0 && (
@@ -244,7 +298,7 @@ export function HomeCard({
               source={require("@/assets/images/home/calendar.png") as number}
               style={{
                 position: "absolute",
-                left: -20,
+                left: -28,
                 top: imgTop,
                 width: IMG_SIZE,
                 height: IMG_SIZE,
@@ -260,7 +314,7 @@ export function HomeCard({
           style={{
             backgroundColor: Color.LightCream,
             minHeight: 120,
-            overflow: "visible",
+            overflow: "hidden",
           }}
         >
           <Text
@@ -272,16 +326,24 @@ export function HomeCard({
           >
             REMINDERS
           </Text>
-          <Text
-            style={{
-              ...applyTextStyle(TextVariant.Title, TextSize.Large),
-              color: Color.Black,
-              textAlign: "center",
-              lineHeight: 36,
-            }}
-          >
-            {loading ? "--" : String(taskCount).padStart(2, "0")}
-          </Text>
+          {loading ? (
+            <ActivityIndicator
+              size="small"
+              color={Color.Black}
+              style={{ marginTop: 6, marginBottom: 6 }}
+            />
+          ) : (
+            <Text
+              style={{
+                ...applyTextStyle(TextVariant.Title, TextSize.Large),
+                color: Color.Black,
+                textAlign: "center",
+                lineHeight: 36,
+              }}
+            >
+              {String(taskCount).padStart(2, "0")}
+            </Text>
+          )}
 
           {/* Reminder image — right edge, dynamically vertically centered */}
           {cardHeight > 0 && (
@@ -290,7 +352,7 @@ export function HomeCard({
               source={require("@/assets/images/home/checklist.png") as number}
               style={{
                 position: "absolute",
-                right: -20,
+                right: -36,
                 top: imgTop,
                 width: IMG_SIZE,
                 height: IMG_SIZE,

@@ -23,7 +23,9 @@ export class ShareableUserLinkRepository {
       .select(SHAREABLE_USER_LINK_QUERIES.SHAREABLE_USER_LINK_ALL)
       .eq(SHAREABLE_USER_LINK_QUERIES.USER_ID, userId)
       .eq(SHAREABLE_USER_LINK_QUERIES.DELETED, false)
-      .single();
+      .order(SHAREABLE_USER_LINK_QUERIES.CREATED_DATE, { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
     if (error) {
       throw new Error(`Failed to fetch shareable user link: ${error.message}`);

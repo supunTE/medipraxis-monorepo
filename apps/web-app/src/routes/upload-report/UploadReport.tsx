@@ -11,10 +11,11 @@ import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
 interface ReportField {
-  id: string;
   active: boolean;
+  required: boolean;
   sequence: number;
   help_text: string;
+  shareable: boolean;
   field_type: string;
   description: string;
   display_label: string;
@@ -73,11 +74,11 @@ export function UploadReport({ requestReportId }: UploadReportProps) {
       title: "Upload Reports",
       description: "Please upload the requested documents",
       questions: activeFields.map((field: ReportField) => ({
-        id: field.id,
+        id: `field-${field.sequence}`,
         type: FormFieldType.FILE_UPLOAD,
         question: field.display_label,
         helpText: field.help_text,
-        compulsory: true,
+        compulsory: field.required,
         sequence: field.sequence,
         notes: field.description,
         fileConfig: {
@@ -102,8 +103,9 @@ export function UploadReport({ requestReportId }: UploadReportProps) {
     const files: Array<{ file: File; title: string }> = [];
     Object.entries(values).forEach(([fieldId, file]) => {
       if (file instanceof File) {
+        const sequence = parseInt(fieldId.replace("field-", ""));
         const field = requestReport.requested_reports.find(
-          (f: ReportField) => f.id === fieldId
+          (f: ReportField) => f.sequence === sequence
         );
         const title = field?.display_label || "Report";
         files.push({ file, title });

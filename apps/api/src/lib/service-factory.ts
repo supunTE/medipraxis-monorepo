@@ -41,6 +41,14 @@ export function getTaskService(c: Context<{ Bindings: Env }>) {
   return new TaskService(taskRepository);
 }
 
+// Passes slotWindowRepository so getAppointmentsByClientIdWithLocation works
+export function getTaskServiceWithLocation(c: Context<{ Bindings: Env }>) {
+  const db = createDatabaseClient(c.env);
+  const taskRepository = new TaskRepository(db);
+  const slotWindowRepository = new SlotWindowRepository(db);
+  return new TaskService(taskRepository, slotWindowRepository);
+}
+
 export function getAIService(c: Context<{ Bindings: Env }>) {
   if (!c.env.AI_ENGINE_URL || !c.env.AI_ENGINE_API_KEY) {
     throw new Error("AI Engine URL or API key not configured");
@@ -127,10 +135,18 @@ export function getShareableCalendarLinkService(c: Context<{ Bindings: Env }>) {
   );
   const slotWindowRepository = new SlotWindowRepository(db);
   const taskRepository = new TaskRepository(db);
+  const userRepository = new UserRepository(db);
+  const clientRepository = new ClientRepository(db);
+  const smsService = getSmsService(c);
+  const webAppUrl = c.env.MEDIPRAXIS_WEB_URL;
   return new ShareableCalendarLinkService(
     shareableCalendarLinkRepository,
     slotWindowRepository,
-    taskRepository
+    taskRepository,
+    userRepository,
+    clientRepository,
+    smsService,
+    webAppUrl
   );
 }
 

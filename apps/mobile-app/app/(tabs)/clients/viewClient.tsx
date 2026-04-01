@@ -20,6 +20,7 @@ import {
   type NativeSyntheticEvent,
   type TextStyle as RNTextStyle,
 } from "react-native";
+import { AppointmentsList } from "./[id]/AppointmentList.component";
 
 // Tab options
 enum ClientDetailTab {
@@ -51,6 +52,8 @@ interface ViewClientProps {
   onScheduleAppointment?: () => void;
   onRequestReport?: () => void;
   onDirectUploadReport?: () => void;
+  onViewAppointment?: (appointmentId: string) => void;
+  onAddRecord?: (appointmentId: string) => void;
 }
 
 // Text styles
@@ -67,6 +70,8 @@ export const ViewClient: React.FC<ViewClientProps> = ({
   onScheduleAppointment,
   onRequestReport,
   onDirectUploadReport,
+  onViewAppointment,
+  onAddRecord,
 }) => {
   const [activeTab, setActiveTab] = useState<ClientDetailTab>(
     ClientDetailTab.Appointments
@@ -443,7 +448,7 @@ export const ViewClient: React.FC<ViewClientProps> = ({
                                   textButtonMediumStyle.fontFamily ===
                                   Font.DMsans
                                     ? "DMSans_400Regular"
-                                    : "Lato_400Regular",
+                                    : "Inter_400Regular",
                                 fontSize: textButtonMediumStyle.fontSize,
                                 fontWeight: String(
                                   textButtonMediumStyle.fontWeight
@@ -493,7 +498,7 @@ export const ViewClient: React.FC<ViewClientProps> = ({
                       fontFamily:
                         textLargeStyle.fontFamily === Font.DMsans
                           ? "DMSans_400Regular"
-                          : "Lato_400Regular",
+                          : "Inter_400Regular",
                       fontSize: textLargeStyle.fontSize,
                       fontWeight: "400" as RNTextStyle["fontWeight"],
                       textAlign: "left",
@@ -517,9 +522,11 @@ export const ViewClient: React.FC<ViewClientProps> = ({
               ) : (
                 <View className="flex-1">
                   {activeTab === ClientDetailTab.Appointments ? (
-                    <EmptyState
-                      icon={Icons.CalendarBlank}
-                      message="No appointments found"
+                    <AppointmentsList
+                      clientId={client.client_id}
+                      searchQuery={searchQuery}
+                      onViewAppointment={onViewAppointment}
+                      onAddRecord={onAddRecord}
                     />
                   ) : (
                     <EmptyState
