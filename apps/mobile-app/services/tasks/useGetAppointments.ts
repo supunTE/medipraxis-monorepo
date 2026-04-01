@@ -38,6 +38,7 @@ export const useGetAppointments = (
       return (await res.json()) as GetAppointmentsResponse;
     },
     enabled: !!userId,
+    meta: { persist: true },
   });
 
   const appointments = useMemo(

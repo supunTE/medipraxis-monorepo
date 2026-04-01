@@ -31,6 +31,7 @@ export const useGetSlotWindowTemplates = (
       return (await res.json()) as GetSlotWindowTemplatesResponse;
     },
     enabled: !!userId,
+    meta: { persist: true },
   });
 
   const templates: SlotWindowTemplate[] = query.data?.templates ?? [];

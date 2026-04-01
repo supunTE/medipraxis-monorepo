@@ -25,6 +25,7 @@ export const useGetReminders = (userId: string, date: string) => {
       return res.json();
     },
     enabled: !!userId && !!date,
+    meta: { persist: true },
   });
 
   const reminders: AgendaReminderData[] = useMemo(() => {
