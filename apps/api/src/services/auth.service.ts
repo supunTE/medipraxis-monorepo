@@ -193,36 +193,31 @@ export class AuthService {
     await this.refreshTokenRepository.revokeAllUserTokens(userId);
   }
 
-  async saveAdditionalDetails(payload: RegisterAdditionalDetailsInput) {
-    const existingUser = await this.userRepository.findUserByMobile(
-      payload.mobile_number,
-      payload.mobile_country_code
-    );
+  async saveAdditionalDetails(
+    userId: string,
+    payload: RegisterAdditionalDetailsInput
+  ) {
+    const existingUser = await this.userRepository.findUserById(userId);
 
     if (!existingUser) {
       throw new Error("User not found");
     }
 
-    const updatedUser =
-      await this.userRepository.updateAdditionalDetailsByMobile(
-        payload.mobile_number,
-        payload.mobile_country_code,
-        {
-          title: payload.title,
-          first_name: payload.first_name,
-          last_name: payload.last_name,
-          role: payload.profession,
-          registration_number: payload.registration_number,
-          specialization: payload.specialization,
-          whatsapp_country_code: payload.different_whatsapp_number
-            ? payload.whatsapp_country_code
-            : undefined,
-          whatsapp_number: payload.different_whatsapp_number
-            ? payload.whatsapp_number
-            : undefined,
-          email_address: payload.email_address,
-        }
-      );
+    const updatedUser = await this.userRepository.updateUser(userId, {
+      title: payload.title,
+      first_name: payload.first_name,
+      last_name: payload.last_name,
+      role: payload.profession,
+      registration_number: payload.registration_number,
+      specialization: payload.specialization,
+      whatsapp_country_code: payload.different_whatsapp_number
+        ? payload.whatsapp_country_code
+        : undefined,
+      whatsapp_number: payload.different_whatsapp_number
+        ? payload.whatsapp_number
+        : undefined,
+      email_address: payload.email_address,
+    });
 
     if (!updatedUser) {
       throw new Error("User not found");
@@ -251,24 +246,17 @@ export class AuthService {
     }
   }
 
-  async uploadProfilePicture(
-    file: File,
-    mobileNumber: string,
-    countryCode: string
-  ) {
+  async uploadProfilePicture(file: File, userId: string) {
     this.validateUserAsset(file, "profile");
 
-    const user = await this.userRepository.findUserByMobile(
-      mobileNumber,
-      countryCode
-    );
+    const user = await this.userRepository.findUserById(userId);
     if (!user) {
       throw new Error("User not found");
     }
 
     const uploadResult = await this.userRepository.uploadProfilePictureForUser(
       file,
-      user.user_id
+      userId
     );
 
     return {
@@ -278,20 +266,17 @@ export class AuthService {
     };
   }
 
-  async uploadSeal(file: File, mobileNumber: string, countryCode: string) {
+  async uploadSeal(file: File, userId: string) {
     this.validateUserAsset(file, "seal");
 
-    const user = await this.userRepository.findUserByMobile(
-      mobileNumber,
-      countryCode
-    );
+    const user = await this.userRepository.findUserById(userId);
     if (!user) {
       throw new Error("User not found");
     }
 
     const uploadResult = await this.userRepository.uploadSealForUser(
       file,
-      user.user_id
+      userId
     );
 
     return {

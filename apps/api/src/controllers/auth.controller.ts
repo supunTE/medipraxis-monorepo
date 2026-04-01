@@ -56,10 +56,11 @@ export class AuthController {
 
   static async registerAdditionalDetails(c: APIContext<any>) {
     const authService = getAuthService(c);
+    const userId = (c.get("user" as never) as { sub: string }).sub;
 
     try {
       const payload = c.req.valid("json");
-      const user = await authService.saveAdditionalDetails(payload);
+      const user = await authService.saveAdditionalDetails(userId, payload);
       return c.json(
         {
           message: "Additional details saved",
@@ -80,35 +81,19 @@ export class AuthController {
   }
 
   static async uploadProfilePicture(
-    c: APIContext<{
-      form: { file: File; mobile_number: string; mobile_country_code: string };
-    }>
+    c: APIContext<{ form: { file: File } }>
   ) {
     try {
+      const userId = (c.get("user" as never) as { sub: string }).sub;
       const body = await c.req.parseBody();
-
       const file = body["file"];
-      const mobileNumber = body["mobile_number"];
-      const countryCode = body["mobile_country_code"];
 
       if (!(file instanceof File)) {
         return c.json({ error: "file is required" }, 400);
       }
 
-      if (typeof mobileNumber !== "string" || typeof countryCode !== "string") {
-        return c.json(
-          { error: "mobile_number and mobile_country_code are required" },
-          400
-        );
-      }
-
       const authService = getAuthService(c);
-
-      const result = await authService.uploadProfilePicture(
-        file,
-        mobileNumber,
-        countryCode
-      );
+      const result = await authService.uploadProfilePicture(file, userId);
 
       return c.json(result, 201);
     } catch (e: any) {
@@ -123,35 +108,18 @@ export class AuthController {
     }
   }
 
-  static async uploadSeal(
-    c: APIContext<{
-      form: { file: File; mobile_number: string; mobile_country_code: string };
-    }>
-  ) {
+  static async uploadSeal(c: APIContext<{ form: { file: File } }>) {
     try {
+      const userId = (c.get("user" as never) as { sub: string }).sub;
       const body = await c.req.parseBody();
-
       const file = body["file"];
-      const mobileNumber = body["mobile_number"];
-      const countryCode = body["mobile_country_code"];
 
       if (!(file instanceof File)) {
         return c.json({ error: "file is required" }, 400);
       }
 
-      if (typeof mobileNumber !== "string" || typeof countryCode !== "string") {
-        return c.json(
-          { error: "mobile_number and mobile_country_code are required" },
-          400
-        );
-      }
-
       const authService = getAuthService(c);
-      const result = await authService.uploadSeal(
-        file,
-        mobileNumber,
-        countryCode
-      );
+      const result = await authService.uploadSeal(file, userId);
 
       return c.json(result, 201);
     } catch (e: any) {

@@ -169,12 +169,8 @@ export const authService = {
   },
 
   async uploadProfilePicture(
-    file: ExpoFile,
-    mobileNumber: string,
-    countryCode: string
+    file: ExpoFile
   ): Promise<UploadUserAssetResponse> {
-    const normalizedCountryCode = countryCode.replace("+", "");
-
     const localUri = `${Paths.cache.uri}${file.name}`;
     await copyAsync({ from: file.uri, to: localUri });
 
@@ -189,8 +185,6 @@ export const authService = {
           type: file.type || "image/jpeg",
           name: file.name || "profile.jpg",
         } as unknown as Blob,
-        mobile_number: mobileNumber,
-        mobile_country_code: normalizedCountryCode,
       },
     });
 
@@ -209,13 +203,7 @@ export const authService = {
     return (await res.json()) as UploadUserAssetResponse;
   },
 
-  async uploadSeal(
-    file: ExpoFile,
-    mobileNumber: string,
-    countryCode: string
-  ): Promise<UploadUserAssetResponse> {
-    const normalizedCountryCode = countryCode.replace("+", "");
-
+  async uploadSeal(file: ExpoFile): Promise<UploadUserAssetResponse> {
     const localUri = `${Paths.cache.uri}${file.name}`;
     await copyAsync({ from: file.uri, to: localUri });
 
@@ -228,8 +216,6 @@ export const authService = {
           type: file.type || "image/jpeg",
           name: file.name || "profile.jpg",
         } as unknown as Blob,
-        mobile_number: mobileNumber,
-        mobile_country_code: normalizedCountryCode,
       },
     });
 

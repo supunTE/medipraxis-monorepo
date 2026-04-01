@@ -133,8 +133,6 @@ export default function AdditionalInfoScreen() {
       profession: data.profession,
       registration_number: data.registrationNumber,
       specialization: data.specialization,
-      mobile_country_code: data.mobileCountryCode,
-      mobile_number: data.mobileNumber,
       different_whatsapp_number: data.differentWhatsappNumber,
       whatsapp_country_code: data.whatsappCountryCode || undefined,
       whatsapp_number: data.whatsappNumber || undefined,
@@ -147,19 +145,11 @@ export default function AdditionalInfoScreen() {
 
       try {
         if (photoFile) {
-          await authService.uploadProfilePicture(
-            photoFile,
-            data.mobileNumber,
-            data.mobileCountryCode
-          );
+          await authService.uploadProfilePicture(photoFile);
         }
 
         if (sealFile) {
-          await authService.uploadSeal(
-            sealFile,
-            data.mobileNumber,
-            data.mobileCountryCode
-          );
+          await authService.uploadSeal(sealFile);
         }
       } catch (uploadError: any) {
         console.error("uploadError", uploadError);

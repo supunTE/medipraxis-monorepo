@@ -27,10 +27,6 @@ export const registerAdditionalDetailsSchema = z
     profession: z.string().min(1, "Profession is required"),
     registration_number: z.string().min(1, "Registration number is required"),
     specialization: z.string().min(1, "Specialization is required"),
-    mobile_country_code: z
-      .string()
-      .regex(/^\+?[0-9]{1,4}$/, "Invalid mobile country code"),
-    mobile_number: z.string().regex(/^[0-9]{7,15}$/, "Invalid mobile number"),
     different_whatsapp_number: z.boolean(),
     whatsapp_country_code: z
       .string()
