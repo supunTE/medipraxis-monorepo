@@ -2,13 +2,23 @@ import type { RegisterAdditionalDetailsInput } from "@repo/models";
 import { type JwtService } from "../lib/jwt";
 import { hashPassword, verifyPassword } from "../lib/password";
 import type { RefreshTokenRepository, UserRepository } from "../repositories";
+import type { OtpService } from "./otp.service";
+
+const MOBILE_PASSWORD_RESET_OTP_EXPIRATION_MS = 5 * 60 * 1000;
 
 export class AuthService {
   constructor(
     private userRepository: UserRepository,
     private refreshTokenRepository: RefreshTokenRepository,
-    public jwtService: JwtService
+    public jwtService: JwtService,
+    private otpService: OtpService
   ) {}
+
+  private buildPasswordResetOtpKey(countryCode: string, mobileNumber: string) {
+    const normalizedCountryCode = countryCode.replace(/\s/g, "");
+    const normalizedMobileNumber = mobileNumber.replace(/\s/g, "");
+    return `password-reset:${normalizedCountryCode}${normalizedMobileNumber}`;
+  }
 
   async register(
     username: string,
@@ -191,6 +201,69 @@ export class AuthService {
 
     // Fallback: If no token matches or no token provided, revoke all tokens for safety/legacy behavior.
     await this.refreshTokenRepository.revokeAllUserTokens(userId);
+  }
+
+  async sendOtp(mobileNumber: string, countryCode: string) {
+    const user = await this.userRepository.findUserByMobile(
+      mobileNumber,
+      countryCode
+    );
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const otp = await this.otpService.sendOtp(countryCode, mobileNumber);
+    const otpKey = this.buildPasswordResetOtpKey(countryCode, mobileNumber);
+    await this.otpService.storeOtp(
+      otpKey,
+      otp,
+      MOBILE_PASSWORD_RESET_OTP_EXPIRATION_MS
+    );
+
+    return {
+      message: "OTP sent successfully",
+    };
+  }
+
+  async resetPasswordWithOtp(
+    mobileNumber: string,
+    countryCode: string,
+    otp: string,
+    newPassword: string
+  ) {
+    const user = await this.userRepository.findUserByMobile(
+      mobileNumber,
+      countryCode
+    );
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const otpKey = this.buildPasswordResetOtpKey(countryCode, mobileNumber);
+    const isValidOtp = await this.otpService.verifyOtp(otpKey, otp);
+
+    if (!isValidOtp) {
+      throw new Error("Invalid or expired OTP");
+    }
+
+    const passwordHash = await hashPassword(newPassword);
+    const updatedUser = await this.userRepository.updatePasswordByMobile(
+      mobileNumber,
+      countryCode,
+      passwordHash
+    );
+
+    if (!updatedUser) {
+      throw new Error("User not found");
+    }
+
+    await this.refreshTokenRepository.revokeAllUserTokens(updatedUser.user_id);
+
+    return {
+      message: "Password reset successfully",
+    };
   }
 
   async saveAdditionalDetails(

@@ -75,6 +75,10 @@ function RootLayoutNav() {
                   options={{ headerShown: false }}
                 />
                 <Stack.Screen
+                  name="auth/forgot-password"
+                  options={{ headerShown: false }}
+                />
+                <Stack.Screen
                   name="auth/key-reveal"
                   options={{ headerShown: false, gestureEnabled: false }}
                 />
