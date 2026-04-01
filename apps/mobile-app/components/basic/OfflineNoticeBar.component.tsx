@@ -15,15 +15,21 @@ type OfflineNoticeBarProps = {
   containerStyle?: unknown;
 };
 
-export function OfflineNoticeBar({ containerStyle: _containerStyle }: OfflineNoticeBarProps) {
+export function OfflineNoticeBar({
+  containerStyle: _containerStyle,
+}: OfflineNoticeBarProps) {
   void _containerStyle;
 
   const { isConnected, isInternetReachable } = useNetInfo();
   const insets = useSafeAreaInsets();
   const isOffline = isConnected === false || isInternetReachable === false;
   const shouldShowOfflineNotice = isOffline;
-  const [showCompactIconOnly, setShowCompactIconOnly] = useState(bannerCompletedGlobally);
-  const progress = useRef(new Animated.Value(bannerCompletedGlobally ? 0 : 1)).current;
+  const [showCompactIconOnly, setShowCompactIconOnly] = useState(
+    bannerCompletedGlobally
+  );
+  const progress = useRef(
+    new Animated.Value(bannerCompletedGlobally ? 0 : 1)
+  ).current;
 
   useEffect(() => {
     if (!shouldShowOfflineNotice) {

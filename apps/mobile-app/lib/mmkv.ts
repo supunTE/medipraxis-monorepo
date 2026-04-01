@@ -16,9 +16,7 @@ if (Platform.OS !== "web") {
     };
     mmkvStorage = new MMKV();
   } catch {
-    console.warn(
-      "MMKV not available — offline persistence disabled (Expo Go)"
-    );
+    console.warn("MMKV not available — offline persistence disabled (Expo Go)");
   }
 }
 
