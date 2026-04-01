@@ -3,8 +3,14 @@ import type { APIContext } from "../types";
 
 export class AuthController {
   static async register(c: APIContext<any>) {
-    const { username, mobile_number, mobile_country_code, password } =
-      await c.req.json();
+    const {
+      username,
+      mobile_number,
+      mobile_country_code,
+      password,
+      first_name,
+      last_name,
+    } = await c.req.json();
     const authService = getAuthService(c);
 
     try {
@@ -12,7 +18,9 @@ export class AuthController {
         username,
         mobile_number,
         mobile_country_code,
-        password
+        password,
+        first_name,
+        last_name
       );
       return c.json(result, 201);
     } catch (e: any) {
@@ -39,6 +47,9 @@ export class AuthController {
       );
       return c.json(result);
     } catch (e: any) {
+      if (e.message === "Mobile number not registered") {
+        return c.json({ error: e.message }, 401);
+      }
       return c.json({ error: "Invalid credentials" }, 401);
     }
   }

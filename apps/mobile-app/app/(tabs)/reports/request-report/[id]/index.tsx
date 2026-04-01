@@ -11,7 +11,7 @@ import {
   CheckboxIndicator,
   CheckboxLabel,
 } from "@/components/ui/checkbox";
-import { Icons, type Icon } from "@/config";
+import type { Icon } from "@/config";
 import { useFetchClients } from "@/services/clients";
 import { useFetchActiveForm } from "@/services/forms";
 import { useCreateRequestReport } from "@/services/reports";
@@ -35,7 +35,6 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-const CLIENT_ICON_SIZE = 14;
 const SEND_THROUGH_ICON_SIZE = 18;
 const NOTES_MIN_HEIGHT = 120;
 const BOTTOM_SPACING = 24;
@@ -190,7 +189,7 @@ export default function RequestReportScreen() {
             Requesting Reports
           </TextComponent>
 
-          <View className="flex-row items-center gap-2 mb-6">
+          <View className="flex-row items-center gap-2 mb-3">
             <TextComponent
               variant={TextVariant.Body}
               size={TextSize.Medium}
@@ -198,12 +197,6 @@ export default function RequestReportScreen() {
             >
               from
             </TextComponent>
-            <View
-              className="w-6 h-6 rounded-full justify-center items-center overflow-hidden"
-              style={{ backgroundColor: Color.LightCream }}
-            >
-              <Icons.User size={CLIENT_ICON_SIZE} color={Color.Grey} />
-            </View>
             <InlineDropdownComponent
               value={selectedClientId}
               onValueChange={setSelectedClientId}

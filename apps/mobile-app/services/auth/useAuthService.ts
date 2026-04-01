@@ -70,11 +70,15 @@ export const authService = {
     phoneNumber: string,
     countryCode: string,
     password: string,
-    username: string
+    username: string,
+    firstName?: string,
+    lastName?: string
   ): Promise<User> {
     const res = await apiClient.api.auth.register.$post({
       json: {
         username: username,
+        first_name: firstName,
+        last_name: lastName,
         mobile_number: phoneNumber,
         mobile_country_code: countryCode,
         password,

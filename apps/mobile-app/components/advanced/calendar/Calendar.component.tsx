@@ -44,6 +44,8 @@ interface CalendarComponentProps {
   selectedDate?: string;
   onDateChange?: (date: string) => void;
   agendaHeaderRightAction?: React.ReactNode;
+  onAgendaRefresh?: () => void;
+  isAgendaRefreshing?: boolean;
   onAppointmentPress?: (
     appointment: AgendaBlockContent,
     groupId: string | null
@@ -138,6 +140,8 @@ export function CalendarComponent({
   selectedDate,
   onDateChange,
   agendaHeaderRightAction,
+  onAgendaRefresh,
+  isAgendaRefreshing = false,
   onAppointmentPress,
   onEmptySlotPress,
   onReminderPress,
@@ -243,8 +247,7 @@ export function CalendarComponent({
       <View
         className="flex-row justify-end items-center pr-4 gap-2"
         style={{
-          marginTop: isExpanded ? 8 : 4,
-          marginBottom: isExpanded ? 8 : 2,
+          marginTop: 8,
         }}
       >
         <TouchableOpacity
@@ -361,6 +364,8 @@ export function CalendarComponent({
         agendaData={agendaData}
         compactTopSpacing={!isExpanded}
         headerRightAction={agendaHeaderRightAction}
+        onRefresh={onAgendaRefresh}
+        isRefreshing={isAgendaRefreshing}
         onAppointmentPress={onAppointmentPress}
         onEmptySlotPress={onEmptySlotPress}
         onReminderPress={onReminderPress}

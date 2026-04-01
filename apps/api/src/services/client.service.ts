@@ -49,8 +49,8 @@ export class ClientService {
     return clients;
   }
 
-  async getClientsByName(name: string): Promise<Client[]> {
-    const clients = await this.clientRepository.findByName(name);
+  async getClientsByName(name: string, userId: string): Promise<Client[]> {
+    const clients = await this.clientRepository.findByName(name, userId);
 
     if (!clients) {
       throw new Error("Clients not found");

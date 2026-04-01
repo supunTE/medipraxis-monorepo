@@ -85,6 +85,8 @@ export class UserRepository {
         mobile_country_code: payload.mobile_country_code,
         password_hash: payload.password_hash,
         username: payload.username,
+        first_name: payload.first_name,
+        last_name: payload.last_name,
         // TODO: Add other fields as necessary based on schema defaults
       })
       .select()

@@ -6,6 +6,7 @@ import {
   Pressable,
   ScrollView,
   Text,
+  TextInput,
   View,
   type TextStyle as RNTextStyle,
 } from "react-native";
@@ -36,6 +37,7 @@ export const InlineDropdownComponent: React.FC<InlineDropdownProps> = ({
   placeholder = "Select",
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const dropdownRef = useRef<View>(null);
   const [dropdownLayout, setDropdownLayout] = useState<{
     x: number;
@@ -61,7 +63,14 @@ export const InlineDropdownComponent: React.FC<InlineDropdownProps> = ({
   const handleSelectOption = (optionValue: string) => {
     onValueChange(optionValue);
     setIsOpen(false);
+    setSearchQuery("");
   };
+
+  const filteredOptions = options
+    .sort((a, b) => a.label.localeCompare(b.label))
+    .filter((opt) =>
+      opt.label.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
   return (
     <>
@@ -69,6 +78,13 @@ export const InlineDropdownComponent: React.FC<InlineDropdownProps> = ({
         ref={dropdownRef}
         onPress={handleOpenDropdown}
         className="flex-row items-center gap-1"
+        style={{
+          borderWidth: 1,
+          borderColor: Color.LightGrey,
+          borderRadius: 8,
+          paddingHorizontal: 12,
+          paddingVertical: 8,
+        }}
       >
         <Text
           style={{
@@ -91,7 +107,13 @@ export const InlineDropdownComponent: React.FC<InlineDropdownProps> = ({
       </Pressable>
 
       <Modal transparent visible={isOpen} animationType="none">
-        <Pressable className="flex-1" onPress={() => setIsOpen(false)} />
+        <Pressable
+          className="flex-1"
+          onPress={() => {
+            setIsOpen(false);
+            setSearchQuery("");
+          }}
+        />
         {dropdownLayout && (
           <View
             className="absolute bg-white rounded-xl shadow-lg overflow-hidden"
@@ -109,39 +131,65 @@ export const InlineDropdownComponent: React.FC<InlineDropdownProps> = ({
               elevation: 5,
             }}
           >
+            <View
+              style={{
+                padding: 8,
+                borderBottomWidth: 1,
+                borderBottomColor: Color.LightGrey,
+              }}
+            >
+              <TextInput
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholder="Search..."
+                placeholderTextColor={Color.Grey}
+                autoFocus
+                style={{
+                  paddingHorizontal: 10,
+                  paddingVertical: 6,
+                  borderWidth: 1,
+                  borderColor: Color.LightGrey,
+                  borderRadius: 8,
+                  color: Color.Black,
+                  fontFamily:
+                    textBodyMediumStyle.fontFamily === Font.DMsans
+                      ? "DMSans_400Regular"
+                      : "Lato_400Regular",
+                  fontSize: textBodyMediumStyle.fontSize,
+                }}
+              />
+            </View>
             <ScrollView showsVerticalScrollIndicator={false}>
-              {options
-                .sort((a, b) => a.label.localeCompare(b.label))
-                .map((option) => (
-                  <Pressable
-                    key={option.value}
-                    onPress={() => handleSelectOption(option.value)}
-                    className="py-3 px-4"
+              {filteredOptions.map((option) => (
+                <Pressable
+                  key={option.value}
+                  onPress={() => handleSelectOption(option.value)}
+                  className="py-3 px-4"
+                  style={{
+                    borderBottomWidth: 1,
+                    borderBottomColor: Color.LightGrey,
+                    backgroundColor:
+                      value === option.value ? Color.Green : Color.White,
+                  }}
+                >
+                  <Text
                     style={{
-                      borderBottomWidth: 1,
-                      borderBottomColor: Color.LightGrey,
-                      backgroundColor:
-                        value === option.value ? Color.LightGrey : Color.White,
+                      color: Color.Black,
+                      fontFamily:
+                        textBodyMediumStyle.fontFamily === Font.DMsans
+                          ? "DMSans_400Regular"
+                          : "Lato_400Regular",
+                      fontSize: textBodyMediumStyle.fontSize,
+                      fontWeight:
+                        value === option.value
+                          ? ("600" as RNTextStyle["fontWeight"])
+                          : ("400" as RNTextStyle["fontWeight"]),
                     }}
                   >
-                    <Text
-                      style={{
-                        color: Color.Black,
-                        fontFamily:
-                          textBodyMediumStyle.fontFamily === Font.DMsans
-                            ? "DMSans_400Regular"
-                            : "Lato_400Regular",
-                        fontSize: textBodyMediumStyle.fontSize,
-                        fontWeight:
-                          value === option.value
-                            ? ("600" as RNTextStyle["fontWeight"])
-                            : ("400" as RNTextStyle["fontWeight"]),
-                      }}
-                    >
-                      {option.label}
-                    </Text>
-                  </Pressable>
-                ))}
+                    {option.label}
+                  </Text>
+                </Pressable>
+              ))}
             </ScrollView>
           </View>
         )}

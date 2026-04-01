@@ -1,12 +1,34 @@
 import { z } from "zod";
 
+export const appointmentFieldDataSchema = z.object({
+  active: z.boolean(),
+  required: z.boolean(),
+  sequence: z.number(),
+  help_text: z.string(),
+  shareable: z.boolean(),
+  field_type: z.string(),
+  description: z.string(),
+  display_label: z.string(),
+  data: z.string(),
+});
+
 export interface AppointmentRecord {
   appointment_record_id: string;
   user_id: string;
   client_id: string;
   appointment_id: string;
   form_id: string;
-  appointment_data: Record<string, unknown> | null;
+  appointment_data: Array<{
+    active: boolean;
+    required: boolean;
+    sequence: number;
+    help_text: string;
+    shareable: boolean;
+    field_type: string;
+    description: string;
+    display_label: string;
+    data: string;
+  }> | null;
   note: string | null;
   created_date: string;
   updated_date: string;
@@ -18,7 +40,7 @@ export const createAppointmentRecordSchema = z.object({
   client_id: z.string().uuid(),
   appointment_id: z.string().uuid(),
   form_id: z.string().uuid(),
-  appointment_data: z.record(z.string(), z.unknown()).optional().nullable(),
+  appointment_data: z.array(appointmentFieldDataSchema).optional().nullable(),
   note: z.string().optional().nullable(),
 });
 
@@ -28,7 +50,7 @@ export const getAppointmentRecordQuerySchema = z.object({
 });
 
 export const updateAppointmentRecordSchema = z.object({
-  appointment_data: z.record(z.string(), z.unknown()).optional().nullable(),
+  appointment_data: z.array(appointmentFieldDataSchema).optional().nullable(),
   note: z.string().optional().nullable(),
 });
 

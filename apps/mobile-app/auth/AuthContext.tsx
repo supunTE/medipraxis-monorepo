@@ -16,7 +16,9 @@ interface AuthContextType {
     phoneNumber: string,
     countryCode: string,
     password: string,
-    username: string
+    username: string,
+    firstName?: string,
+    lastName?: string
   ) => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -114,10 +116,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     countryCode: string,
     password: string,
     username: string,
-    _title?: string
+    firstName?: string,
+    lastName?: string
   ) => {
     try {
-      await authService.register(phoneNumber, countryCode, password, username);
+      await authService.register(
+        phoneNumber,
+        countryCode,
+        password,
+        username,
+        firstName,
+        lastName
+      );
       // Registration successful, but we don't log them in automatically.
       // The user will be redirected manually from the Register screen.
     } catch (e) {

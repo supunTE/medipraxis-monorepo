@@ -15,7 +15,8 @@ export function useInputParser(
 
   const parsed = useMemo<ParsedInput | null>(() => {
     if (inputText.trim().length < MIN_LENGTH) return null;
-    return parse(inputText, clients);
+    const result = parse(inputText, clients);
+    return result;
   }, [inputText, clients]);
 
   useEffect(() => {

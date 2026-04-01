@@ -53,8 +53,8 @@ export const useClientRegistrationForm = (onClose: () => void) => {
 
     mutate({
       ...values,
-      user_id: "2a3c19b8-d352-4b30-a2ac-1cdf993d310c",
-      contact_id: "57e0f5d8-92ad-44c9-b546-ccd3502af7d0",
+      user_id: sessionStorage.getItem("user_id") || "",
+      contact_id: sessionStorage.getItem("contact_id") || "",
     });
   };
 

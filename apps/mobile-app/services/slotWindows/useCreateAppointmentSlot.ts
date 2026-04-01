@@ -1,5 +1,5 @@
 import { apiClient } from "@/lib/api-client";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { type DayOfWeek } from "@repo/models";
 
@@ -34,6 +34,8 @@ type UseCreateAppointmentSlotOptions = {
 export const useCreateAppointmentSlot = (
   options?: UseCreateAppointmentSlotOptions
 ) => {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async (payload: CreateAppointmentSlotPayload) => {
       if (payload.is_recurring) {
@@ -81,7 +83,8 @@ export const useCreateAppointmentSlot = (
       }
     },
 
-    onSuccess: () => {
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["slot-windows"] });
       options?.onSuccess?.();
     },
 
