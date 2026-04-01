@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 
 import { apiClient } from "@/lib/api-client";
-import { TaskDetails, TaskType } from "@repo/models";
+import { type TaskDetails, TaskType } from "@repo/models";
 import { type UseQueryResult, useQuery } from "@tanstack/react-query";
 
 type GetAppointmentsResponse = {
@@ -38,6 +38,7 @@ export const useGetAppointments = (
       return (await res.json()) as GetAppointmentsResponse;
     },
     enabled: !!userId,
+    meta: { persist: true },
   });
 
   const appointments = useMemo(

@@ -1,5 +1,10 @@
 import { useAuth } from "@/auth/AuthContext";
-import { ButtonComponent, ButtonSize, TextComponent } from "@/components/basic";
+import {
+  ButtonComponent,
+  ButtonSize,
+  OfflineNoticeBar,
+  TextComponent,
+} from "@/components/basic";
 import { Input, InputField, InputSlot } from "@/components/ui/input";
 import { Icons } from "@/config";
 import { useFetchGroupedReports } from "@/services/reports";
@@ -11,8 +16,8 @@ import {
   ScrollView,
   TouchableOpacity,
   View,
-  type NativeSyntheticEvent,
   type NativeScrollEvent,
+  type NativeSyntheticEvent,
   type TextStyle as RNTextStyle,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -118,6 +123,8 @@ export default function ReportsScreen() {
           + Request Report
         </ButtonComponent>
       </View>
+
+      <OfflineNoticeBar containerStyle={{ marginBottom: 16 }} />
 
       {/* Search Bar */}
       <View className="mb-5">

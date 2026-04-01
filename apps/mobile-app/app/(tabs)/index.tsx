@@ -10,11 +10,12 @@ import {
   Text,
   TouchableOpacity,
   View,
-  type NativeSyntheticEvent,
   type NativeScrollEvent,
+  type NativeSyntheticEvent,
 } from "react-native";
 
 import TaskForm from "@/components/advanced/taskPanel/TaskForm";
+import { OfflineNoticeBar } from "@/components/basic";
 import { HomeCard } from "./home/HomeCard.component";
 import { UpcomingEventCard } from "./home/UpcomingEventCard.Component";
 
@@ -91,10 +92,17 @@ export default function TabOneScreen() {
         </TouchableOpacity>
       </View>
 
+      <OfflineNoticeBar
+        containerStyle={{
+          marginHorizontal: 20,
+          marginTop: 8,
+        }}
+      />
+
       {/* Scrollable: only the event cards scroll */}
       <ScrollView
         contentContainerStyle={{
-          paddingTop: 16,
+          paddingTop: 12,
           paddingBottom: 120, // space for nav bar
         }}
         onScroll={handleScroll}
