@@ -1,6 +1,8 @@
 import { zValidator } from "@hono/zod-validator";
 import {
+  forgotPasswordSchema,
   loginSchema,
+  resetPasswordSchema,
   refreshTokenSchema,
   registerAdditionalDetailsSchema,
   registerSchema,
@@ -33,6 +35,16 @@ const auth = new Hono<{ Bindings: Env }>()
     AuthController.uploadSeal
   )
   .post("/login", zValidator("json", loginSchema), AuthController.login)
+  .post(
+    "/forgot-password",
+    zValidator("json", forgotPasswordSchema),
+    AuthController.forgotPassword
+  )
+  .post(
+    "/reset-password",
+    zValidator("json", resetPasswordSchema),
+    AuthController.resetPassword
+  )
   .post(
     "/refresh",
     zValidator("json", refreshTokenSchema),

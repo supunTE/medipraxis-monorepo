@@ -54,6 +54,51 @@ export class AuthController {
     }
   }
 
+  static async forgotPassword(c: APIContext<any>) {
+    const authService = getAuthService(c);
+
+    try {
+      const { mobile_number, mobile_country_code } = c.req.valid("json");
+      const result = await authService.requestPasswordReset(
+        mobile_number,
+        mobile_country_code
+      );
+      return c.json(result);
+    } catch (e: any) {
+      if (e.message === "User not found") {
+        return c.json({ error: e.message }, 404);
+      }
+
+      return c.json({ error: e.message ?? "Failed to send OTP" }, 400);
+    }
+  }
+
+  static async resetPassword(c: APIContext<any>) {
+    const authService = getAuthService(c);
+
+    try {
+      const { mobile_number, mobile_country_code, otp, new_password } =
+        c.req.valid("json");
+      const result = await authService.resetPasswordWithOtp(
+        mobile_number,
+        mobile_country_code,
+        otp,
+        new_password
+      );
+      return c.json(result);
+    } catch (e: any) {
+      if (e.message === "User not found") {
+        return c.json({ error: e.message }, 404);
+      }
+
+      if (e.message === "Invalid or expired OTP") {
+        return c.json({ error: e.message }, 400);
+      }
+
+      return c.json({ error: e.message ?? "Failed to reset password" }, 400);
+    }
+  }
+
   static async registerAdditionalDetails(c: APIContext<any>) {
     const authService = getAuthService(c);
     const userId = (c.get("user" as never) as { sub: string }).sub;

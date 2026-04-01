@@ -15,6 +15,8 @@ interface TextLKResponse {
   };
 }
 
+const DEFAULT_OTP_EXPIRATION_MS = 60 * 1000;
+
 export class OtpService {
   private apiKey: string;
   private baseUrl: string;
@@ -79,9 +81,13 @@ export class OtpService {
     }
   }
 
-  async storeOtp(key: string, otp: number): Promise<void> {
+  async storeOtp(
+    key: string,
+    otp: number,
+    expirationMs = DEFAULT_OTP_EXPIRATION_MS
+  ): Promise<void> {
     const hashedOtp = await this.hashOtp(otp.toString());
-    const expiresAt = new Date(Date.now() + 60 * 1000);
+    const expiresAt = new Date(Date.now() + expirationMs);
     await this.otpRepository.storeOtp(key, hashedOtp, expiresAt);
   }
 

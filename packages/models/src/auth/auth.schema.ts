@@ -19,6 +19,24 @@ export const refreshTokenSchema = z.object({
   refreshToken: z.string().min(1),
 });
 
+export const forgotPasswordSchema = z.object({
+  mobile_number: z.string().min(1),
+  mobile_country_code: z.string().min(1),
+});
+
+export const resetPasswordSchema = z
+  .object({
+    mobile_number: z.string().min(1),
+    mobile_country_code: z.string().min(1),
+    otp: z.string().length(5, "OTP must be 5 digits"),
+    new_password: z.string().min(8, "Password must be at least 8 characters"),
+    confirm_password: z.string().min(1, "Confirm password is required"),
+  })
+  .refine((data) => data.new_password === data.confirm_password, {
+    message: "Passwords do not match",
+    path: ["confirm_password"],
+  });
+
 export const registerAdditionalDetailsSchema = z
   .object({
     title: z.string().min(1, "Title is required"),
@@ -62,6 +80,8 @@ export const registerAdditionalDetailsSchema = z
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>;
+export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
+export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export type RegisterAdditionalDetailsInput = z.infer<
   typeof registerAdditionalDetailsSchema
 >;
@@ -87,6 +107,26 @@ export const loginFormSchema = z.object({
 });
 
 export type LoginFormData = z.infer<typeof loginFormSchema>;
+
+export const forgotPasswordFormSchema = z.object({
+  countryCode: z.string().min(1, "Code is required"),
+  phoneNumber: phoneSchema,
+});
+
+export type ForgotPasswordFormData = z.infer<typeof forgotPasswordFormSchema>;
+
+export const resetPasswordFormSchema = z
+  .object({
+    otp: z.string().length(5, "OTP must be 5 digits"),
+    newPassword: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string().min(1, "Confirm password is required"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+export type ResetPasswordFormData = z.infer<typeof resetPasswordFormSchema>;
 
 /**
  * Registration form validation schema

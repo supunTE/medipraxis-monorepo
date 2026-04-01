@@ -172,9 +172,20 @@ export function getAuthService(c: Context<{ Bindings: Env }>) {
   const db = createDatabaseClient(c.env);
   const userRepository = new UserRepository(db);
   const refreshTokenRepository = new RefreshTokenRepository(db);
+  const otpRepository = new OtpRepository(db);
   const jwtService = new JwtService(
     c.env.ACCESS_TOKEN_SECRET,
     c.env.REFRESH_TOKEN_SECRET
   );
-  return new AuthService(userRepository, refreshTokenRepository, jwtService);
+  const otpService = new OtpService(
+    c.env.TEXT_LK_API_KEY || "dev",
+    otpRepository,
+    c.env.TEXT_LK_API_URL
+  );
+  return new AuthService(
+    userRepository,
+    refreshTokenRepository,
+    jwtService,
+    otpService
+  );
 }
