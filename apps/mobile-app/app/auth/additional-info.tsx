@@ -156,10 +156,15 @@ export default function AdditionalInfoScreen() {
           await authService.uploadSeal(sealFile);
         }
       } catch (uploadError: any) {
-        console.error("uploadError", uploadError);
+        const uploadErrorMessage = String(uploadError?.message ?? "");
+        const hasIncorrectFileData = /invalid file type/i.test(
+          uploadErrorMessage
+        );
         Alert.alert(
-          "Partial Success",
-          `Details saved, but file upload failed: ${uploadError?.message ?? "Unknown error"}`
+          "Upload Failed",
+          hasIncorrectFileData
+            ? "Incorrect file data. Please upload PDF, JPG, JPEG, or PNG files only."
+            : `File upload failed: ${uploadErrorMessage || "Unknown error"}`
         );
         return;
       }
