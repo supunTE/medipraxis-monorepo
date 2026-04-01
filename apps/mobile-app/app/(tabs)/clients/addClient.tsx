@@ -3,6 +3,7 @@ import {
   ButtonSize,
   DateTimePickerComponent,
   DropdownComponent,
+  FormPopup,
   TextComponent,
   TextInputComponent,
   TextInputType,
@@ -13,7 +14,7 @@ import { Color, TextSize, TextVariant } from "@repo/config";
 import React, { useState } from "react";
 import type { NativeSyntheticEvent, NativeScrollEvent } from "react-native";
 import { Controller, useForm } from "react-hook-form";
-import { Modal, Pressable, ScrollView, View } from "react-native";
+import { Pressable, ScrollView, View } from "react-native";
 import { z } from "zod";
 import type { CreateClientInput } from "../../../services/clients";
 
@@ -223,376 +224,342 @@ export const AddClient: React.FC<AddClientProps> = ({
   };
 
   return (
-    <>
-      {/* Overlay modal — covers status bar */}
-      <Modal
-        visible={visible}
-        transparent
-        animationType="fade"
-        statusBarTranslucent
+    <FormPopup
+      visible={visible}
+      onRequestClose={handleClose}
+      containerStyle={{ paddingTop: 24 }}
+    >
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: "white",
+          borderRadius: 20,
+          overflow: "hidden",
+        }}
       >
-        <View style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.4)" }} />
-      </Modal>
-
-      {/* Form modal */}
-      <Modal
-        visible={visible}
-        animationType="slide"
-        transparent
-        onRequestClose={handleClose}
-      >
-        {/* Pseudo wrapper — transparent so overlay shows through padding gaps */}
         <View
+          className="px-5 pt-4 pb-3"
           style={{
-            flex: 1,
-            justifyContent: "center",
-            padding: 12,
-            paddingTop: 24,
-            backgroundColor: "transparent",
+            backgroundColor: Color.White,
+            shadowColor: "#0000007b",
+            shadowOffset: { width: 0, height: 8 },
+            shadowOpacity: isScrolled ? 0.05 : 0,
+            shadowRadius: 4,
+            elevation: isScrolled ? 2 : 0,
+            zIndex: 1,
           }}
         >
-          <View
-            style={{
-              flex: 1,
-              backgroundColor: "white",
-              borderRadius: 20,
-              overflow: "hidden",
-            }}
-          >
-            <View
-              className="px-5 pt-4 pb-3"
-              style={{
-                backgroundColor: Color.White,
-                shadowColor: "#0000007b",
-                shadowOffset: { width: 0, height: 8 },
-                shadowOpacity: isScrolled ? 0.05 : 0,
-                shadowRadius: 4,
-                elevation: isScrolled ? 2 : 0,
-                zIndex: 1,
-              }}
-            >
-              <TextComponent variant={TextVariant.Title} size={TextSize.Large}>
-                Add Client Details
-              </TextComponent>
-            </View>
+          <TextComponent variant={TextVariant.Title} size={TextSize.Large}>
+            Add Client Details
+          </TextComponent>
+        </View>
 
-            <ScrollView
-              className="flex-1 px-5"
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 120 }}
-              onScroll={handleScroll}
-              scrollEventThrottle={16}
-            >
-              <View className="mb-3">
-                <TextComponent
-                  variant={TextVariant.Title}
-                  size={TextSize.Small}
-                >
-                  Basic Information
-                </TextComponent>
-              </View>
+        <ScrollView
+          className="flex-1 px-5"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 120 }}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+        >
+          <View className="mb-3">
+            <TextComponent variant={TextVariant.Title} size={TextSize.Small}>
+              Basic Information
+            </TextComponent>
+          </View>
 
-              <View className="flex-row gap-3 mb-4">
-                <View className="flex-1">
-                  <Controller
-                    control={control}
-                    name="title"
-                    render={({ field: { onChange, value } }) => (
-                      <DropdownComponent
-                        label="Title *"
-                        value={value}
-                        onValueChange={onChange}
-                        options={titleOptions}
-                        placeholder="Select"
-                        errorText={errors.title?.message}
-                      />
-                    )}
+          <View className="flex-row gap-3 mb-4">
+            <View className="flex-1">
+              <Controller
+                control={control}
+                name="title"
+                render={({ field: { onChange, value } }) => (
+                  <DropdownComponent
+                    label="Title *"
+                    value={value}
+                    onValueChange={onChange}
+                    options={titleOptions}
+                    placeholder="Select"
+                    errorText={errors.title?.message}
                   />
-                </View>
-                <View className="flex-[2]">
-                  <Controller
-                    control={control}
-                    name="firstName"
-                    render={({ field: { onChange, value } }) => (
-                      <TextInputComponent
-                        label="First Name *"
-                        inputField={{
-                          value,
-                          onChangeText: onChange,
-                          placeholder: "John",
-                        }}
-                        errorText={errors.firstName?.message}
-                      />
-                    )}
-                  />
-                </View>
-              </View>
-
-              <View className="mb-4">
-                <Controller
-                  control={control}
-                  name="lastName"
-                  render={({ field: { onChange, value } }) => (
-                    <TextInputComponent
-                      label="Last Name *"
-                      inputField={{
-                        value,
-                        onChangeText: onChange,
-                        placeholder: "Siriwardane",
-                      }}
-                      errorText={errors.lastName?.message}
-                    />
-                  )}
-                />
-              </View>
-
-              <View className="flex-row gap-3 mb-4">
-                <View className="flex-1">
-                  <Controller
-                    control={control}
-                    name="gender"
-                    render={({ field: { onChange, value } }) => (
-                      <DropdownComponent
-                        label="Gender *"
-                        value={value}
-                        onValueChange={onChange}
-                        options={genderOptions}
-                        placeholder="Select"
-                        errorText={errors.gender?.message}
-                      />
-                    )}
-                  />
-                </View>
-                <View className="flex-1">
-                  <Controller
-                    control={control}
-                    name="dateOfBirth"
-                    render={({ field: { onChange, value } }) => (
-                      <DateTimePickerComponent
-                        label="Date of birth *"
-                        mode="date"
-                        value={value ? dobToISO(value) : ""}
-                        onChange={(iso) => onChange(isoToDOB(iso))}
-                        placeholder="Select date"
-                        errorText={errors.dateOfBirth?.message}
-                      />
-                    )}
-                  />
-                </View>
-              </View>
-
-              <View className="mb-6">
-                <Controller
-                  control={control}
-                  name="contactNumber"
-                  render={({ field: { onChange, value } }) => (
-                    <TextInputComponent
-                      label="Contact Number *"
-                      inputType={TextInputType.Phone}
-                      inputField={{
-                        value,
-                        onChangeText: onChange,
-                        placeholder: "+94 70 123 4567",
-                      }}
-                      errorText={errors.contactNumber?.message}
-                    />
-                  )}
-                />
-              </View>
-
-              <View className="mb-3">
-                <TextComponent
-                  variant={TextVariant.Title}
-                  size={TextSize.Small}
-                >
-                  Additional Information
-                </TextComponent>
-              </View>
-
-              <View className="mb-4">
-                <Controller
-                  control={control}
-                  name="emergencyContactName"
-                  render={({ field: { onChange, value } }) => (
-                    <TextInputComponent
-                      label="Emergency Contact Name"
-                      inputField={{
-                        value: value || "",
-                        onChangeText: onChange,
-                        placeholder: "Elena Siriwardane",
-                      }}
-                    />
-                  )}
-                />
-              </View>
-
-              <View className="mb-4">
-                <Controller
-                  control={control}
-                  name="emergencyContactNumber"
-                  render={({ field: { onChange, value } }) => (
-                    <TextInputComponent
-                      label="Emergency Contact Number"
-                      inputType={TextInputType.Phone}
-                      inputField={{
-                        value: value || "",
-                        onChangeText: onChange,
-                        placeholder: "+94 70 123 4567",
-                      }}
-                      errorText={errors.emergencyContactNumber?.message}
-                    />
-                  )}
-                />
-              </View>
-
-              <View className="mb-4">
-                <Controller
-                  control={control}
-                  name="emergencyContactRelationship"
-                  render={({ field: { onChange, value } }) => (
-                    <TextInputComponent
-                      label="Emergency Contact Relationship"
-                      inputField={{
-                        value: value || "",
-                        onChangeText: onChange,
-                        placeholder: "Wife",
-                      }}
-                    />
-                  )}
-                />
-              </View>
-
-              <View className="mb-4">
-                <View className="mb-2">
-                  <TextComponent
-                    variant={TextVariant.Body}
-                    size={TextSize.Medium}
-                  >
-                    Known Conditions
-                  </TextComponent>
-                </View>
-                <View className="flex-row items-center gap-2 mb-3">
-                  <View className="flex-1">
-                    <TextInputComponent
-                      inputField={{
-                        value: conditionInput,
-                        onChangeText: setConditionInput,
-                        placeholder: "Condition Name",
-                      }}
-                    />
-                  </View>
-                  <ButtonComponent
-                    size={ButtonSize.Small}
-                    leftIcon={Icons.Plus}
-                    buttonColor={Color.Black}
-                    textColor={Color.White}
-                    iconColor={Color.White}
-                    onPress={handleAddCondition}
-                    disabled={
-                      !conditionInput.trim() ||
-                      conditions.length >= MAX_CONDITIONS
-                    }
-                  >
-                    Add
-                  </ButtonComponent>
-                </View>
-
-                {conditions.length > 0 && (
-                  <View className="flex-row flex-wrap gap-2 mb-2">
-                    {conditions.map((condition) => (
-                      <Pressable
-                        key={condition}
-                        onPress={() => handleRemoveCondition(condition)}
-                        className="flex-row items-center rounded-full px-3 py-1.5"
-                        style={{ backgroundColor: Color.Danger }}
-                      >
-                        <TextComponent
-                          variant={TextVariant.Body}
-                          size={TextSize.Small}
-                          color={Color.White}
-                          style={{ marginRight: 6 }}
-                        >
-                          ×
-                        </TextComponent>
-                        <TextComponent
-                          variant={TextVariant.Body}
-                          size={TextSize.Small}
-                          color={Color.White}
-                        >
-                          {condition}
-                        </TextComponent>
-                      </Pressable>
-                    ))}
-                  </View>
                 )}
-
-                <TextComponent
-                  variant={TextVariant.Body}
-                  size={TextSize.Small}
-                  color={Color.Grey}
-                >
-                  {MAX_CONDITIONS - conditions.length}/{MAX_CONDITIONS}{" "}
-                  Remaining
-                </TextComponent>
-              </View>
-
-              <View className="mb-6">
-                <Controller
-                  control={control}
-                  name="note"
-                  render={({ field: { onChange, value } }) => (
-                    <TextInputComponent
-                      label="Note"
-                      inputField={{
-                        value: value || "",
-                        onChangeText: onChange,
-                        placeholder: "Type additional notes here",
-                        multiline: true,
-                        textAlignVertical: "top",
-                        className: "py-2 h-32",
-                      }}
-                    />
-                  )}
-                />
-              </View>
-            </ScrollView>
-
-            {/* Action Footer */}
-            <View className="absolute bottom-0 w-full bg-[#EAF8C9] p-4 flex-row justify-end gap-x-2.5 border-t border-gray-100">
-              <Pressable
-                className="flex-row items-center py-2.5 px-6 rounded-lg"
-                style={{
-                  backgroundColor: Color.LightCream,
-                  borderWidth: 1,
-                  borderColor: Color.LightGrey,
-                }}
-                onPress={handleClose}
-              >
-                <TextComponent
-                  variant={TextVariant.Body}
-                  size={TextSize.Medium}
-                  color={Color.Black}
-                >
-                  Close
-                </TextComponent>
-              </Pressable>
-              <Pressable
-                className="flex-row items-center bg-slate-900 py-2.5 px-6 rounded-lg gap-x-2"
-                onPress={() => void handleSubmit(onSubmit)()}
-              >
-                <Icons.Check size={18} color="white" weight="bold" />
-                <TextComponent
-                  variant={TextVariant.Body}
-                  size={TextSize.Medium}
-                  color={Color.White}
-                >
-                  Save
-                </TextComponent>
-              </Pressable>
+              />
+            </View>
+            <View className="flex-[2]">
+              <Controller
+                control={control}
+                name="firstName"
+                render={({ field: { onChange, value } }) => (
+                  <TextInputComponent
+                    label="First Name *"
+                    inputField={{
+                      value,
+                      onChangeText: onChange,
+                      placeholder: "John",
+                    }}
+                    errorText={errors.firstName?.message}
+                  />
+                )}
+              />
             </View>
           </View>
+
+          <View className="mb-4">
+            <Controller
+              control={control}
+              name="lastName"
+              render={({ field: { onChange, value } }) => (
+                <TextInputComponent
+                  label="Last Name *"
+                  inputField={{
+                    value,
+                    onChangeText: onChange,
+                    placeholder: "Siriwardane",
+                  }}
+                  errorText={errors.lastName?.message}
+                />
+              )}
+            />
+          </View>
+
+          <View className="flex-row gap-3 mb-4">
+            <View className="flex-1">
+              <Controller
+                control={control}
+                name="gender"
+                render={({ field: { onChange, value } }) => (
+                  <DropdownComponent
+                    label="Gender *"
+                    value={value}
+                    onValueChange={onChange}
+                    options={genderOptions}
+                    placeholder="Select"
+                    errorText={errors.gender?.message}
+                  />
+                )}
+              />
+            </View>
+            <View className="flex-1">
+              <Controller
+                control={control}
+                name="dateOfBirth"
+                render={({ field: { onChange, value } }) => (
+                  <DateTimePickerComponent
+                    label="Date of birth *"
+                    mode="date"
+                    value={value ? dobToISO(value) : ""}
+                    onChange={(iso) => onChange(isoToDOB(iso))}
+                    placeholder="Select date"
+                    errorText={errors.dateOfBirth?.message}
+                    minYear={1900}
+                    maxYear={new Date().getFullYear()}
+                  />
+                )}
+              />
+            </View>
+          </View>
+
+          <View className="mb-6">
+            <Controller
+              control={control}
+              name="contactNumber"
+              render={({ field: { onChange, value } }) => (
+                <TextInputComponent
+                  label="Contact Number *"
+                  inputType={TextInputType.Phone}
+                  inputField={{
+                    value,
+                    onChangeText: onChange,
+                    placeholder: "+94 70 123 4567",
+                  }}
+                  errorText={errors.contactNumber?.message}
+                />
+              )}
+            />
+          </View>
+
+          <View className="mb-3">
+            <TextComponent variant={TextVariant.Title} size={TextSize.Small}>
+              Additional Information
+            </TextComponent>
+          </View>
+
+          <View className="mb-4">
+            <Controller
+              control={control}
+              name="emergencyContactName"
+              render={({ field: { onChange, value } }) => (
+                <TextInputComponent
+                  label="Emergency Contact Name"
+                  inputField={{
+                    value: value || "",
+                    onChangeText: onChange,
+                    placeholder: "Elena Siriwardane",
+                  }}
+                />
+              )}
+            />
+          </View>
+
+          <View className="mb-4">
+            <Controller
+              control={control}
+              name="emergencyContactNumber"
+              render={({ field: { onChange, value } }) => (
+                <TextInputComponent
+                  label="Emergency Contact Number"
+                  inputType={TextInputType.Phone}
+                  inputField={{
+                    value: value || "",
+                    onChangeText: onChange,
+                    placeholder: "+94 70 123 4567",
+                  }}
+                  errorText={errors.emergencyContactNumber?.message}
+                />
+              )}
+            />
+          </View>
+
+          <View className="mb-4">
+            <Controller
+              control={control}
+              name="emergencyContactRelationship"
+              render={({ field: { onChange, value } }) => (
+                <TextInputComponent
+                  label="Emergency Contact Relationship"
+                  inputField={{
+                    value: value || "",
+                    onChangeText: onChange,
+                    placeholder: "Wife",
+                  }}
+                />
+              )}
+            />
+          </View>
+
+          <View className="mb-4">
+            <View className="mb-2">
+              <TextComponent variant={TextVariant.Body} size={TextSize.Medium}>
+                Known Conditions
+              </TextComponent>
+            </View>
+            <View className="flex-row items-center gap-2 mb-3">
+              <View className="flex-1">
+                <TextInputComponent
+                  inputField={{
+                    value: conditionInput,
+                    onChangeText: setConditionInput,
+                    placeholder: "Condition Name",
+                  }}
+                />
+              </View>
+              <ButtonComponent
+                size={ButtonSize.Small}
+                leftIcon={Icons.Plus}
+                buttonColor={Color.Black}
+                textColor={Color.White}
+                iconColor={Color.White}
+                onPress={handleAddCondition}
+                disabled={
+                  !conditionInput.trim() || conditions.length >= MAX_CONDITIONS
+                }
+              >
+                Add
+              </ButtonComponent>
+            </View>
+
+            {conditions.length > 0 && (
+              <View className="flex-row flex-wrap gap-2 mb-2">
+                {conditions.map((condition) => (
+                  <Pressable
+                    key={condition}
+                    onPress={() => handleRemoveCondition(condition)}
+                    className="flex-row items-center rounded-full px-3 py-1.5"
+                    style={{ backgroundColor: Color.Danger }}
+                  >
+                    <TextComponent
+                      variant={TextVariant.Body}
+                      size={TextSize.Small}
+                      color={Color.White}
+                      style={{ marginRight: 6 }}
+                    >
+                      ×
+                    </TextComponent>
+                    <TextComponent
+                      variant={TextVariant.Body}
+                      size={TextSize.Small}
+                      color={Color.White}
+                    >
+                      {condition}
+                    </TextComponent>
+                  </Pressable>
+                ))}
+              </View>
+            )}
+
+            <TextComponent
+              variant={TextVariant.Body}
+              size={TextSize.Small}
+              color={Color.Grey}
+            >
+              {MAX_CONDITIONS - conditions.length}/{MAX_CONDITIONS} Remaining
+            </TextComponent>
+          </View>
+
+          <View className="mb-6">
+            <Controller
+              control={control}
+              name="note"
+              render={({ field: { onChange, value } }) => (
+                <TextInputComponent
+                  label="Note"
+                  inputField={{
+                    value: value || "",
+                    onChangeText: onChange,
+                    placeholder: "Type additional notes here",
+                    multiline: true,
+                    textAlignVertical: "top",
+                    className: "py-2 h-32",
+                  }}
+                />
+              )}
+            />
+          </View>
+        </ScrollView>
+
+        {/* Action Footer */}
+        <View className="absolute bottom-0 w-full bg-[#EAF8C9] p-4 flex-row justify-end gap-x-2.5 border-t border-gray-100">
+          <Pressable
+            className="flex-row items-center py-2.5 px-6 rounded-lg"
+            style={{
+              backgroundColor: Color.LightCream,
+              borderWidth: 1,
+              borderColor: Color.LightGrey,
+            }}
+            onPress={handleClose}
+          >
+            <TextComponent
+              variant={TextVariant.Body}
+              size={TextSize.Medium}
+              color={Color.Black}
+            >
+              Close
+            </TextComponent>
+          </Pressable>
+          <Pressable
+            className="flex-row items-center bg-slate-900 py-2.5 px-6 rounded-lg gap-x-2"
+            onPress={() => void handleSubmit(onSubmit)()}
+          >
+            <Icons.Check size={18} color="white" weight="bold" />
+            <TextComponent
+              variant={TextVariant.Body}
+              size={TextSize.Medium}
+              color={Color.White}
+            >
+              Save
+            </TextComponent>
+          </Pressable>
         </View>
-      </Modal>
-    </>
+      </View>
+    </FormPopup>
   );
 };

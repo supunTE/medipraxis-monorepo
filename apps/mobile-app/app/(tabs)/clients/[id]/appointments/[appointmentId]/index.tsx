@@ -4,6 +4,8 @@ import {
   ButtonSize,
   CheckboxComponent,
   DateTimePickerComponent,
+  MessagePopup,
+  MessageType,
   TextAreaComponent,
   TextComponent,
   TextInputComponent,
@@ -22,11 +24,10 @@ import { useGetTaskById } from "@/services/tasks/useGetTaskById";
 import { Color, TextSize, TextVariant } from "@repo/config";
 import { FormType, type TaskDetails } from "@repo/models";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { CalendarBlankIcon, ClockIcon, PlayIcon } from "phosphor-react-native";
+import { CalendarBlankIcon, ClockIcon } from "phosphor-react-native";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
-  Alert,
   SafeAreaView,
   ScrollView,
   View,
@@ -59,6 +60,9 @@ export default function AppointmentDetailsScreen() {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasExistingRecord, setHasExistingRecord] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupType, setPopupType] = useState<MessageType>(MessageType.Success);
+  const [popupMessage, setPopupMessage] = useState("");
 
   const {
     mutate: fetchAppointment,
@@ -88,13 +92,17 @@ export default function AppointmentDetailsScreen() {
   const { mutate: createAppointmentRecord } = useCreateAppointmentRecord({
     onSuccess: () => {
       setIsSubmitting(false);
-      Alert.alert("Success", "Appointment record saved successfully");
-      // Optionally navigate back or clear the form
-      // router.back();
+      setPopupType(MessageType.Success);
+      setPopupMessage("Appointment record saved successfully!");
+      setShowPopup(true);
     },
     onError: (message) => {
       setIsSubmitting(false);
-      Alert.alert("Error", message);
+      setPopupType(MessageType.Error);
+      setPopupMessage(
+        message || "Failed to save appointment record. Please try again."
+      );
+      setShowPopup(true);
     },
   });
 
@@ -179,7 +187,7 @@ export default function AppointmentDetailsScreen() {
     return (
       <SafeAreaView className="flex-1 bg-white">
         <View className="flex-1 justify-center items-center">
-          <ActivityIndicator size="large" color={Color.Black} />
+          <ActivityIndicator size="large" color={Color.Green} />
         </View>
       </SafeAreaView>
     );
@@ -215,8 +223,6 @@ export default function AppointmentDetailsScreen() {
       : null;
 
   const chipConfig = getChipConfig(appointment.task_status_name);
-  const isNotStarted = appointment.task_status_name === "NOT_STARTED";
-  const showStartButton = isNotStarted && !hasExistingRecord;
 
   const sortedFormFields =
     appointmentForm?.form_configuration
@@ -247,12 +253,16 @@ export default function AppointmentDetailsScreen() {
 
   const handleSubmit = () => {
     if (!validateForm()) {
-      Alert.alert("Error", "Please fill in all required fields");
+      setPopupType(MessageType.Error);
+      setPopupMessage("Please fill in all required fields");
+      setShowPopup(true);
       return;
     }
 
     if (!appointmentForm?.form_id) {
-      Alert.alert("Error", "Form configuration not found");
+      setPopupType(MessageType.Error);
+      setPopupMessage("Form configuration not found");
+      setShowPopup(true);
       return;
     }
 
@@ -581,25 +591,6 @@ export default function AppointmentDetailsScreen() {
               variant={chipConfig.variant}
             />
           </View>
-
-          {/* Start Button - aligned to right, auto width */}
-          {showStartButton && (
-            <View className="items-end">
-              <ButtonComponent
-                size={ButtonSize.Small}
-                leftIcon={PlayIcon}
-                buttonColor={Color.Black}
-                textColor={Color.White}
-                iconColor={Color.White}
-                onPress={() => {
-                  console.log("Start appointment:", appointmentId);
-                  // TODO: Implement start appointment logic
-                }}
-              >
-                Start
-              </ButtonComponent>
-            </View>
-          )}
         </View>
 
         <ScrollView className="flex-1 px-5">
@@ -626,6 +617,15 @@ export default function AppointmentDetailsScreen() {
           )}
         </ScrollView>
       </View>
+
+      <MessagePopup
+        visible={showPopup}
+        type={popupType}
+        message={popupMessage}
+        onClose={() => {
+          setShowPopup(false);
+        }}
+      />
     </SafeAreaView>
   );
 }

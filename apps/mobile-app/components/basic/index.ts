@@ -1,5 +1,6 @@
 export * from "./Button.component";
 export * from "./Checkbox.component";
+export * from "./FormPopup.component";
 export * from "./Chip.component";
 export * from "./DateTimePicker.component";
 export * from "./Dropdown.component";

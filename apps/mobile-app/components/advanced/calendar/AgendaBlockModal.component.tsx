@@ -1,4 +1,4 @@
-import { TextComponent } from "@/components/basic";
+import { FormPopup, TextComponent } from "@/components/basic";
 import { Text } from "@/components/Themed";
 import { Icons } from "@/config";
 
@@ -10,7 +10,7 @@ import {
 import { Color, TextSize, TextVariant } from "@repo/config";
 import clsx from "clsx";
 import { useRef } from "react";
-import { Animated, Modal, Pressable, ScrollView, View } from "react-native";
+import { Animated, Pressable, ScrollView, View } from "react-native";
 import { type AgendaBlockContent } from "./calendar.types";
 
 interface AgendaBlockModalProps {
@@ -141,96 +141,94 @@ export function AgendaBlockModal({
   const reservedSlots = contents.filter((content) => content !== null).length;
 
   return (
-    <Modal
+    <FormPopup
       visible={visible}
-      transparent
-      animationType="fade"
       onRequestClose={onClose}
+      animationType="fade"
+      containerStyle={{ alignItems: "center", padding: 0 }}
     >
-      <View className="flex-1 bg-black/50 justify-center items-center">
-        <View className="bg-white rounded-2xl overflow-hidden w-[85%] h-[70%]">
-          {/* Scrollable content */}
-          <View className="flex-1 p-5">
-            <View className="mb-4">
-              <TextComponent size={TextSize.Medium} variant={TextVariant.Title}>
-                Appointments
-              </TextComponent>
-              <TextComponent
-                size={TextSize.Small}
-                variant={TextVariant.Body}
-                color={Color.Grey}
-              >
-                {reservedSlots}/{slots} slots reserved
-              </TextComponent>
-            </View>
-
-            <ScrollView
-              className="flex-1"
-              contentContainerClassName="pb-4"
-              showsVerticalScrollIndicator={true}
+      <View className="bg-white rounded-2xl overflow-hidden w-[85%] h-[70%]">
+        {/* Scrollable content */}
+        <View className="flex-1 p-5">
+          <View className="mb-4">
+            <TextComponent size={TextSize.Medium} variant={TextVariant.Title}>
+              Appointments
+            </TextComponent>
+            <TextComponent
+              size={TextSize.Small}
+              variant={TextVariant.Body}
+              color={Color.Grey}
             >
-              {contents.map((content, index) => {
-                const slotTime = getSlotTimeFromMinutes(
-                  index,
-                  startTimeMinutes,
-                  slotDurationMinutes
-                );
-                const endSlotTime = getSlotTimeFromMinutes(
-                  index + 1,
-                  startTimeMinutes,
-                  slotDurationMinutes
-                );
-
-                return (
-                  <SlotItem
-                    key={index}
-                    content={content}
-                    slotTime={slotTime}
-                    endSlotTime={endSlotTime}
-                    slotDurationMinutes={slotDurationMinutes}
-                    onPress={() => {
-                      if (content) {
-                        onAppointmentPress?.(content, groupId);
-                      } else {
-                        onEmptySlotPress?.(groupId, index);
-                      }
-                    }}
-                  />
-                );
-              })}
-            </ScrollView>
+              {reservedSlots}/{slots} slots reserved
+            </TextComponent>
           </View>
 
-          {/* Footer — same pattern as ViewAppointmentModal / ViewReminderModal */}
-          <View className="bg-[#EAF8C9] p-4 flex-row justify-end gap-x-2.5 border-t border-gray-100">
-            <Pressable
-              className="flex-row items-center bg-[#FF5A5F] py-2.5 px-4 rounded-lg gap-x-2"
-              onPress={onCancelSlotWindow}
+          <ScrollView
+            className="flex-1"
+            contentContainerClassName="pb-4"
+            showsVerticalScrollIndicator={true}
+          >
+            {contents.map((content, index) => {
+              const slotTime = getSlotTimeFromMinutes(
+                index,
+                startTimeMinutes,
+                slotDurationMinutes
+              );
+              const endSlotTime = getSlotTimeFromMinutes(
+                index + 1,
+                startTimeMinutes,
+                slotDurationMinutes
+              );
+
+              return (
+                <SlotItem
+                  key={index}
+                  content={content}
+                  slotTime={slotTime}
+                  endSlotTime={endSlotTime}
+                  slotDurationMinutes={slotDurationMinutes}
+                  onPress={() => {
+                    if (content) {
+                      onAppointmentPress?.(content, groupId);
+                    } else {
+                      onEmptySlotPress?.(groupId, index);
+                    }
+                  }}
+                />
+              );
+            })}
+          </ScrollView>
+        </View>
+
+        {/* Footer — same pattern as ViewAppointmentModal / ViewReminderModal */}
+        <View className="bg-[#EAF8C9] p-4 flex-row justify-end gap-x-2.5 border-t border-gray-100">
+          <Pressable
+            className="flex-row items-center bg-[#FF5A5F] py-2.5 px-4 rounded-lg gap-x-2"
+            onPress={onCancelSlotWindow}
+          >
+            <Icons.Trash size={18} color="white" weight="bold" />
+            <Text
+              darkColor="white"
+              lightColor="white"
+              className="font-semibold text-sm"
             >
-              <Icons.Trash size={18} color="white" weight="bold" />
-              <Text
-                darkColor="white"
-                lightColor="white"
-                className="font-semibold text-sm"
-              >
-                Cancel Slot Window
-              </Text>
-            </Pressable>
-            <Pressable
-              className="flex-row items-center bg-slate-900 py-2.5 px-4 rounded-lg gap-x-2"
-              onPress={onClose}
+              Cancel Slot Window
+            </Text>
+          </Pressable>
+          <Pressable
+            className="flex-row items-center bg-slate-900 py-2.5 px-4 rounded-lg gap-x-2"
+            onPress={onClose}
+          >
+            <Text
+              darkColor="white"
+              lightColor="white"
+              className="font-semibold text-sm"
             >
-              <Text
-                darkColor="white"
-                lightColor="white"
-                className="font-semibold text-sm"
-              >
-                Close
-              </Text>
-            </Pressable>
-          </View>
+              Close
+            </Text>
+          </Pressable>
         </View>
       </View>
-    </Modal>
+    </FormPopup>
   );
 }

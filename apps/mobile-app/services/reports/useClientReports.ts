@@ -6,7 +6,7 @@ export const useFetchClientReports = () => {
   return useMutation({
     mutationFn: async (payload: { user_id: string; client_id: string }) => {
       const response = await (apiClient.api["client-reports"] as any).$get({
-        json: {
+        query: {
           user_id: payload.user_id,
           client_id: payload.client_id,
         },

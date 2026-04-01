@@ -1,25 +1,77 @@
+import { apiClient } from "@/lib";
 import { DaySelector, SlotWindow } from "@/routes/schedules";
 import { useCancelAppointment } from "@/services/ShareableCalendarLink/useCancelAppointment";
 import { useReserveAppointment } from "@/services/ShareableCalendarLink/useReserveAppointment";
 import { useShareableCalendarLink } from "@/services/ShareableCalendarLink/useShareableCalendarLink";
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { HouseIcon } from "@phosphor-icons/react";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/schedules/$id")({
   component: ScheduleDetail,
+  beforeLoad: ({ location }) => {
+    // Check if user is authenticated (has contact_id in sessionStorage)
+    const contactId = sessionStorage.getItem("contact_id");
+
+    if (!contactId) {
+      // Store the current URL for redirect after login
+      const redirectUrl = location.pathname;
+
+      // Redirect to phone entry page with redirect parameter
+      throw redirect({
+        to: "/",
+        search: {
+          redirect: redirectUrl,
+        },
+      });
+    }
+  },
 });
 
 function ScheduleDetail() {
   const { id } = Route.useParams();
+  const navigate = useNavigate();
   const [selectedDay, setSelectedDay] = useState(0); // Start with today (index 0)
+  const [clientId, setClientId] = useState<string | null>(null);
 
-  // TODO: Get client_id from authentication context or local storage
-  // For now, using a placeholder. This should be replaced with actual client authentication
-  const clientId = "4231411e-efa4-4a1c-8e05-bf16f93c542d";
+  // Get contact_id from sessionStorage and fetch client_id
+  useEffect(() => {
+    const fetchClientId = async () => {
+      const contactId = sessionStorage.getItem("contact_id");
+      if (!contactId) {
+        return;
+      }
+
+      try {
+        // Fetch clients associated with this contact
+        const response = await apiClient.api.clients["contact-id"][":id"].$get({
+          param: {
+            id: contactId,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          // Use the first client for this contact
+          // TODO: If multiple clients exist for a contact, add a client selection UI
+          if (data.clients && data.clients.length > 0 && data.clients[0]) {
+            setClientId(data.clients[0].client_id);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch client_id:", error);
+      }
+    };
+
+    fetchClientId();
+  }, []);
 
   // Fetch shareable calendar link data with slot windows
-  const { data, isLoading, error } = useShareableCalendarLink(id, clientId);
+  const { data, isLoading, error } = useShareableCalendarLink(
+    id,
+    clientId ?? ""
+  );
 
   // Reserve appointment mutation
   const reserveAppointment = useReserveAppointment({
@@ -35,7 +87,7 @@ function ScheduleDetail() {
   // Cancel appointment mutation
   const cancelAppointment = useCancelAppointment({
     linkId: id,
-    clientId,
+    clientId: clientId ?? "",
     onSuccess: () => {
       toast.success("Your appointment has been cancelled successfully.");
     },
@@ -107,7 +159,7 @@ function ScheduleDetail() {
     });
   };
 
-  if (isLoading) {
+  if (!clientId || isLoading) {
     return (
       <div className="min-h-screen bg-mp-white px-6 py-8 max-w-2xl mx-auto">
         <div className="text-center text-mp-dark-green font-dm-sans">
@@ -134,63 +186,78 @@ function ScheduleDetail() {
   const numberOfDays = data?.data?.visible_days_ahead || 7;
 
   return (
-    <div className="min-h-screen bg-mp-white px-6 py-8 max-w-2xl mx-auto">
-      {/* Header */}
-      <div className="mb-8 text-center">
-        <h1 className="text-5xl font-bold text-mp-dark-green mb-4 font-lato">
-          Appointment
-        </h1>
+    <div className="min-h-screen bg-mp-white px-6 py-8">
+      {/* Dashboard Button - Fixed to viewport */}
+      <button
+        onClick={() => navigate({ to: "/dashboard" })}
+        className="fixed top-4 left-4 p-2 rounded-full hover:bg-gray-100 transition-colors group z-10"
+        title="Go to Dashboard"
+      >
+        <HouseIcon
+          size={24}
+          weight="regular"
+          className="text-mp-dark-green group-hover:text-mp-green transition-colors"
+        />
+      </button>
 
-        <div className="flex items-center justify-center gap-2 mb-6">
-          <span className="text-lg text-mp-dark-green font-dm-sans">
-            to consult
-          </span>
-          <button className="bg-mp-green px-6 py-2 rounded-md hover:bg-mp-green/90 transition-colors">
-            <span className="text-lg font-semibold text-mp-dark-green font-lato">
-              {practitionerName}
+      <div className="max-w-2xl mx-auto">
+        {/* Header */}
+        <div className="mb-8 text-center">
+          <h1 className="text-5xl font-bold text-mp-dark-green mb-4 font-lato">
+            Appointment
+          </h1>
+
+          <div className="flex items-center justify-center gap-2 mb-6">
+            <span className="text-lg text-mp-dark-green font-dm-sans">
+              to consult
             </span>
-          </button>
-        </div>
-      </div>
-
-      {/* Day Selector - Single Row */}
-      <DaySelector
-        numberOfDays={numberOfDays}
-        selectedDay={selectedDay}
-        onDaySelect={setSelectedDay}
-      />
-
-      {/* Time Slots */}
-      <div className="space-y-8">
-        {filteredSlotWindows.length === 0 ? (
-          <div className="text-center text-mp-dark-green font-dm-sans">
-            No appointments available for this day.
+            <button className="bg-mp-green px-6 py-2 rounded-md hover:bg-mp-green/90 transition-colors">
+              <span className="text-lg font-semibold text-mp-dark-green font-lato">
+                {practitionerName}
+              </span>
+            </button>
           </div>
-        ) : (
-          filteredSlotWindows.map((slot) => {
-            const availableSlots = slot.total_slots - slot.slots_filled;
-            const isReserved =
-              data?.data.clientReservedSlotWindowIds?.includes(
-                slot.slot_window_id
-              ) ?? false;
-            return (
-              <SlotWindow
-                key={slot.slot_window_id}
-                id={slot.slot_window_id}
-                time={formatTimeRange(slot.start_date, slot.end_date)}
-                clinic={slot.location || "Clinic"}
-                address={slot.note || "Address not provided"}
-                slots={availableSlots}
-                available={availableSlots > 0}
-                isReserved={isReserved}
-                isReserving={reserveAppointment.isPending}
-                isCancelling={cancelAppointment.isPending}
-                onReserve={handleReserve}
-                onCancel={handleCancel}
-              />
-            );
-          })
-        )}
+        </div>
+
+        {/* Day Selector - Single Row */}
+        <DaySelector
+          numberOfDays={numberOfDays}
+          selectedDay={selectedDay}
+          onDaySelect={setSelectedDay}
+        />
+
+        {/* Time Slots */}
+        <div className="space-y-8">
+          {filteredSlotWindows.length === 0 ? (
+            <div className="text-center text-mp-dark-green font-dm-sans">
+              No appointments available for this day.
+            </div>
+          ) : (
+            filteredSlotWindows.map((slot) => {
+              const availableSlots = slot.total_slots - slot.slots_filled;
+              const isReserved =
+                data?.data.clientReservedSlotWindowIds?.includes(
+                  slot.slot_window_id
+                ) ?? false;
+              return (
+                <SlotWindow
+                  key={slot.slot_window_id}
+                  id={slot.slot_window_id}
+                  time={formatTimeRange(slot.start_date, slot.end_date)}
+                  clinic={slot.location || "Clinic"}
+                  address={slot.note || "Address not provided"}
+                  slots={availableSlots}
+                  available={availableSlots > 0}
+                  isReserved={isReserved}
+                  isReserving={reserveAppointment.isPending}
+                  isCancelling={cancelAppointment.isPending}
+                  onReserve={handleReserve}
+                  onCancel={handleCancel}
+                />
+              );
+            })
+          )}
+        </div>
       </div>
     </div>
   );

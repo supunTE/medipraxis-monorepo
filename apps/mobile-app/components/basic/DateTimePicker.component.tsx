@@ -26,6 +26,10 @@ interface DateTimePickerProps {
   hideHelperText?: boolean;
   className?: string;
   minDate?: string;
+  /** Earliest year shown in the year picker (default: current year - 10) */
+  minYear?: number;
+  /** Latest year shown in the year picker (default: current year + 29) */
+  maxYear?: number;
   /** When true, the calendar opens immediately on mount (used by chip interaction) */
   autoOpen?: boolean;
   /** Called when the modal is dismissed without confirming a selection */
@@ -79,6 +83,8 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
   hideHelperText = false,
   className,
   minDate,
+  minYear,
+  maxYear,
   autoOpen = false,
   onDismiss,
 }) => {
@@ -147,8 +153,13 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
 
   const selectedDateStr = `${tempDate.getFullYear()}-${padZero(tempDate.getMonth() + 1)}-${padZero(tempDate.getDate())}`;
 
-  const baseYear = new Date().getFullYear();
-  const yearsOptions = Array.from({ length: 40 }, (_, i) => baseYear - 10 + i);
+  const currentYear = new Date().getFullYear();
+  const effectiveMinYear = minYear ?? currentYear - 10;
+  const effectiveMaxYear = maxYear ?? currentYear + 29;
+  const yearsOptions = Array.from(
+    { length: effectiveMaxYear - effectiveMinYear + 1 },
+    (_, i) => effectiveMinYear + i
+  );
   const hoursOptions = Array.from({ length: 12 }, (_, i) => i + 1);
   const minutesOptions = Array.from({ length: 60 }, (_, i) => i);
 
@@ -167,7 +178,7 @@ export const DateTimePickerComponent: React.FC<DateTimePickerProps> = ({
           y: Math.max(0, monthIdx * ITEM_HEIGHT - ITEM_HEIGHT),
           animated: false,
         });
-        const yearIdx = tempDate.getFullYear() - (baseYear - 10);
+        const yearIdx = tempDate.getFullYear() - effectiveMinYear;
         yearScrollRef.current?.scrollTo({
           y: Math.max(0, yearIdx * ITEM_HEIGHT - ITEM_HEIGHT),
           animated: false,
