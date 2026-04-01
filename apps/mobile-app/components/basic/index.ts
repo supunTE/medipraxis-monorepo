@@ -4,6 +4,7 @@ export * from "./FormPopup.component";
 export * from "./Chip.component";
 export * from "./DateTimePicker.component";
 export * from "./Dropdown.component";
+export * from "./FileUpload.component";
 export * from "./InlineDropdown.component";
 export * from "./MessagePopup.component";
 export * from "./NumberDropdown.component";

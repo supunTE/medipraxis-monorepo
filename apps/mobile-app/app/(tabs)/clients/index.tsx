@@ -76,12 +76,14 @@ export default function ClientsScreen() {
     searchQuery
   );
 
-  // Update familyMembersMap when firstThreeMembers data arrives
+  // Update familyMembersMap when firstThreeMembers data arrives, clear when search is empty
   useEffect(() => {
-    if (firstThreeMembers) {
+    if (!searchQuery) {
+      setFamilyMembersMap({});
+    } else if (firstThreeMembers) {
       setFamilyMembersMap(firstThreeMembers);
     }
-  }, [firstThreeMembers]);
+  }, [firstThreeMembers, searchQuery]);
 
   const handleClientPress = (clientId: string) => {
     router.push(`/clients/${clientId}` as any);

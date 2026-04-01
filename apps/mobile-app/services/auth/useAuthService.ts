@@ -1,5 +1,9 @@
 import { apiClient } from "@/lib/api-client";
 import { authStorage } from "@/utils/storage";
+import type { RegisterAdditionalDetailsInput } from "@repo/models";
+import type { File as ExpoFile } from "expo-file-system";
+import { Paths } from "expo-file-system";
+import { copyAsync } from "expo-file-system/legacy";
 
 export interface User {
   user_id: string;
@@ -16,6 +20,18 @@ export interface AuthResponse {
 
 export interface ErrorResponse {
   error: string | Record<string, any>;
+}
+
+export interface AdditionalDetailsResponse {
+  message: string;
+  user?: User;
+}
+
+export interface UploadUserAssetResponse {
+  user?: User;
+  file_path?: string;
+  photo_url?: string;
+  seal_url?: string;
 }
 
 export const authService = {
@@ -126,5 +142,92 @@ export const authService = {
       await authStorage.clearAll();
       return null;
     }
+  },
+
+  async registerAdditionalDetails(
+    payload: RegisterAdditionalDetailsInput
+  ): Promise<AdditionalDetailsResponse> {
+    const res = await (
+      apiClient.api.auth.register["additional-details"] as any
+    ).$post({
+      json: payload,
+    });
+
+    if (!res.ok) {
+      const errorData = (await res.json().catch(() => ({
+        error: "Failed to save additional details",
+      }))) as ErrorResponse;
+      const errorMessage =
+        typeof errorData.error === "string"
+          ? errorData.error
+          : JSON.stringify(errorData.error) ||
+            "Failed to save additional details";
+      throw new Error(errorMessage);
+    }
+
+    return (await res.json()) as AdditionalDetailsResponse;
+  },
+
+  async uploadProfilePicture(file: ExpoFile): Promise<UploadUserAssetResponse> {
+    const localUri = `${Paths.cache.uri}${file.name}`;
+    await copyAsync({ from: file.uri, to: localUri });
+
+    const res = await (
+      apiClient.api.auth.register["additional-details"][
+        "profile-picture"
+      ] as any
+    ).$post({
+      form: {
+        file: {
+          uri: localUri,
+          type: file.type || "image/jpeg",
+          name: file.name || "profile.jpg",
+        } as unknown as Blob,
+      },
+    });
+
+    if (!res.ok) {
+      const errorData = (await res.json().catch(() => ({
+        error: "Failed to upload profile picture",
+      }))) as ErrorResponse;
+      const errorMessage =
+        typeof errorData.error === "string"
+          ? errorData.error
+          : JSON.stringify(errorData.error) ||
+            "Failed to upload profile picture";
+      throw new Error(errorMessage);
+    }
+
+    return (await res.json()) as UploadUserAssetResponse;
+  },
+
+  async uploadSeal(file: ExpoFile): Promise<UploadUserAssetResponse> {
+    const localUri = `${Paths.cache.uri}${file.name}`;
+    await copyAsync({ from: file.uri, to: localUri });
+
+    const res = await (
+      apiClient.api.auth.register["additional-details"]["seal"] as any
+    ).$post({
+      form: {
+        file: {
+          uri: localUri,
+          type: file.type || "image/jpeg",
+          name: file.name || "profile.jpg",
+        } as unknown as Blob,
+      },
+    });
+
+    if (!res.ok) {
+      const errorData = (await res
+        .json()
+        .catch(() => ({ error: "Failed to upload seal" }))) as ErrorResponse;
+      const errorMessage =
+        typeof errorData.error === "string"
+          ? errorData.error
+          : JSON.stringify(errorData.error) || "Failed to upload seal";
+      throw new Error(errorMessage);
+    }
+
+    return (await res.json()) as UploadUserAssetResponse;
   },
 };

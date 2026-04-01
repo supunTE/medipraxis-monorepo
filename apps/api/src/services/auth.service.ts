@@ -1,3 +1,4 @@
+import type { RegisterAdditionalDetailsInput } from "@repo/models";
 import { type JwtService } from "../lib/jwt";
 import { hashPassword, verifyPassword } from "../lib/password";
 import type { RefreshTokenRepository, UserRepository } from "../repositories";
@@ -190,5 +191,98 @@ export class AuthService {
 
     // Fallback: If no token matches or no token provided, revoke all tokens for safety/legacy behavior.
     await this.refreshTokenRepository.revokeAllUserTokens(userId);
+  }
+
+  async saveAdditionalDetails(
+    userId: string,
+    payload: RegisterAdditionalDetailsInput
+  ) {
+    const existingUser = await this.userRepository.findUserById(userId);
+
+    if (!existingUser) {
+      throw new Error("User not found");
+    }
+
+    const updatedUser = await this.userRepository.updateUser(userId, {
+      title: payload.title,
+      first_name: payload.first_name,
+      last_name: payload.last_name,
+      role: payload.profession,
+      registration_number: payload.registration_number,
+      specialization: payload.specialization,
+      whatsapp_country_code: payload.different_whatsapp_number
+        ? payload.whatsapp_country_code
+        : undefined,
+      whatsapp_number: payload.different_whatsapp_number
+        ? payload.whatsapp_number
+        : undefined,
+      email_address: payload.email_address,
+    });
+
+    if (!updatedUser) {
+      throw new Error("User not found");
+    }
+
+    return updatedUser;
+  }
+
+  private validateUserAsset(file: File, assetName: "profile" | "seal") {
+    const allowedTypes = [
+      "application/pdf",
+      "image/jpeg",
+      "image/png",
+      "image/jpg",
+    ];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+
+    if (!allowedTypes.includes(file.type)) {
+      throw new Error(
+        `Invalid ${assetName} file type. Only PDF and image files (JPEG, PNG, JPG) are allowed`
+      );
+    }
+
+    if (file.size > maxSize) {
+      throw new Error(`${assetName} file exceeds 5MB limit`);
+    }
+  }
+
+  async uploadProfilePicture(file: File, userId: string) {
+    this.validateUserAsset(file, "profile");
+
+    const user = await this.userRepository.findUserById(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const uploadResult = await this.userRepository.uploadProfilePictureForUser(
+      file,
+      userId
+    );
+
+    return {
+      user: uploadResult.user,
+      file_path: uploadResult.filePath,
+      photo_url: uploadResult.publicUrl,
+    };
+  }
+
+  async uploadSeal(file: File, userId: string) {
+    this.validateUserAsset(file, "seal");
+
+    const user = await this.userRepository.findUserById(userId);
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const uploadResult = await this.userRepository.uploadSealForUser(
+      file,
+      userId
+    );
+
+    return {
+      user: uploadResult.user,
+      file_path: uploadResult.filePath,
+      seal_url: uploadResult.publicUrl,
+    };
   }
 }

@@ -86,18 +86,6 @@ export const AppointmentTile: React.FC<AppointmentTileProps> = ({
     appointment.status === "NOT_STARTED" &&
     new Date(appointment.date) > new Date();
 
-  // Show "Add Record" if no record exists and appointment is within ±24 hours of now
-  const MS_24H = 24 * 60 * 60 * 1000;
-  const isWithin24Hours =
-    Math.abs(new Date(appointment.date).getTime() - Date.now()) <= MS_24H;
-  const showAddRecord = !hasRecord && isWithin24Hours;
-
-  const actionLabel = hasRecord ? "View Record" : "View Appointment";
-
-  const handleActionPress = () => {
-    onViewAppointment?.(appointment.appointment_id);
-  };
-
   return (
     <View
       className="bg-white rounded-2xl p-4 mb-3"
@@ -121,7 +109,18 @@ export const AppointmentTile: React.FC<AppointmentTileProps> = ({
         </TextComponent>
 
         <View className="flex-row items-center gap-2">
-          {showAddRecord ? (
+          {hasRecord ? (
+            <ButtonComponent
+              size={ButtonSize.Small}
+              leftIcon={EyeIcon}
+              buttonColor={Color.Black}
+              textColor={Color.White}
+              iconColor={Color.White}
+              onPress={() => onViewAppointment?.(appointment.appointment_id)}
+            >
+              View Record
+            </ButtonComponent>
+          ) : (
             <ButtonComponent
               size={ButtonSize.Small}
               leftIcon={PlusIcon}
@@ -131,17 +130,6 @@ export const AppointmentTile: React.FC<AppointmentTileProps> = ({
               onPress={() => onAddRecord?.(appointment.appointment_id)}
             >
               Add Record
-            </ButtonComponent>
-          ) : (
-            <ButtonComponent
-              size={ButtonSize.Small}
-              leftIcon={EyeIcon}
-              buttonColor={Color.Black}
-              textColor={Color.White}
-              iconColor={Color.White}
-              onPress={handleActionPress}
-            >
-              {actionLabel}
             </ButtonComponent>
           )}
         </View>
