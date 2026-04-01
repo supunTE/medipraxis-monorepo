@@ -24,6 +24,33 @@ export class UserController {
     }
   }
 
+  // Get profile picture signed URL
+  static async getProfilePicture(
+    c: APIContext<{ param: UserParam }, "/:id/profile-picture">
+  ) {
+    try {
+      const userService = getUserService(c);
+      const userId = c.req.param("id");
+
+      const profilePictureData = await userService.getProfilePictureUrl(userId);
+
+      return c.json(profilePictureData);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to get profile picture";
+      if (error instanceof Error) {
+        if (error.message === "User not found") {
+          return c.json({ error: message }, 404);
+        } else if (error.message === "Profile picture not found") {
+          return c.json({ error: message }, 404);
+        }
+      }
+      return c.json({ error: message }, 500);
+    }
+  }
+
   // Update user by ID
   static async updateUser(
     c: APIContext<{ json: any; param: UserParam }, "/:id">

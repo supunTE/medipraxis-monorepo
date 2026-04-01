@@ -2,12 +2,14 @@ import { KeyRevealModal } from "@/app/auth/KeyRevealModal";
 import { useAuth } from "@/auth/AuthContext";
 import { ButtonComponent, ButtonSize } from "@/components/basic";
 import { Icons } from "@/config";
+import { useFetchUser, useFetchProfilePicture } from "@/services/user";
 import { Color, TextSize, TextVariant, textStyles } from "@repo/config";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { SignOutIcon } from "phosphor-react-native";
 import { useState } from "react";
 import {
+  Image,
   Platform,
   ScrollView,
   Text,
@@ -102,11 +104,15 @@ function SettingsRow({ icon, label, onPress }: SettingsRowProps) {
 export default function SettingsScreen() {
   const router = useRouter();
   const { user, signOut } = useAuth();
+  const userId = user?.user_id ?? "";
+  const { data: userProfile } = useFetchUser(userId);
+  const { data: profilePicture } = useFetchProfilePicture(userId);
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const [isRevokeKeyVisible, setIsRevokeKeyVisible] = useState(false);
 
-  const displayName = user?.username || "User";
+  const displayName = userProfile?.username || user?.username || "User";
+  const profileImageUrl = profilePicture ?? userProfile?.photo_url ?? undefined;
 
   return (
     <>
@@ -188,17 +194,26 @@ export default function SettingsScreen() {
                   backgroundColor: "#CFCFCF",
                   alignItems: "center",
                   justifyContent: "center",
+                  overflow: "hidden",
                 }}
               >
-                <Text
-                  style={{
-                    color: Color.White,
-                    fontSize: 24,
-                    fontWeight: "700",
-                  }}
-                >
-                  {displayName.charAt(0).toUpperCase()}
-                </Text>
+                {profileImageUrl ? (
+                  <Image
+                    source={{ uri: profileImageUrl }}
+                    style={{ width: "100%", height: "100%" }}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <Text
+                    style={{
+                      color: Color.White,
+                      fontSize: 24,
+                      fontWeight: "700",
+                    }}
+                  >
+                    {displayName.charAt(0).toUpperCase()}
+                  </Text>
+                )}
               </View>
 
               <View>

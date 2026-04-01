@@ -17,6 +17,22 @@ export class UserService {
     return user;
   }
 
+  async getProfilePictureUrl(userId: string) {
+    const user = await this.userRepository.findUserById(userId);
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    if (!user.photo_url) {
+      throw new Error("Profile picture not found");
+    }
+
+    return {
+      imageUrl: user.photo_url,
+    };
+  }
+
   async updateUser(userId: string, updateData: any) {
     // Check if user exists
     const existingUser = await this.userRepository.findUserById(userId);
