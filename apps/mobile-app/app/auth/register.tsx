@@ -34,8 +34,10 @@ export default function RegisterScreen() {
     try {
       const success = await register.submit();
       if (success) {
+        const { phoneNumber, countryCode } = register.form.getValues();
         router.replace({
           pathname: "/auth/additional-info",
+          params: { phoneNumber, countryCode },
         });
       }
     } catch (e: any) {

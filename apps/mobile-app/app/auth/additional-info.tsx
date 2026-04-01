@@ -1,5 +1,5 @@
 import { Color, TextSize, TextVariant } from "@repo/config";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import type { RegisterAdditionalDetailsInput } from "@repo/models";
 import { File as ExpoFile } from "expo-file-system";
@@ -43,6 +43,10 @@ type AdditionalInfoForm = {
 export default function AdditionalInfoScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { phoneNumber, countryCode } = useLocalSearchParams<{
+    phoneNumber: string;
+    countryCode: string;
+  }>();
   const [isSaving, setIsSaving] = useState(false);
   const [photoFile, setPhotoFile] = useState<ExpoFile | null>(null);
   const [sealFile, setSealFile] = useState<ExpoFile | null>(null);
@@ -164,8 +168,8 @@ export default function AdditionalInfoScreen() {
       router.replace({
         pathname: "/auth/key-reveal",
         params: {
-          phoneNumber: data.mobileNumber,
-          countryCode: data.mobileCountryCode,
+          phoneNumber,
+          countryCode,
         },
       });
     } catch (e: any) {
