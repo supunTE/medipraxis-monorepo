@@ -14,6 +14,7 @@ import { Alert } from "react-native";
 export const useFetchGroupedReports = (userId: string, completed?: boolean) => {
   return useQuery({
     queryKey: ["grouped-reports", userId, completed],
+    enabled: !!userId,
     queryFn: async () => {
       const response = await apiClient.api["client-reports"].grouped.$get({
         query: {
