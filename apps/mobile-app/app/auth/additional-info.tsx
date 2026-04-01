@@ -10,6 +10,7 @@ import {
   ScrollView,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   ButtonComponent,
   ButtonSize,
@@ -40,6 +41,7 @@ type AdditionalInfoForm = {
 };
 
 export default function AdditionalInfoScreen() {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   const [photoFile, setPhotoFile] = useState<ExpoFile | null>(null);
@@ -197,7 +199,7 @@ export default function AdditionalInfoScreen() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : undefined}
-      className="flex-1 bg-white"
+      style={{ flex: 1, backgroundColor: "white", paddingTop: insets.top }}
     >
       <ScrollView
         contentContainerClassName="px-[22px] pb-7 pt-5"
