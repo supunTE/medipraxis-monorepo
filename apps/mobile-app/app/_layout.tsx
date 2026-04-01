@@ -78,6 +78,10 @@ function RootLayoutNav() {
                   name="auth/key-reveal"
                   options={{ headerShown: false, gestureEnabled: false }}
                 />
+                <Stack.Screen
+                  name="auth/additional-info"
+                  options={{ headerShown: false }}
+                />
               </Stack>
             </QueryClientProvider>
           </ThemeProvider>
