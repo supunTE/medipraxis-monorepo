@@ -41,11 +41,11 @@ const taskFormSchema = z
     startDate: z.string(),
     endDate: z.string(),
     // Task + Appointment shared
-    taskTitle: z.string(),
+    taskTitle: z.string().optional(),
     client: z.string(),
     alarm: z.boolean(),
     // Slot window
-    location: z.string(),
+    location: z.string().optional(),
     totalSlots: z.number(),
     isRecurring: z.boolean(),
     slotDate: z.string(),
@@ -323,7 +323,7 @@ export const useTaskHandler = (onClose: () => void) => {
   const onSubmit = (data: TaskFormData) => {
     if (data.eventType === EVENT_TYPES.TASK) {
       createTask({
-        task_title: data.taskTitle,
+        task_title: data.taskTitle!,
         user_id: userId,
         end_date: formatDateTime(data.endDate),
         start_date: formatDateTime(data.startDate),
@@ -353,7 +353,7 @@ export const useTaskHandler = (onClose: () => void) => {
         createAppointmentSlot({
           is_recurring: true,
           user_id: userId,
-          location: data.location,
+          location: data.location!,
           total_slots: data.totalSlots,
           start_time: extractTime(data.startDate),
           end_time: extractTime(data.endDate),
@@ -365,7 +365,7 @@ export const useTaskHandler = (onClose: () => void) => {
         createAppointmentSlot({
           is_recurring: false,
           user_id: userId,
-          location: data.location,
+          location: data.location!,
           total_slots: data.totalSlots,
           date: data.slotDate,
           start_time: mergeDateAndTime(data.slotDate, data.startDate),
@@ -383,7 +383,7 @@ export const useTaskHandler = (onClose: () => void) => {
         });
       } else {
         createAppointment({
-          task_title: data.taskTitle,
+          task_title: data.taskTitle!,
           user_id: userId,
           end_date: formatDateTime(data.endDate),
           // Sending date-only for start_date to bypass a backend bug in getAppointmentCountForDate
