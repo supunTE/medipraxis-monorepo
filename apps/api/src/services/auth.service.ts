@@ -203,7 +203,7 @@ export class AuthService {
     await this.refreshTokenRepository.revokeAllUserTokens(userId);
   }
 
-  async sendOtp(mobileNumber: string, countryCode: string) {
+  async requestPasswordReset(mobileNumber: string, countryCode: string) {
     const user = await this.userRepository.findUserByMobile(
       mobileNumber,
       countryCode
