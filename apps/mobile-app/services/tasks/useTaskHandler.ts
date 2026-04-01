@@ -232,12 +232,6 @@ const formatDateTime = (dateStr: string): string => {
   return `${date}T${h.padStart(2, "0")}:${m.padStart(2, "0")}:00`;
 };
 
-const formatDateOnly = (dateStr: string): string => {
-  // dateStr is "YYYY-MM-DDTHH:MM" from the picker — just strip the time part.
-  if (!dateStr) return "";
-  return dateStr.split("T")[0] ?? dateStr;
-};
-
 /* ─────────────────────────── Hook ──────────────────────────────── */
 
 export const useTaskHandler = (onClose: () => void) => {
@@ -386,10 +380,7 @@ export const useTaskHandler = (onClose: () => void) => {
           task_title: data.taskTitle!,
           user_id: userId,
           end_date: formatDateTime(data.endDate),
-          // Sending date-only for start_date to bypass a backend bug in getAppointmentCountForDate
-          // (which blindly appends T00:00:00). WARNING: The appointment start time will be saved
-          // as midnight local time in the database!
-          start_date: formatDateOnly(data.startDate),
+          start_date: formatDateTime(data.startDate),
           client_id: data.client,
           note: data.note,
           task_type_id: TASK_TYPE_IDS.APPOINTMENT,
