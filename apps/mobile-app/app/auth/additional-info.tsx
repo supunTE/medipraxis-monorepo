@@ -1,8 +1,21 @@
+import {
+  ButtonComponent,
+  ButtonSize,
+  CheckboxComponent,
+  DropdownComponent,
+  type DropdownOption,
+  FileUploadComponent,
+  TextComponent,
+  TextInputComponent,
+  TextInputType,
+} from "@/components/basic";
+import { authService } from "@/services/auth";
 import { Color, TextSize, TextVariant } from "@repo/config";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState } from "react";
 import type { RegisterAdditionalDetailsInput } from "@repo/models";
 import { File as ExpoFile } from "expo-file-system";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -11,19 +24,6 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import {
-  ButtonComponent,
-  ButtonSize,
-  CheckboxComponent,
-  DropdownComponent,
-  DropdownOption,
-  FileUploadComponent,
-  TextComponent,
-  TextInputComponent,
-  TextInputType,
-} from "@/components/basic";
-import { Controller, useForm } from "react-hook-form";
-import { authService } from "@/services/auth";
 
 type AdditionalInfoForm = {
   title: string;
@@ -164,7 +164,7 @@ export default function AdditionalInfoScreen() {
         return;
       }
 
-      Alert.alert("Saved", "Additional information submitted.");
+      Alert.alert("Saved", "Registration Completed!");
       router.replace({
         pathname: "/auth/key-reveal",
         params: {
@@ -175,7 +175,7 @@ export default function AdditionalInfoScreen() {
     } catch (e: any) {
       Alert.alert(
         "Save Failed",
-        e?.message ?? "Failed to save additional details"
+        e?.message ?? "Failed to cpomplete registration. Please try again."
       );
     } finally {
       setIsSaving(false);
