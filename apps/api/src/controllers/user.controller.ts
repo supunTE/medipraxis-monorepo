@@ -32,8 +32,7 @@ export class UserController {
       const userService = getUserService(c);
       const userId = c.req.param("id");
 
-      const profilePictureData =
-        await userService.getProfilePictureUrl(userId);
+      const profilePictureData = await userService.getProfilePictureUrl(userId);
 
       return c.json(profilePictureData);
     } catch (error) {
