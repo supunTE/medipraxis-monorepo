@@ -168,9 +168,7 @@ export const authService = {
     return (await res.json()) as AdditionalDetailsResponse;
   },
 
-  async uploadProfilePicture(
-    file: ExpoFile
-  ): Promise<UploadUserAssetResponse> {
+  async uploadProfilePicture(file: ExpoFile): Promise<UploadUserAssetResponse> {
     const localUri = `${Paths.cache.uri}${file.name}`;
     await copyAsync({ from: file.uri, to: localUri });
 

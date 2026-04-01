@@ -80,9 +80,7 @@ export class AuthController {
     }
   }
 
-  static async uploadProfilePicture(
-    c: APIContext<{ form: { file: File } }>
-  ) {
+  static async uploadProfilePicture(c: APIContext<{ form: { file: File } }>) {
     try {
       const userId = (c.get("user" as never) as { sub: string }).sub;
       const body = await c.req.parseBody();
