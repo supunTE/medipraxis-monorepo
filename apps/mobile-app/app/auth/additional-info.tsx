@@ -157,7 +157,9 @@ export default function AdditionalInfoScreen() {
         }
       } catch (uploadError: any) {
         const uploadErrorMessage = String(uploadError?.message ?? "");
-        const hasIncorrectFileData = /invalid file type/i.test(uploadErrorMessage);
+        const hasIncorrectFileData = /invalid file type/i.test(
+          uploadErrorMessage
+        );
         Alert.alert(
           "Upload Failed",
           hasIncorrectFileData
