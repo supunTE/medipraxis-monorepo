@@ -210,7 +210,7 @@ export function PhoneEntry({ redirect }: PhoneEntryProps) {
 
         {!otpSent ? (
           <form onSubmit={handlePhoneSubmit}>
-            <div className="flex gap-3 mb-6">
+            <div className="flex items-start gap-3 mb-6">
               {/* Country Code Dropdown with Flag */}
               <div className="w-28 relative">
                 <div className="absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none select-none bg-[#90C67C] text-white text-xs font-bold px-1.5 py-0.5 rounded">

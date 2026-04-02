@@ -46,6 +46,12 @@ const users = new Hono()
     zValidator("param", getUserParamSchema),
     UserController.getUserById
   )
+  // Get profile picture signed URL
+  .get(
+    "/:id/profile-picture",
+    zValidator("param", getUserParamSchema),
+    UserController.getProfilePicture
+  )
   // Update user by ID
   .put(
     "/:id",

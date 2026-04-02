@@ -121,6 +121,28 @@ export class UserRepository {
     return data;
   }
 
+  async updatePasswordByMobile(
+    mobileNumber: string,
+    countryCode: string,
+    passwordHash: string
+  ) {
+    const { data, error } = await this.db
+      .from(USER_QUERIES.USER_TABLE)
+      .update({
+        password_hash: passwordHash,
+      })
+      .eq("mobile_number", mobileNumber)
+      .eq("mobile_country_code", countryCode)
+      .select()
+      .single();
+
+    if (error && error.code !== "PGRST116") {
+      throw new Error(`Failed to update password: ${error.message}`);
+    }
+
+    return data || null;
+  }
+
   async updateAdditionalDetailsByMobile(
     mobileNumber: string,
     countryCode: string,

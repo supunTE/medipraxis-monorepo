@@ -27,6 +27,10 @@ export interface AdditionalDetailsResponse {
   user?: User;
 }
 
+export interface MessageResponse {
+  message: string;
+}
+
 export interface UploadUserAssetResponse {
   user?: User;
   file_path?: string;
@@ -142,6 +146,62 @@ export const authService = {
       await authStorage.clearAll();
       return null;
     }
+  },
+
+  async requestPasswordReset(
+    phoneNumber: string,
+    countryCode: string
+  ): Promise<MessageResponse> {
+    const res = await apiClient.api.auth["forgot-password"].$post({
+      json: {
+        mobile_number: phoneNumber,
+        mobile_country_code: countryCode,
+      },
+    });
+
+    if (!res.ok) {
+      const errorData = (await res
+        .json()
+        .catch(() => ({ error: "Failed to send OTP" }))) as ErrorResponse;
+      const errorMessage =
+        typeof errorData.error === "string"
+          ? errorData.error
+          : JSON.stringify(errorData.error) || "Failed to send OTP";
+      throw new Error(errorMessage);
+    }
+
+    return (await res.json()) as MessageResponse;
+  },
+
+  async resetPassword(
+    phoneNumber: string,
+    countryCode: string,
+    otp: string,
+    newPassword: string,
+    confirmPassword: string
+  ): Promise<MessageResponse> {
+    const res = await apiClient.api.auth["reset-password"].$post({
+      json: {
+        mobile_number: phoneNumber,
+        mobile_country_code: countryCode,
+        otp,
+        new_password: newPassword,
+        confirm_password: confirmPassword,
+      },
+    });
+
+    if (!res.ok) {
+      const errorData = (await res
+        .json()
+        .catch(() => ({ error: "Failed to reset password" }))) as ErrorResponse;
+      const errorMessage =
+        typeof errorData.error === "string"
+          ? errorData.error
+          : JSON.stringify(errorData.error) || "Failed to reset password";
+      throw new Error(errorMessage);
+    }
+
+    return (await res.json()) as MessageResponse;
   },
 
   async registerAdditionalDetails(
