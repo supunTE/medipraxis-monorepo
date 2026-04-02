@@ -32,6 +32,7 @@
     },
     "plugins": [
       "expo-router",
+      "expo-splash-screen",
       "expo-secure-store",
       [
         "expo-speech-recognition",
