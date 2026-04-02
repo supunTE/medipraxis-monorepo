@@ -462,7 +462,12 @@ export default function AIAssistantModal({
                   variant={TextVariant.Body}
                   size={TextSize.Small}
                   color={Color.Grey}
-                  style={{ textAlign: "center", marginBottom: 12, opacity: 0.7, fontSize: 12 }}
+                  style={{
+                    textAlign: "center",
+                    marginBottom: 12,
+                    opacity: 0.7,
+                    fontSize: 12,
+                  }}
                 >
                   AI Responses may not always be accurate.
                 </TextComponent>
@@ -507,8 +512,8 @@ export default function AIAssistantModal({
                           : !inputText.trim() && !SpeechModule
                             ? "bg-mp-black/40"
                             : isListening
-                            ? "bg-red-500 active:opacity-80"
-                            : "bg-mp-black active:opacity-80"
+                              ? "bg-red-500 active:opacity-80"
+                              : "bg-mp-black active:opacity-80"
                       )}
                     >
                       {inputText.trim() ? (

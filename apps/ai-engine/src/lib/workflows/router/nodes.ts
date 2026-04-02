@@ -19,7 +19,6 @@ export async function guardRailCheck(
   return result.output as { isValid: boolean; violation?: string };
 }
 
-
 export async function identifyTask(
   message: string,
   history: ChatMessage[] = []
