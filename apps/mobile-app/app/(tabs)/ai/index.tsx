@@ -462,7 +462,7 @@ export default function AIAssistantModal({
                   variant={TextVariant.Body}
                   size={TextSize.Small}
                   color={Color.Grey}
-                  style={{ textAlign: "center", marginBottom: 6, opacity: 0.7 }}
+                  style={{ textAlign: "center", marginBottom: 12, opacity: 0.7, fontSize: 12 }}
                 >
                   AI Responses may not always be accurate.
                 </TextComponent>
