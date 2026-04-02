@@ -33,18 +33,13 @@ jobs:
           eas-version: latest
           token: ${{ secrets.EXPO_TOKEN }}
 
-      # Install dependencies (root)
-      - name: Install root dependencies
+      # Install dependencies (root - works for monorepo too)
+      - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      # Install mobile app dependencies
-      - name: Install mobile dependencies
-        run: yarn install --frozen-lockfile
-        working-directory: ./apps/mobile-app
-
-      # Verify login
+      # Verify Expo login (fail if not logged in)
       - name: Verify Expo login
-        run: npx expo whoami
+        run: eas whoami || exit 1
 
       # Run EAS Build and capture output
       - name: Run EAS Build
@@ -56,8 +51,8 @@ jobs:
           echo "Starting EAS Build..."
 
           BUILD_OUTPUT=$(eas build \
-            --platform ${{ github.event.inputs.platform }} \
-            --profile ${{ github.event.inputs.profile }} \
+            --platform android \
+            --profile production \
             --non-interactive \
             --no-wait \
             --json)
@@ -72,22 +67,13 @@ jobs:
           echo "DEBUG: Extracted Build URLs:"
           echo "$BUILD_OUTPUT" | jq -r '.[] | "\(.platform): \(.buildDetailsPageUrl)"'
 
-          # Set first URL as primary for existing summary steps (fallback)
-          DETAILS_URL=$(echo $BUILD_OUTPUT | jq -r '.[0].buildDetailsPageUrl')
-          echo "DETAILS_URL=$DETAILS_URL" >> $GITHUB_ENV
-
-          # Append all links to GitHub Summary
+          # Append info to GitHub Summary
           echo "## EAS Build Info" >> $GITHUB_STEP_SUMMARY
-          echo "$BUILD_OUTPUT" | jq -r '.[] | "- [View Build Details (\(.platform))](\(.buildDetailsPageUrl))"' >> $GITHUB_STEP_SUMMARY
+          echo "Android production build has been successfully initiated via EAS." >> $GITHUB_STEP_SUMMARY
+          echo "Build initiated successfully." >> $GITHUB_STEP_SUMMARY
 
       # Print links in logs
-      - name: Show Build Links
+      - name: Show Build Logs
         run: |
-          # echo "APK Download URL: $BUILD_URL"
-          echo "Build Details Page: $DETAILS_URL"
+          echo "EAS Build has started. Check the 'Run EAS Build' step output for raw build details."
 
-      # Add to GitHub Summary (nice UI)
-      - name: Add Build Links to Summary
-        run: |
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Build initiated successfully." >> $GITHUB_STEP_SUMMARY
