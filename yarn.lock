@@ -9314,6 +9314,11 @@ expo-server@^1.0.5:
   resolved "https://registry.yarnpkg.com/expo-server/-/expo-server-1.0.5.tgz#2d52002199a2af99c2c8771d0657916004345ca9"
   integrity sha512-IGR++flYH70rhLyeXF0Phle56/k4cee87WeQ4mamS+MkVAVP+dDlOHf2nN06Z9Y2KhU0Gp1k+y61KkghF7HdhA==
 
+expo-speech-recognition@^3.1.2:
+  version "3.1.2"
+  resolved "https://registry.yarnpkg.com/expo-speech-recognition/-/expo-speech-recognition-3.1.2.tgz#785f2738cc8f7eaeb39aabc2d74829548e89dc84"
+  integrity sha512-yaXy+6w218Urdshits2KsfLjXNCnGNlXzUxEP4BVehKEbiIPAeUKBzuicCeELU5H2zTLwL9u+RjbFAUom4LiYQ==
+
 expo-splash-screen@~31.0.12:
   version "31.0.12"
   resolved "https://registry.yarnpkg.com/expo-splash-screen/-/expo-splash-screen-31.0.12.tgz#917bc5ad533933fbf5788f61d3212b0aaa760a45"

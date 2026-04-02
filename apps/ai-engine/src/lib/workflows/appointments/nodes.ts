@@ -8,13 +8,13 @@ export async function runAgent(
   history: ChatMessage[]
 ): Promise<{ message: string }> {
   const prompt = ai.prompt("appointments/appointment-agent");
+  const messages = history.slice(-5).map((m) => ({
+    role: m.role === "user" ? ("user" as const) : ("model" as const),
+    content: [{ text: m.content }],
+  }));
   const response = await prompt(
-    {
-      query,
-      history:
-        history.length > 0 ? JSON.stringify(history.slice(-5)) : undefined,
-    },
-    { use: [retryMiddleware] }
+    { query },
+    { messages, use: [retryMiddleware] }
   );
 
   const text = response.text;

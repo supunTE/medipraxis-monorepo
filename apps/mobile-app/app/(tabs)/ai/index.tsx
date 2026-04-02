@@ -8,9 +8,28 @@ import { NotoColorEmoji_400Regular } from "@expo-google-fonts/noto-color-emoji";
 import { Color, TextSize, TextVariant } from "@repo/config";
 import { AIChatRole, type UIChatMessage } from "@repo/models";
 import clsx from "clsx";
-import Markdown from "react-native-markdown-display";
 import { useFonts } from "expo-font";
 import { LinearGradient } from "expo-linear-gradient";
+import type {
+  ExpoSpeechRecognitionModule as SpeechModuleType,
+  useSpeechRecognitionEvent as useSpeechEventType,
+} from "expo-speech-recognition";
+
+// expo-speech-recognition is not available in Expo Go — load safely
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let SpeechModule: typeof SpeechModuleType | null = null;
+let useSpeechRecognitionEvent: typeof useSpeechEventType = () => {};
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const mod = require("expo-speech-recognition") as {
+    ExpoSpeechRecognitionModule: typeof SpeechModuleType;
+    useSpeechRecognitionEvent: typeof useSpeechEventType;
+  };
+  SpeechModule = mod.ExpoSpeechRecognitionModule;
+  useSpeechRecognitionEvent = mod.useSpeechRecognitionEvent;
+} catch {
+  // Running in Expo Go — speech recognition unavailable
+}
 import {
   BroomIcon,
   MicrophoneIcon,
@@ -20,6 +39,7 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
   Image,
   ImageBackground,
   KeyboardAvoidingView,
@@ -32,6 +52,7 @@ import {
   View,
   type ImageSourcePropType,
 } from "react-native";
+import Markdown from "react-native-markdown-display";
 
 const backgroundGradient =
   // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -75,6 +96,65 @@ export default function AIAssistantModal({
   const [resolvedClientIds, setResolvedClientIds] = useState<string[]>([]);
   const { messages, isLoading, sendMessage, clearMessages } = useAIChat();
   const scrollViewRef = useRef<ScrollView>(null);
+
+  const [isListening, setIsListening] = useState(false);
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  useSpeechRecognitionEvent("result", (event) => {
+    const transcript = event.results[0]?.transcript ?? "";
+    if (transcript) {
+      setInputText(transcript);
+    }
+  });
+
+  useSpeechRecognitionEvent("end", () => {
+    setIsListening(false);
+  });
+
+  useSpeechRecognitionEvent("error", () => {
+    setIsListening(false);
+  });
+
+  useEffect(() => {
+    if (isListening) {
+      const pulse = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.25,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      pulse.start();
+      return () => pulse.stop();
+    } else {
+      pulseAnim.setValue(1);
+      return undefined;
+    }
+  }, [isListening, pulseAnim]);
+
+  const handleMicPress = useCallback(async () => {
+    if (!SpeechModule) return;
+    if (isListening) {
+      SpeechModule.stop();
+      return;
+    }
+    const { granted } = await SpeechModule.requestPermissionsAsync();
+    if (!granted) return;
+    setInputText("");
+    setIsListening(true);
+    SpeechModule.start({
+      lang: "en-US",
+      interimResults: true,
+      maxAlternatives: 1,
+    });
+  }, [isListening]);
 
   const { user } = useAuth();
   const { data: clients } = useFetchClients(user?.user_id ?? "");
@@ -378,6 +458,19 @@ export default function AIAssistantModal({
                   clients={clients ?? []}
                   onClientIdChange={setResolvedClientIds}
                 />
+                <TextComponent
+                  variant={TextVariant.Body}
+                  size={TextSize.Small}
+                  color={Color.Grey}
+                  style={{
+                    textAlign: "center",
+                    marginBottom: 12,
+                    opacity: 0.7,
+                    fontSize: 12,
+                  }}
+                >
+                  AI Responses may not always be accurate.
+                </TextComponent>
                 <View className="flex-row items-center gap-3">
                   {/* Input field */}
                   <View className="flex-1 relative">
@@ -399,34 +492,45 @@ export default function AIAssistantModal({
                   </View>
 
                   {/* Microphone/Send button */}
-                  <Pressable
-                    onPress={
-                      inputText.trim()
-                        ? handleSendMessage
-                        : () => console.log("Voice input")
+                  <Animated.View
+                    style={
+                      isListening ? { transform: [{ scale: pulseAnim }] } : {}
                     }
-                    disabled={!canSend && inputText.trim().length > 0}
-                    className={clsx(
-                      "w-12 h-12 rounded-full items-center justify-center shadow-soft-2",
-                      inputText.trim().length > 0 && !canSend
-                        ? "bg-mp-black/40"
-                        : "bg-mp-black active:opacity-80"
-                    )}
                   >
-                    {inputText.trim() ? (
-                      <PaperPlaneRightIcon
-                        size={20}
-                        color={Color.White}
-                        weight="bold"
-                      />
-                    ) : (
-                      <MicrophoneIcon
-                        size={20}
-                        color={Color.White}
-                        weight="bold"
-                      />
-                    )}
-                  </Pressable>
+                    <Pressable
+                      onPress={
+                        inputText.trim() ? handleSendMessage : handleMicPress
+                      }
+                      disabled={
+                        (!canSend && inputText.trim().length > 0) ||
+                        (!inputText.trim() && !SpeechModule)
+                      }
+                      className={clsx(
+                        "w-12 h-12 rounded-full items-center justify-center shadow-soft-2",
+                        inputText.trim().length > 0 && !canSend
+                          ? "bg-mp-black/40"
+                          : !inputText.trim() && !SpeechModule
+                            ? "bg-mp-black/40"
+                            : isListening
+                              ? "bg-red-500 active:opacity-80"
+                              : "bg-mp-black active:opacity-80"
+                      )}
+                    >
+                      {inputText.trim() ? (
+                        <PaperPlaneRightIcon
+                          size={20}
+                          color={Color.White}
+                          weight="bold"
+                        />
+                      ) : (
+                        <MicrophoneIcon
+                          size={20}
+                          color={Color.White}
+                          weight={isListening ? "fill" : "bold"}
+                        />
+                      )}
+                    </Pressable>
+                  </Animated.View>
                 </View>
               </View>
             </ImageBackground>

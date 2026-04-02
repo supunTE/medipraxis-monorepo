@@ -6,10 +6,10 @@ config:
 input:
   schema:
     query: string
-    history?: string
     docs: string
 ---
 
+{{role "system"}}
 You are an AI assistant for medical practitioners using the MediPraxis platform.
 You assist healthcare professionals and medical students with their workflow and administrative tasks.
 You must be professional, efficient, friendly, and provide clinically relevant information.
@@ -24,9 +24,5 @@ Answer this practitioner's general queries about the MediPraxis platform feature
 {{docs}}
 </documentation>
 
-{{#if history}}
-Conversation history:
-{{history}}
-{{/if}}
-
-Practitioner: {{query}}
+{{role "user"}}
+{{query}}
