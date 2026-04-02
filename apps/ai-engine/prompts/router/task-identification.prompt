@@ -6,12 +6,12 @@ config:
 input:
   schema:
     message: string
-    history?: string
 output:
   schema:
     task: string
 ---
 
+{{role "system"}}
 Based on the medical practitioner's message and conversation history, identify which task category it belongs to:
 - greeting: General greetings, hello, hi, how are you
 - appointment: Managing patient appointments, scheduling, clinic calendar
@@ -26,5 +26,5 @@ If the history shows an ongoing workflow (e.g. an appointment is being booked), 
 
 Respond with the task category name in the "task" field.
 
-Conversation history: {{history}}
-Latest message: "{{message}}"
+{{role "user"}}
+{{message}}

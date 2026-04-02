@@ -19,18 +19,19 @@ export async function guardRailCheck(
   return result.output as { isValid: boolean; violation?: string };
 }
 
+
 export async function identifyTask(
   message: string,
   history: ChatMessage[] = []
 ): Promise<{ task: AIActionType }> {
   const prompt = ai.prompt("router/task-identification");
+  const messages = history.slice(-5).map((m) => ({
+    role: m.role === "user" ? ("user" as const) : ("model" as const),
+    content: [{ text: m.content }],
+  }));
   const result = await prompt(
-    {
-      message,
-      history:
-        history.length > 0 ? JSON.stringify(history.slice(-5)) : undefined,
-    },
-    { use: [retryMiddleware] }
+    { message },
+    { messages, use: [retryMiddleware] }
   );
   const output = result.output as { task: string };
   const taskType = output.task.trim().toLowerCase().replace(/-/g, "_");
