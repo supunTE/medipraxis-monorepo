@@ -6,7 +6,6 @@ on:
   #     - main # Or whichever branch you want to trigger the build
   workflow_dispatch: # Allows you to trigger the build manually from the GitHub UI
 
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -23,7 +22,7 @@ jobs:
           node-version: 20
           cache: yarn
 
-      # Install jq
+      # Install jq (for parsing JSON)
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
 
@@ -55,28 +54,26 @@ jobs:
             --platform android \
             --profile production \
             --non-interactive \
-            --wait \
+            --no-wait \
             --json)
 
           echo "$BUILD_OUTPUT"
 
-          # Extract URLs safely (handles both array & object)
-          BUILD_URL=$(echo "$BUILD_OUTPUT" | jq -r '.[0].artifacts.buildUrl' || echo "")
-          DETAILS_URL=$(echo "$BUILD_OUTPUT" | jq -r '.[0].buildDetailsPageUrl' || echo "")
+          # Debug: Print entire build output object
+          echo "DEBUG: Full Build Output:"
+          echo "$BUILD_OUTPUT" | jq .
 
-          echo "BUILD_URL=$BUILD_URL" >> $GITHUB_ENV
-          echo "DETAILS_URL=$DETAILS_URL" >> $GITHUB_ENV
+          # Extract and print all URLs for logging
+          echo "DEBUG: Extracted Build URLs:"
+          echo "$BUILD_OUTPUT" | jq -r '.[] | "\(.platform): \(.buildDetailsPageUrl)"'
+
+          # Append info to GitHub Summary
+          echo "## EAS Build Info" >> $GITHUB_STEP_SUMMARY
+          echo "Android production build has been successfully initiated via EAS." >> $GITHUB_STEP_SUMMARY
+          echo "Build initiated successfully." >> $GITHUB_STEP_SUMMARY
 
       # Print links in logs
-      - name: Show Build Links
+      - name: Show Build Logs
         run: |
-          echo "APK Download URL: $BUILD_URL"
-          echo "Build Details Page: $DETAILS_URL"
+          echo "EAS Build has started. Check the 'Run EAS Build' step output for raw build details."
 
-      # Add to GitHub Summary
-      - name: Add Build Links to Summary
-        run: |
-          echo "## EAS Build Completed" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "- [Download APK]($BUILD_URL)" >> $GITHUB_STEP_SUMMARY
-          echo "- [View Build Details]($DETAILS_URL)" >> $GITHUB_STEP_SUMMARY

@@ -37,6 +37,7 @@ export const useGetSlotWindows = (
       return (await res.json()) as GetSlotWindowsResponse;
     },
     enabled: !!userId,
+    meta: { persist: true },
   });
 
   const timeBlockGroups: AgendaTimeBlockGroupData[] = useMemo(() => {

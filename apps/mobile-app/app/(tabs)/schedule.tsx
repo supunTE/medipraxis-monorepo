@@ -1,15 +1,4 @@
 import { useAuth } from "@/auth/AuthContext";
-import { useFocusEffect } from "@react-navigation/native";
-import { useQueryClient } from "@tanstack/react-query";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useCallback, useMemo, useState } from "react";
-import {
-  Alert,
-  StyleSheet,
-  Text as RNText,
-  TouchableOpacity,
-  View as RNView,
-} from "react-native";
 import { View } from "@/components/Themed";
 import {
   type AgendaBlockContent,
@@ -22,7 +11,11 @@ import {
   ViewReminderModal,
 } from "@/components/advanced/schedule";
 import TaskForm from "@/components/advanced/taskPanel/TaskForm";
-import { ButtonComponent, ButtonSize } from "@/components/basic";
+import {
+  ButtonComponent,
+  ButtonSize,
+  OfflineNoticeBar,
+} from "@/components/basic";
 import Loader from "@/components/basic/Loader.component";
 import { Icons } from "@/config";
 import { useGetSlotWindows } from "@/services/slotWindows";
@@ -34,8 +27,19 @@ import {
   useUpdateTask,
 } from "@/services/tasks";
 import { formatISOToTime, simpleDateTimeToISO } from "@/utils";
+import { useFocusEffect } from "@react-navigation/native";
 import { Color } from "@repo/config";
 import { type TaskDetails } from "@repo/models";
+import { useQueryClient } from "@tanstack/react-query";
+import { useCallback, useMemo, useState } from "react";
+import {
+  Alert,
+  Text as RNText,
+  View as RNView,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ScheduleScreen() {
   const insets = useSafeAreaInsets();
@@ -304,6 +308,12 @@ export default function ScheduleScreen() {
         style={[styles.topEdgeBackground, { height: insets.top + 16 }]}
       />
       <View style={{ flex: 1, paddingTop: insets.top }}>
+        <OfflineNoticeBar
+          containerStyle={{
+            marginHorizontal: 16,
+            marginTop: 4,
+          }}
+        />
         <CalendarComponent
           agendaData={agendaData}
           selectedDate={selectedDate}

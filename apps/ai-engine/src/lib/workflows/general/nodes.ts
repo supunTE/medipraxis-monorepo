@@ -8,7 +8,6 @@ export async function runAgent(
   query: string,
   history: ChatMessage[]
 ): Promise<{ message: string }> {
-  // Read the documentation file directly
   const docsPath = path.join(
     process.cwd(),
     "prompts",
@@ -18,14 +17,13 @@ export async function runAgent(
   const docs = fs.readFileSync(docsPath, "utf-8");
 
   const prompt = ai.prompt("general/general-agent");
+  const messages = history.slice(-5).map((m) => ({
+    role: m.role === "user" ? ("user" as const) : ("model" as const),
+    content: [{ text: m.content }],
+  }));
   const response = await prompt(
-    {
-      query,
-      docs,
-      history:
-        history.length > 0 ? JSON.stringify(history.slice(-5)) : undefined,
-    },
-    { use: [retryMiddleware] }
+    { query, docs },
+    { messages, use: [retryMiddleware] }
   );
 
   const text = response.text;

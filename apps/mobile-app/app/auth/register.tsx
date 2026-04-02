@@ -36,7 +36,7 @@ export default function RegisterScreen() {
       if (success) {
         const { phoneNumber, countryCode } = register.form.getValues();
         router.replace({
-          pathname: "/auth/key-reveal",
+          pathname: "/auth/additional-info",
           params: { phoneNumber, countryCode },
         });
       }

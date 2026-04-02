@@ -54,6 +54,126 @@ export class AuthController {
     }
   }
 
+  static async forgotPassword(c: APIContext<any>) {
+    const authService = getAuthService(c);
+
+    try {
+      const { mobile_number, mobile_country_code } = c.req.valid("json");
+      const result = await authService.requestPasswordReset(
+        mobile_number,
+        mobile_country_code
+      );
+      return c.json(result);
+    } catch (e: any) {
+      if (e.message === "User not found") {
+        return c.json({ error: e.message }, 404);
+      }
+
+      return c.json({ error: e.message ?? "Failed to send OTP" }, 400);
+    }
+  }
+
+  static async resetPassword(c: APIContext<any>) {
+    const authService = getAuthService(c);
+
+    try {
+      const { mobile_number, mobile_country_code, otp, new_password } =
+        c.req.valid("json");
+      const result = await authService.resetPasswordWithOtp(
+        mobile_number,
+        mobile_country_code,
+        otp,
+        new_password
+      );
+      return c.json(result);
+    } catch (e: any) {
+      if (e.message === "User not found") {
+        return c.json({ error: e.message }, 404);
+      }
+
+      if (e.message === "Invalid or expired OTP") {
+        return c.json({ error: e.message }, 400);
+      }
+
+      return c.json({ error: e.message ?? "Failed to reset password" }, 400);
+    }
+  }
+
+  static async registerAdditionalDetails(c: APIContext<any>) {
+    const authService = getAuthService(c);
+    const userId = (c.get("user" as never) as { sub: string }).sub;
+
+    try {
+      const payload = c.req.valid("json");
+      const user = await authService.saveAdditionalDetails(userId, payload);
+      return c.json(
+        {
+          message: "Additional details saved",
+          user,
+        },
+        201
+      );
+    } catch (e: any) {
+      if (e.message == "User not found") {
+        return c.json({ error: e.message }, 404);
+      }
+
+      return c.json(
+        { error: e.message ?? "Failed to save additional details" },
+        400
+      );
+    }
+  }
+
+  static async uploadProfilePicture(c: APIContext<{ form: { file: File } }>) {
+    try {
+      const userId = (c.get("user" as never) as { sub: string }).sub;
+      const body = await c.req.parseBody();
+      const file = body["file"];
+
+      if (!(file instanceof File)) {
+        return c.json({ error: "file is required" }, 400);
+      }
+
+      const authService = getAuthService(c);
+      const result = await authService.uploadProfilePicture(file, userId);
+
+      return c.json(result, 201);
+    } catch (e: any) {
+      if (e.message === "User not found") {
+        return c.json({ error: e.message }, 404);
+      }
+
+      return c.json(
+        { error: e.message ?? "Failed to upload profile picture" },
+        400
+      );
+    }
+  }
+
+  static async uploadSeal(c: APIContext<{ form: { file: File } }>) {
+    try {
+      const userId = (c.get("user" as never) as { sub: string }).sub;
+      const body = await c.req.parseBody();
+      const file = body["file"];
+
+      if (!(file instanceof File)) {
+        return c.json({ error: "file is required" }, 400);
+      }
+
+      const authService = getAuthService(c);
+      const result = await authService.uploadSeal(file, userId);
+
+      return c.json(result, 201);
+    } catch (e: any) {
+      if (e.message === "User not found") {
+        return c.json({ error: e.message }, 404);
+      }
+
+      return c.json({ error: e.message ?? "Failed to upload seal" }, 400);
+    }
+  }
+
   static async refresh(c: APIContext<any>) {
     const { refreshToken } = await c.req.json();
     const authService = getAuthService(c);

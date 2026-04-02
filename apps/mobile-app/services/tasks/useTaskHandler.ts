@@ -41,11 +41,11 @@ const taskFormSchema = z
     startDate: z.string(),
     endDate: z.string(),
     // Task + Appointment shared
-    taskTitle: z.string(),
+    taskTitle: z.string().optional(),
     client: z.string(),
     alarm: z.boolean(),
     // Slot window
-    location: z.string(),
+    location: z.string().optional(),
     totalSlots: z.number(),
     isRecurring: z.boolean(),
     slotDate: z.string(),
@@ -232,12 +232,6 @@ const formatDateTime = (dateStr: string): string => {
   return `${date}T${h.padStart(2, "0")}:${m.padStart(2, "0")}:00`;
 };
 
-const formatDateOnly = (dateStr: string): string => {
-  // dateStr is "YYYY-MM-DDTHH:MM" from the picker — just strip the time part.
-  if (!dateStr) return "";
-  return dateStr.split("T")[0] ?? dateStr;
-};
-
 /* ─────────────────────────── Hook ──────────────────────────────── */
 
 export const useTaskHandler = (onClose: () => void) => {
@@ -323,7 +317,7 @@ export const useTaskHandler = (onClose: () => void) => {
   const onSubmit = (data: TaskFormData) => {
     if (data.eventType === EVENT_TYPES.TASK) {
       createTask({
-        task_title: data.taskTitle,
+        task_title: data.taskTitle!,
         user_id: userId,
         end_date: formatDateTime(data.endDate),
         start_date: formatDateTime(data.startDate),
@@ -353,7 +347,7 @@ export const useTaskHandler = (onClose: () => void) => {
         createAppointmentSlot({
           is_recurring: true,
           user_id: userId,
-          location: data.location,
+          location: data.location!,
           total_slots: data.totalSlots,
           start_time: extractTime(data.startDate),
           end_time: extractTime(data.endDate),
@@ -365,7 +359,7 @@ export const useTaskHandler = (onClose: () => void) => {
         createAppointmentSlot({
           is_recurring: false,
           user_id: userId,
-          location: data.location,
+          location: data.location!,
           total_slots: data.totalSlots,
           date: data.slotDate,
           start_time: mergeDateAndTime(data.slotDate, data.startDate),
@@ -383,13 +377,10 @@ export const useTaskHandler = (onClose: () => void) => {
         });
       } else {
         createAppointment({
-          task_title: data.taskTitle,
+          task_title: data.taskTitle!,
           user_id: userId,
           end_date: formatDateTime(data.endDate),
-          // Sending date-only for start_date to bypass a backend bug in getAppointmentCountForDate
-          // (which blindly appends T00:00:00). WARNING: The appointment start time will be saved
-          // as midnight local time in the database!
-          start_date: formatDateOnly(data.startDate),
+          start_date: formatDateTime(data.startDate),
           client_id: data.client,
           note: data.note,
           task_type_id: TASK_TYPE_IDS.APPOINTMENT,

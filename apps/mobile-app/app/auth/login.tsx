@@ -1,6 +1,6 @@
 import { Color, TextSize, TextVariant } from "@repo/config";
 import { LinearGradient } from "expo-linear-gradient";
-import { Link, useLocalSearchParams } from "expo-router";
+import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import {
   Alert,
@@ -24,6 +24,7 @@ import { Controller } from "react-hook-form";
 import { useAuthHandler } from "../../services/auth";
 
 export default function LoginScreen() {
+  const router = useRouter();
   const params = useLocalSearchParams<{
     phoneNumber?: string;
     countryCode?: string;
@@ -211,7 +212,17 @@ export default function LoginScreen() {
                   )}
                 />
 
-                <TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() =>
+                    router.push({
+                      pathname: "/auth/forgot-password",
+                      params: {
+                        phoneNumber: login.form.getValues("phoneNumber"),
+                        countryCode: login.form.getValues("countryCode"),
+                      },
+                    })
+                  }
+                >
                   <TextComponent
                     variant={TextVariant.Body}
                     size={TextSize.Small}
