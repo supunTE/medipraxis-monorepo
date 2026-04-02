@@ -8,6 +8,7 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
+import { Platform } from "react-native";
 import "react-native-reanimated";
 import "../global.css";
 
@@ -54,8 +55,13 @@ export const unstable_settings = {
   initialRouteName: "(tabs)",
 };
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-void SplashScreen.preventAutoHideAsync();
+// Splash screen is disabled on iOS dev (Expo Go doesn't register a native
+// splash screen for its view controller, causing unhandled rejections).
+const SPLASH_ENABLED = !(Platform.OS === "ios" && __DEV__);
+
+if (SPLASH_ENABLED) {
+  SplashScreen.preventAutoHideAsync().catch(() => {});
+}
 
 export default function RootLayout() {
   const [loaded, error] = useFonts({
@@ -135,7 +141,7 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
   const { isLoading: authLoading } = useAuth();
 
   useEffect(() => {
-    if (!authLoading) {
+    if (!authLoading && SPLASH_ENABLED) {
       SplashScreen.hideAsync().catch(() => {});
     }
   }, [authLoading]);
