@@ -13,8 +13,6 @@
         // helps avoid strict install issues
         "YARN_ENABLE_IMMUTABLE_INSTALLS": "false"
       },
-      "node": "20",
-      "yarn": "1.22.22",
       "android": {
         "buildType": "apk"
       }
